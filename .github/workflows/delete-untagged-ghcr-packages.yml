@@ -1,0 +1,113 @@
+# by gemini
+name: Delete Untagged GHCR Packages
+
+on:
+  workflow_dispatch: # Permette l'esecuzione manuale
+    inputs:
+      owner_type:
+        description: 'Type of owner: user or org'
+        required: true
+        default: 'user' # Cambia in 'org' se è un'organizzazione
+        type: choice
+        options:
+          - user
+          - org
+      owner_name:
+        description: 'GitHub username or organization name'
+        required: true
+        default: ${{ github.repository_owner }} # Usa l'owner del repository attuale
+        type: string
+      package_name:
+        description: 'Name of the package (e.g., your-repo-name in lowercase)'
+        required: true
+        type: string
+
+jobs:
+  delete-untagged:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Necessario per il checkout, anche se non strettamente per questo script
+      packages: write # Necessario per l'API di eliminazione (anche se il PAT lo gestisce, è buona pratica)
+
+    steps:
+      - name: Checkout code (optional, useful if you need scripts from repo)
+        uses: actions/checkout@v4
+
+      - name: Install JQ (JSON processor)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Retrieve and Delete Untagged Package Versions
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_DELETE_PACKAGES }} # Il tuo PAT con permessi delete:packages
+          OWNER_TYPE: ${{ github.event.inputs.owner_type }}
+          OWNER_NAME: ${{ github.event.inputs.owner_name }}
+          PACKAGE_NAME: ${{ github.event.inputs.package_name }}
+        run: |
+          echo "Listing versions for package: $PACKAGE_NAME owned by $OWNER_NAME ($OWNER_TYPE)"
+
+          # Base URL for listing package versions
+          # For user-owned packages: /users/{username}/packages/{package_type}/{package_name}/versions
+          # For org-owned packages: /orgs/{org}/packages/{package_type}/{package_name}/versions
+          if [ "$OWNER_TYPE" == "user" ]; then
+            API_URL="https://api.github.com/users/$OWNER_NAME/packages/container/$PACKAGE_NAME/versions"
+          else
+            API_URL="https://api.github.com/orgs/$OWNER_NAME/packages/container/$PACKAGE_NAME/versions"
+          fi
+
+          # Fetch all package versions
+          # Using a loop to handle pagination (max 100 per page, but often more pages)
+          page=1
+          all_versions=""
+          while : ; do
+            echo "Fetching page $page..."
+            response=$(curl -s -L \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token $GH_TOKEN" \
+              "$API_URL?per_page=100&page=$page")
+
+            # Check if the response contains any versions
+            if [ "$(echo "$response" | jq 'length')" -eq 0 ]; then
+              echo "No more versions found."
+              break
+            fi
+
+            all_versions="${all_versions}$(echo "$response" | jq -c '.[]')"
+            page=$((page+1))
+          done
+
+          if [ -z "$all_versions" ]; then
+            echo "No package versions found for $PACKAGE_NAME."
+            exit 0
+          fi
+
+          echo "Found the following package versions:"
+          echo "$all_versions" | jq '.' # Pretty print all versions found
+
+          # Loop through each version and check if it has a tag
+          echo "Checking for untagged versions..."
+          echo "$all_versions" | while read -r version; do
+            version_id=$(echo "$version" | jq -r '.id')
+            tags=$(echo "$version" | jq -r '.metadata.container.tags[]' 2>/dev/null) # Redirect stderr to /dev/null for empty tags
+
+            if [ -z "$tags" ]; then
+              echo "Found untagged version with ID: $version_id"
+              DELETE_URL="https://api.github.com/${OWNER_TYPE}s/${OWNER_NAME}/packages/container/${PACKAGE_NAME}/versions/$version_id"
+              
+              echo "Attempting to delete: $DELETE_URL"
+              delete_response=$(curl -s -L -X DELETE \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Authorization: token $GH_TOKEN" \
+                "$DELETE_URL")
+
+              echo "Deletion response: $delete_response"
+              if [ "$delete_response" == "" ]; then
+                echo "Successfully deleted version $version_id (API often returns empty for success delete)."
+              else
+                echo "Deletion failed for version $version_id. Response: $(echo $delete_response | jq '.message')"
+              fi
+            else
+              echo "Version with ID: $version_id has tags: $tags. Skipping."
+            fi
+          done
+
+          echo "Untagged package cleanup complete."
