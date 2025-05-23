@@ -1,0 +1,76 @@
+name: Upload file to another repository
+
+on:
+  workflow_dispatch: # Permette di avviare il workflow manualmente dalla UI di GitHub
+  workflow_call: # Permette di riutilizzare il workflow da un altro repo
+    inputs:
+      #reusable_input:
+      #  description: 'Input to the reusable workflow'
+      #  required: true
+      #  type: string
+      filename:
+        required: true
+        type: string
+      file_id:
+        required: true
+        type: string
+      dockertag:
+        description: 'Tag for the image'
+        required: false
+        type: string
+        default: "latest"
+  #push:
+  #  branches:
+  #    - main # Esegui quando ci sono push sul branch main (o il tuo branch principale)
+    secrets:
+      API_TOKEN_GITHUB:
+        required: false
+        
+jobs:
+  upload-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+
+      - name: Echo filename, file_id
+        run: echo "filename ${{ inputs.filename }}, file_id ${{ inputs.file_id }}"
+
+      - name: Download File
+        uses: actions/download-artifact@v4
+        with:
+          name: uploaded-file_${{ inputs.dockertag }}
+          #${{ inputs.filename }}
+          #artifact-ids: ${{ inputs.file_id }}
+          path: downloaded-artifact
+
+      - name: show directory content
+        run: ls -lah downloaded-artifact
+        #uploaded-file_${{ inputs.dockertag }}
+
+      - name: Get current date for commit message
+        id: date
+        run: echo "now=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+
+      - name: Configure Git for target repository
+        run: |
+          git config --global user.email "neo-github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "neo-github-actions[bot]"
+
+      - name: Clone target repository
+        run: |
+          git clone https://github.com/Neomediatech/docker-images-scan-reports.git target-repo
+
+      - name: Copy file to target repository and commit
+        run: |
+          #cp uploaded-file_${{ inputs.dockertag }}/${{ inputs.filename }} target-repo/
+          cp downloaded-artifact/* target-repo/
+          #cp downloaded-artifact/${{ inputs.filename }} target-repo/
+          cd target-repo
+          ls -lah
+          #FILES="$(ls|xargs)"
+          git add .
+          #git add ${{ inputs.filename }}
+          git commit -m "Upload ${{ inputs.filename }} from ${{ github.repository }} - ${{ steps.date.outputs.now }}"
+          git push https://${{ github.actor }}:${{ secrets.API_TOKEN_GITHUB }}@github.com/Neomediatech/docker-images-scan-reports.git
