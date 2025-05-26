@@ -82,48 +82,50 @@ jobs:
       - name: Set INPUT_IMAGE_REF
         run: echo "INPUT_IMAGE_REF=${{ steps.vars.outputs.tag }}" >> $GITHUB_ENV
 
-      - name: Run Trivy vulnerability scanner and save JSON report
+      - name: Run Trivy vulnerability scanner and save TABLE report
+      #- name: Run Trivy vulnerability scanner and save JSON report
         uses: aquasecurity/trivy-action@0.30.0
-        #run: trivy image --format json -o trivy-report.json --ignore-unfixed --vuln-type os,library --severity CRITICAL,HIGH $INPUT_IMAGE_REF
         with:
           #version: latest
           image-ref: ${{ steps.vars.outputs.tag }}
-          format: 'json'
-          output: ${{ steps.vars.outputs.json_to_copy }}
+          #format: 'json'
+          format: 'table'
+          output: ${{ steps.vars.outputs.txt_to_copy }}
+          #output: ${{ steps.vars.outputs.json_to_copy }}
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
         env:
           INPUT_IMAGE_REF: ${{ steps.vars.outputs.tag }}
 
-      - name: Get the trivy HTML template
-        run: wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+      #- name: Get the trivy HTML template
+      #  run: wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
 
-      - name: Generate HTML report from JSON
-        run: trivy convert --format template --template "@$GITHUB_WORKSPACE/html.tpl" -o ${{ steps.vars.outputs.html_to_copy }} ${{ steps.vars.outputs.json_to_copy }}
+      #- name: Generate HTML report from JSON
+      #  run: trivy convert --format template --template "@$GITHUB_WORKSPACE/html.tpl" -o ${{ steps.vars.outputs.html_to_copy }} ${{ steps.vars.outputs.json_to_copy }}
 
-      - name: Generate TXT report from JSON
-        run: trivy convert --format table -o ${{ steps.vars.outputs.txt_to_copy }} ${{ steps.vars.outputs.json_to_copy }}
+      #- name: Generate TXT report from JSON
+      #  run: trivy convert --format table -o ${{ steps.vars.outputs.txt_to_copy }} ${{ steps.vars.outputs.json_to_copy }}
 
-      - name: Upload json report
-        id: upload-json
-        uses: actions/upload-artifact@v4
-        with:
-          name: uploaded-json_${{ inputs.dockertag }}
-          path: ${{ steps.vars.outputs.json_to_copy }}
-          overwrite: true
-          compression-level: 0
-          retention-days: 1
+      #- name: Upload json report
+      #  id: upload-json
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: uploaded-json_${{ inputs.dockertag }}
+      #    path: ${{ steps.vars.outputs.json_to_copy }}
+      #    overwrite: true
+      #    compression-level: 0
+      #    retention-days: 1
 
-      - name: Upload html report
-        id: upload-step
-        uses: actions/upload-artifact@v4
-        with:
-          name: uploaded-file_${{ inputs.dockertag }}
-          path: ${{ steps.vars.outputs.html_to_copy }}
-          overwrite: true
-          compression-level: 0
-          retention-days: 1
+      #- name: Upload html report
+      #  id: upload-step
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: uploaded-file_${{ inputs.dockertag }}
+      #    path: ${{ steps.vars.outputs.html_to_copy }}
+      #    overwrite: true
+      #    compression-level: 0
+      #    retention-days: 1
 
       - name: Upload txt report
         id: upload-txt
