@@ -102,6 +102,9 @@ jobs:
       - name: Generate HTML report from JSON
         run: trivy convert --format template --template "@$GITHUB_WORKSPACE/html.tpl" -o ${{ steps.vars.outputs.html_to_copy }} ${{ steps.vars.outputs.json_to_copy }}
 
+      - name: Generate TXT report from JSON
+        run: trivy convert --format table -o ${{ steps.vars.outputs.txt_to_copy }} ${{ steps.vars.outputs.json_to_copy }}
+
       - name: Upload json report
         id: upload-json
         uses: actions/upload-artifact@v4
@@ -121,7 +124,6 @@ jobs:
           overwrite: true
           compression-level: 0
           retention-days: 1
-
 
       - name: Upload txt report
         id: upload-txt
