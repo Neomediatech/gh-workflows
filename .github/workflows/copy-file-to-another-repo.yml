@@ -80,5 +80,9 @@ jobs:
           #FILES="$(ls|xargs)"
           git add .
           #git add ${{ inputs.filename }}
-          git commit -m "Upload ${{ inputs.filename }} from ${{ github.repository }} - ${{ steps.date.outputs.now }}"
-          git push https://${{ github.actor }}:${{ secrets.API_TOKEN_GITHUB }}@github.com/Neomediatech/docker-images-scan-reports.git
+          if [[ $(git status --porcelain) ]]; then
+            git commit -m "Upload ${{ inputs.filename }} from ${{ github.repository }} - ${{ steps.date.outputs.now }}"
+            git push https://${{ github.actor }}:${{ secrets.API_TOKEN_GITHUB }}@github.com/Neomediatech/docker-images-scan-reports.git
+          else
+            echo "Nessuna modifica. Il working tree è pulito."
+          fi
