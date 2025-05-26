@@ -47,7 +47,8 @@ jobs:
       packages: write # Permesso per scrivere pacchetti (necessario per GHCR)
     outputs:
       # Define an output for this job
-      file_to_copy_output: ${{ steps.vars.outputs.html_to_copy }}
+      #file_to_copy_output: ${{ steps.vars.outputs.html_to_copy }}
+      file_to_copy_output: ${{ steps.vars.outputs.txt_to_copy }}
       uploaded-file-id: ${{ steps.upload-step.outputs.artifact-id }}
       txt_to_copy_output: ${{ steps.vars.outputs.txt_to_copy }}
 
