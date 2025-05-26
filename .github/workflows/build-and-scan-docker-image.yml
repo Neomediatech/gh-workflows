@@ -49,6 +49,7 @@ jobs:
       # Define an output for this job
       file_to_copy_output: ${{ steps.vars.outputs.html_to_copy }}
       uploaded-file-id: ${{ steps.upload-step.outputs.artifact-id }}
+      txt_to_copy_output: ${{ steps.vars.outputs.txt_to_copy }}
 
     steps:
       - name: Checkout code
@@ -70,6 +71,7 @@ jobs:
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
           echo "html_to_copy=${REPO_NAME}_${{ inputs.dockertag }}_trivy-report.html" >> $GITHUB_OUTPUT
           echo "json_to_copy=${REPO_NAME}_${{ inputs.dockertag }}_trivy-report.json" >> $GITHUB_OUTPUT
+          echo "txt_to_copy=${REPO_NAME}_${{ inputs.dockertag }}_trivy-report.txt" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
         run: docker build -t ${{ steps.vars.outputs.tag }} ${{ inputs.dockerdir }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }}
@@ -116,6 +118,17 @@ jobs:
         with:
           name: uploaded-file_${{ inputs.dockertag }}
           path: ${{ steps.vars.outputs.html_to_copy }}
+          overwrite: true
+          compression-level: 0
+          retention-days: 1
+
+
+      - name: Upload txt report
+        id: upload-txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: uploaded-txt_${{ inputs.dockertag }}
+          path: ${{ steps.vars.outputs.txt_to_copy }}
           overwrite: true
           compression-level: 0
           retention-days: 1
