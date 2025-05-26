@@ -45,6 +45,14 @@ jobs:
           #artifact-ids: ${{ inputs.file_id }}
           path: downloaded-artifact
 
+      - name: Download TXT
+        uses: actions/download-artifact@v4
+        with:
+          name: uploaded-txt_${{ inputs.dockertag }}
+          #${{ inputs.filename }}
+          #artifact-ids: ${{ inputs.file_id }}
+          path: downloaded-artifact
+
       - name: show directory content
         run: ls -lah downloaded-artifact
         #uploaded-file_${{ inputs.dockertag }}
