@@ -37,13 +37,13 @@ jobs:
       - name: Echo filename, file_id
         run: echo "filename ${{ inputs.filename }}, file_id ${{ inputs.file_id }}"
 
-      - name: Download File
-        uses: actions/download-artifact@v4
-        with:
-          name: uploaded-file_${{ inputs.dockertag }}
-          #${{ inputs.filename }}
-          #artifact-ids: ${{ inputs.file_id }}
-          path: downloaded-artifact
+      #- name: Download File
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: uploaded-file_${{ inputs.dockertag }}
+      #    #${{ inputs.filename }}
+      #    #artifact-ids: ${{ inputs.file_id }}
+      #    path: downloaded-artifact
 
       - name: Download TXT
         uses: actions/download-artifact@v4
