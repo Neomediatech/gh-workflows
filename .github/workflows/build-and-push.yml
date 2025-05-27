@@ -1,0 +1,61 @@
+name: Build and Push Docker Image
+
+on:
+  workflow_dispatch: # Permette di avviare il workflow manualmente dalla UI di GitHub
+  workflow_call: # Permette di riutilizzare il workflow da un altro repo
+    inputs:
+      dockerfile:
+        description: 'Dockerfile name'
+        required: false
+        type: string
+        default: "Dockerfile"
+      dockerdir:
+        description: 'Path for the Dockerfile'
+        required: false
+        type: string
+        default: "."
+      dockertag:
+        description: 'Tag for the image'
+        required: false
+        type: string
+        default: "latest"
+  #push:
+  #  branches:
+    secrets:
+      GHCR_TOKEN:
+        required: false
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Permesso per il checkout del codice
+      packages: write # Permesso per scrivere pacchetti (necessario per GHCR)
+
+    steps:
+      #- name: Checkout code
+      #  uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up image tag (lowercase)
+        id: vars
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME=$(echo "${REPO_LOWER}"|awk -F'/' '{print $2}')
+          echo "tag=ghcr.io/${REPO_LOWER}:${{ inputs.dockertag }}" >> $GITHUB_OUTPUT
+          echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: docker build -t ${{ steps.vars.outputs.tag }} ${{ inputs.dockerdir }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }}
+
+      - name: Push Docker image to GHCR
+        run: docker push ${{ steps.vars.outputs.tag }}
+
+      - name: Set INPUT_IMAGE_REF
+        run: echo "INPUT_IMAGE_REF=${{ steps.vars.outputs.tag }}" >> $GITHUB_ENV
