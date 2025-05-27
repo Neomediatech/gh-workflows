@@ -52,7 +52,7 @@ jobs:
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build -t ${{ steps.vars.outputs.tag }} ${{ inputs.dockerdir }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }}
+        run: docker build -t ${{ steps.vars.outputs.tag }} -f ${{ inputs.dockerfile }} ${{ inputs.dockerdir }}
 
       - name: Push Docker image to GHCR
         run: docker push ${{ steps.vars.outputs.tag }}
