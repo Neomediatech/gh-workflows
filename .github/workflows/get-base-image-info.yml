@@ -1,0 +1,76 @@
+name: Get Base Image Info
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: 'The Docker image repository (e.g., ubuntu).'
+        required: true
+        type: string
+      tag:
+        description: 'The Docker image tag (e.g., latest, 22.04).'
+        required: false
+        type: string
+        default: 'latest'
+      architecture:
+        description: 'The target architecture for the base image (e.g., amd64, arm64).'
+        required: false
+        type: string
+        default: 'amd64' # Default per i runner GitHub Actions
+      os:
+        description: 'The target OS for the base image (e.g., linux).'
+        required: false
+        type: string
+        default: 'linux' # Default per i runner GitHub Actions
+    outputs:
+      base_image_name:
+        description: 'The full name of the base image (e.g., ubuntu:latest).'
+        value: ${{ jobs.get_info.outputs.base_image_name }}
+      base_image_digest:
+        description: 'The digest (hash) of the base image for the specified architecture.'
+        value: ${{ jobs.get_info.outputs.base_image_digest }}
+
+jobs:
+  get_info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get Base Image Digest
+        id: get_digest
+        run: |
+          FULL_BASE_IMAGE="${{ inputs.repository }}:${{ inputs.tag }}"
+          TARGET_ARCH="${{ inputs.architecture }}"
+          TARGET_OS="${{ inputs.os }}"
+
+          echo "Inspecting base image: $FULL_BASE_IMAGE for $TARGET_OS/$TARGET_ARCH"
+
+          # Ottieni il manifest completo dell'immagine base
+          # Reindirizza stderr a stdout per catturare gli errori nell'output
+          MANIFEST_OUTPUT=$(docker manifest inspect "$FULL_BASE_IMAGE" 2>&1)
+
+          # Prova a parsare come Manifest List (immagini multi-arch)
+          # Se l'output non è un Manifest List (es. è un singolo manifest V2),
+          # jq non troverà .manifests e la variabile sarà vuota/nulla.
+          PARSED_DIGEST=$(echo "$MANIFEST_OUTPUT" | jq -r ".manifests[] | select(.platform.architecture == \"$TARGET_ARCH\" and .platform.os == \"$TARGET_OS\") | .digest" 2>/dev/null)
+
+          # Se il parsing come Manifest List non ha prodotto un digest valido,
+          # prova a parsare come singolo Manifest V2 (digest sotto .config.digest).
+          if [ -z "$PARSED_DIGEST" ] || [ "$PARSED_DIGEST" == "null" ]; then
+              echo "Not a multi-arch manifest or no matching platform found. Attempting to parse as single manifest V2."
+              PARSED_DIGEST=$(echo "$MANIFEST_OUTPUT" | jq -r '.config.digest' 2>/dev/null)
+          fi
+
+          if [ -z "$PARSED_DIGEST" ] || [ "$PARSED_DIGEST" == "null" ]; then
+              echo "::error::Failed to get valid digest for base image: $FULL_BASE_IMAGE for $TARGET_OS/$TARGET_ARCH"
+              echo "::error::Raw output of 'docker manifest inspect $FULL_BASE_IMAGE':"
+              echo "$MANIFEST_OUTPUT"
+              exit 1
+          fi
+
+          echo "Base Image Name: $FULL_BASE_IMAGE"
+          echo "Base Image Digest: $PARSED_DIGEST"
+          echo "base_image_name=$FULL_BASE_IMAGE" >> "$GITHUB_OUTPUT"
+          echo "base_image_digest=$PARSED_DIGEST" >> "$GITHUB_OUTPUT"
+        shell: bash
