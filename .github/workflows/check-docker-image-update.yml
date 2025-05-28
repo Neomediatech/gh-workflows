@@ -38,9 +38,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }} # Token fornito automaticamente da GitHub Actions
 
-      - name: Check Docker Version
-        run: docker version
-
       #- name: Check image digests for ${{ matrix.type }}:${{ matrix.version }}
       - name: Check image digests for ${{ matrix.version }}
         id: check_digests # Assegniamo un ID a questo step per poter accedere ai suoi output
@@ -52,9 +49,6 @@ jobs:
 
           echo "Checking updates for: $DERIVED_IMAGE based on $BASE_IMAGE"
 
-          FULL_BASE_MANIFEST_OUTPUT=$(docker manifest inspect "$BASE_IMAGE" 2>&1)
-          #echo "FULL_BASE_MANIFEST_OUTPUT: $FULL_BASE_MANIFEST_OUTPUT"
-          
           # Recupera il digest dell'immagine base da Docker Hub
           # Usiamo 'jq' per parsare l'output JSON in modo robusto, gestendo sia manifest singoli che liste di manifest.
           # `.[0].Digest // .Digest` cerca il digest nel primo elemento di un array (per manifest list)
@@ -64,7 +58,7 @@ jobs:
             echo "::error::Failed to inspect base image: $BASE_IMAGE"
             exit 12 # Fallisce lo step se l'ispezione dell'immagine base fallisce
           fi
-          BASE_DIGEST=$(echo "$BASE_MANIFEST_OUTPUT" | jq -r '.manifests[] | select(.platform.architecture == "amd64" and .platform.os == "linux") | .digest')
+          BASE_DIGEST=$(echo "$BASE_MANIFEST_JSON" | jq -r '.manifests[] | select(.platform.architecture == "amd64" and .platform.os == "linux") | .digest')
 
           echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
