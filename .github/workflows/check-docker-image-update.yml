@@ -50,6 +50,7 @@ jobs:
           echo "Checking updates for: $DERIVED_IMAGE based on $BASE_IMAGE"
 
           FULL_BASE_MANIFEST_OUTPUT=$(docker manifest inspect "$BASE_IMAGE" 2>&1)
+          echo "FULL_BASE_MANIFEST_OUTPUT: $FULL_BASE_MANIFEST_OUTPUT"
           
           # if docker < v25.0.0
           # Recupera il digest dell'immagine base da Docker Hub
@@ -62,7 +63,7 @@ jobs:
             docker manifest inspect "$BASE_IMAGE" # Mostra l'output completo per debugging
             echo "::error::Raw output of 'docker manifest inspect $BASE_IMAGE':"
             echo "$FULL_BASE_MANIFEST_OUTPUT" # STAMPA QUI L'OUTPUT COMPLETO PER DEBUGGING
-            exit 1
+            exit 10
           fi
           echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
@@ -75,7 +76,7 @@ jobs:
             docker manifest inspect "$DERIVED_IMAGE" # Mostra l'output completo per debugging
             echo "::error::Raw output of 'docker manifest inspect $DERIVED_IMAGE':"
             echo "$FULL_DERIVED_MANIFEST_OUTPUT" # STAMPA QUI L'OUTPUT COMPLETO PER DEBUGGING
-            exit 1
+            exit 11
           fi
           echo "Derived Image Digest ($DERIVED_IMAGE): $DERIVED_DIGEST"
 
@@ -87,7 +88,7 @@ jobs:
           #BASE_MANIFEST_JSON=$(docker manifest inspect "$BASE_IMAGE" --json)
           #if [ $? -ne 0 ]; then
           #  echo "::error::Failed to inspect base image: $BASE_IMAGE"
-          #  exit 1 # Fallisce lo step se l'ispezione dell'immagine base fallisce
+          #  exit 12 # Fallisce lo step se l'ispezione dell'immagine base fallisce
           #fi
           #BASE_DIGEST=$(echo "$BASE_MANIFEST_JSON" | jq -r '.[0].Digest // .Digest')
 
@@ -101,7 +102,7 @@ jobs:
             # o almeno che non è stata trovata, quindi si può forzare un rebuild.
             # Puoi scegliere se far fallire il workflow qui o continuare e segnalare un aggiornamento necessario.
             # Per ora, lo faremo fallire per chiarezza.
-          #  exit 1
+          #  exit 13
           #fi
           #DERIVED_DIGEST=$(echo "$DERIVED_MANIFEST_JSON" | jq -r '.[0].Digest // .Digest')
 
