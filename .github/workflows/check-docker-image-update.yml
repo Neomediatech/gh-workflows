@@ -38,6 +38,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }} # Token fornito automaticamente da GitHub Actions
 
+      - name: Install Skopeo (if not already present)
+        # Skopeo è spesso già installato su ubuntu-latest, ma questo garantisce la sua presenza.
+        run: sudo apt-get update && sudo apt-get install -y skopeo
+
       #- name: Check image digests for ${{ matrix.type }}:${{ matrix.version }}
       - name: Check image digests for ${{ matrix.version }}
         id: check_digests # Assegniamo un ID a questo step per poter accedere ai suoi output
@@ -87,15 +91,34 @@ jobs:
             exit 1 # --> Lo script termina qui se DERIVED_DIGEST è nullo/vuoto
           fi
 
+          # Ottieni il digest della base immagine che è stato usato per costruire l'immagine su GHCR
+          echo "Inspecting base image digest from existing derived image on GHCR: $DERIVED_IMAGE"
+          EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL=""
+          # Cerca di estrarre la label dell'immagine remota usando skopeo
+          SKOPEO_OUTPUT=$(skopeo inspect "docker://$DERIVED_IMAGE" --raw 2>&1)
+          # Controlla se l'ispezione con skopeo è riuscita e se l'output è JSON valido
+          if echo "$SKOPEO_OUTPUT" | jq -e '.config.Labels."org.opencontainers.image.base.digest"' > /dev/null; then
+              EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL=$(echo "$SKOPEO_OUTPUT" | jq -r '.config.Labels."org.opencontainers.image.base.digest"')
+              echo "Existing Derived Image Base Digest Label: $EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL"
+          else
+              echo "::warning::Could not find 'org.opencontainers.image.base.digest' label or inspect image $DERIVED_IMAGE on GHCR."
+              echo "::warning::Output di 'skopeo inspect':"
+              echo "$SKOPEO_OUTPUT"
+              # Se la label non è trovata (es. prima build, o immagine vecchia), consideriamo che necessiti di aggiornamento
+              # Questo farà scattare un rebuild se la label non è presente
+              EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL="NOT_FOUND"
+          fi
+
           # Confronta i digest
-          if [ "$DERIVED_DIGEST" != "$BASE_DIGEST" ]; then
+          if [ "$EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL" != "$BASE_DIGEST" ]; then
             echo "::notice file=README.md::The base image ($BASE_IMAGE) has been updated! Rebuild $DERIVED_IMAGE."
             echo "needs-updating=true" >> "$GITHUB_OUTPUT"
           else
             echo "The base image ($BASE_IMAGE) has not changed. No rebuild needed for $DERIVED_IMAGE."
             echo "needs-updating=false" >> "$GITHUB_OUTPUT"
+            echo "base_digest_for_build=$CURRENT_BASE_DIGEST" >> "$GITHUB_OUTPUT" # Passa il digest corrente per la build
           fi
-        shell: bash # Assicurati di usare bash per le funzionalità avanzate dello script
+        shell: bash
 
       #- name: Perform rebuild and push (if update needed)
         # Questo step verrà eseguito solo se 'needs-updating' è 'true' per questa specifica combinazione della matrice.
