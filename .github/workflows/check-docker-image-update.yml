@@ -69,7 +69,7 @@ jobs:
           echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
           # Recupera il digest dell'immagine derivata da GHCR
-          DERIVED_MANIFEST_JSON=$(docker manifest inspect "$DERIVED_IMAGE" --json)
+          DERIVED_MANIFEST_JSON=$(docker manifest inspect "$DERIVED_IMAGE")
           if [ $? -ne 0 ]; then
             echo "::error::Failed to inspect derived image: $DERIVED_IMAGE"
             # Se l'immagine derivata non esiste o non è accessibile, consideriamo che necessita di aggiornamento
