@@ -58,6 +58,8 @@ jobs:
           # Cerchiamo la riga "Digest:" e prendiamo il secondo campo.
           BASE_DIGEST=$(docker manifest inspect "$BASE_IMAGE" 2>&1 | grep 'Digest:' | head -n1 | awk '{print $2}')
 
+          echo "BASE_DIGEST: $BASE_DIGEST"
+
           if [ -z "$BASE_DIGEST" ]; then # Verifica se il digest è vuoto
             echo "::error::Failed to get digest for base image: $BASE_IMAGE"
             docker manifest inspect "$BASE_IMAGE" # Mostra l'output completo per debugging
