@@ -62,6 +62,12 @@ jobs:
 
           echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
+          if [ -z "$BASE_DIGEST" ] || [ "$BASE_DIGEST" == "null" ]; then
+            echo "::error::Failed to get valid digest for base image: $BASE_IMAGE"
+            echo "$BASE_MANIFEST_OUTPUT" # Stampa l'output completo per debugging
+            exit 1 # --> Lo script termina qui se BASE_DIGEST è nullo/vuoto
+          fi
+
           # Recupera il digest dell'immagine derivata da GHCR
           DERIVED_MANIFEST_JSON=$(docker manifest inspect "$DERIVED_IMAGE")
           if [ $? -ne 0 ]; then
@@ -75,6 +81,11 @@ jobs:
           DERIVED_DIGEST=$(echo "$DERIVED_MANIFEST_JSON" | jq -r '.config.digest')
 
           echo "Derived Image Digest ($DERIVED_IMAGE): $DERIVED_DIGEST"
+          if [ -z "$DERIVED_DIGEST" ] || [ "$DERIVED_DIGEST" == "null" ]; then
+            echo "::error::Failed to get valid digest for derived image: $DERIVED_IMAGE"
+            echo "$DERIVED_MANIFEST_OUTPUT" # Stampa l'output completo per debugging
+            exit 1 # --> Lo script termina qui se DERIVED_DIGEST è nullo/vuoto
+          fi
 
           # Confronta i digest
           if [ "$DERIVED_DIGEST" != "$BASE_DIGEST" ]; then
