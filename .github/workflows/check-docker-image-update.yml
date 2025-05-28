@@ -64,7 +64,7 @@ jobs:
             echo "::error::Failed to inspect base image: $BASE_IMAGE"
             exit 12 # Fallisce lo step se l'ispezione dell'immagine base fallisce
           fi
-          BASE_DIGEST=$(echo "$BASE_MANIFEST_JSON" | jq -r '.config.digest')
+          BASE_DIGEST=$(echo "$BASE_MANIFEST_OUTPUT" | jq -r '.manifests[] | select(.platform.architecture == "amd64" and .platform.os == "linux") | .digest')
 
           echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
