@@ -38,6 +38,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }} # Token fornito automaticamente da GitHub Actions
 
+      - name: Check Docker Version
+        run: docker version
+
       #- name: Check image digests for ${{ matrix.type }}:${{ matrix.version }}
       - name: Check image digests for ${{ matrix.version }}
         id: check_digests # Assegniamo un ID a questo step per poter accedere ai suoi output
@@ -50,13 +53,13 @@ jobs:
           echo "Checking updates for: $DERIVED_IMAGE based on $BASE_IMAGE"
 
           FULL_BASE_MANIFEST_OUTPUT=$(docker manifest inspect "$BASE_IMAGE" 2>&1)
-          echo "FULL_BASE_MANIFEST_OUTPUT: $FULL_BASE_MANIFEST_OUTPUT"
+          #echo "FULL_BASE_MANIFEST_OUTPUT: $FULL_BASE_MANIFEST_OUTPUT"
           
           # if docker < v25.0.0
           # Recupera il digest dell'immagine base da Docker Hub
           # L'output di 'docker manifest inspect' senza --json è testuale.
           # Cerchiamo la riga "Digest:" e prendiamo il secondo campo.
-          BASE_DIGEST=$(docker manifest inspect "$BASE_IMAGE" 2>&1 | grep 'Digest:' | head -n1 | awk '{print $2}')
+          BASE_DIGEST=$(docker manifest inspect "$BASE_IMAGE" 2>&1 | grep -i 'Digest:' | head -n1 | awk '{print $2}')
 
           echo "BASE_DIGEST: $BASE_DIGEST"
 
