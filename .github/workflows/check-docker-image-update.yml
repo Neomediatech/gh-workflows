@@ -98,7 +98,7 @@ jobs:
           SKOPEO_OUTPUT=$(skopeo inspect "docker://$DERIVED_IMAGE" 2>&1)
           # Controlla se l'ispezione con skopeo è riuscita e se l'output è JSON valido
           if echo "$SKOPEO_OUTPUT" | jq -e '.Labels."org.opencontainers.image.base.digest"' > /dev/null; then
-              EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL=$(echo "$SKOPEO_OUTPUT" | jq -r '.config.Labels."org.opencontainers.image.base.digest"')
+              EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL=$(echo "$SKOPEO_OUTPUT" | jq -r '.Labels."org.opencontainers.image.base.digest"')
               echo "Existing Derived Image Base Digest Label: $EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL"
           else
               echo "::warning::Could not find 'org.opencontainers.image.base.digest' label or inspect image $DERIVED_IMAGE on GHCR."
