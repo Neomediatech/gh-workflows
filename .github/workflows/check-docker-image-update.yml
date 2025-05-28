@@ -73,7 +73,7 @@ jobs:
           echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
           # Recupera il digest dell'immagine derivata da GHCR
-          DERIVED_DIGEST=$(docker manifest inspect "$DERIVED_IMAGE" 2>&1 | grep 'Digest:' | head -n1 | awk '{print $2}')
+          DERIVED_DIGEST=$(docker manifest inspect "$DERIVED_IMAGE" 2>&1 | grep -i 'Digest:' | head -n1 | awk '{print $2}')
           FULL_DERIVED_MANIFEST_OUTPUT=$(docker manifest inspect "$DERIVED_IMAGE" 2>&1)
 
           if [ -z "$DERIVED_DIGEST" ]; then # Verifica se il digest è vuoto
