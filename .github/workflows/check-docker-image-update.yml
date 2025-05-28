@@ -5,6 +5,32 @@ on:
     # Esegui ogni giorno alle 04:00 UTC per controllare gli aggiornamenti.
   #  - cron: '0 4 * * *'
   workflow_dispatch:
+    inputs:
+      image_repo:
+        description: 'Repo for the image (eg: neomediatech/ubuntu-base)'
+        required: true
+        type: string
+      dockertag:
+        description: 'Tag for the image (eg: 24.04 or empty for latest)'
+        required: false
+        type: string
+        default: "latest"
+  
+  workflow_call: # Permette di riutilizzare il workflow da un altro repo
+    inputs:
+      image_repo:
+        description: 'Repo for the image'
+        required: true
+        type: string
+      dockertag:
+        description: 'Tag for the image'
+        required: false
+        type: string
+        default: "latest"
+      base_image_digest:
+        description: 'Base image digest'
+        required: false
+        type: string
 
 jobs:
   check:
@@ -12,16 +38,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-
-    strategy:
-      matrix:
-        #type: [apache, fpm]
-        version: [latest, 24.04, 22.04, 20.04, 18.04]
-      max-parallel: 1
-      #fail-fast: false # Continua a eseguire gli altri job della matrice anche se uno fallisce
-
-    #name: Check ${{ matrix.type }}:${{ matrix.version }} updates
-    name: Check ${{ matrix.version }} updates
+    name: Check ${{ inputs.version }} updates
     
     steps:
       - name: Set up Docker Buildx
@@ -42,8 +59,7 @@ jobs:
         # Skopeo è spesso già installato su ubuntu-latest, ma questo garantisce la sua presenza.
         run: sudo apt-get update && sudo apt-get install -y skopeo
 
-      #- name: Check image digests for ${{ matrix.type }}:${{ matrix.version }}
-      - name: Check image digests for ${{ matrix.version }}
+      - name: Check image digests for ${{ inputs.dockertag }}
         id: check_digests # Assegniamo un ID a questo step per poter accedere ai suoi output
         run: |
           # Costruisci i nomi completi delle immagini usando le variabili della matrice
@@ -119,29 +135,6 @@ jobs:
             echo "base_digest_for_build=$CURRENT_BASE_DIGEST" >> "$GITHUB_OUTPUT" # Passa il digest corrente per la build
           fi
         shell: bash
-
-      #- name: Perform rebuild and push (if update needed)
-        # Questo step verrà eseguito solo se 'needs-updating' è 'true' per questa specifica combinazione della matrice.
-      #  if: steps.check_digests.outputs.needs-updating == 'true'
-      #  run: |
-      #    echo "Starting rebuild process for ghcr.io/neomediatech/ubuntu-${{ matrix.type }}:${{ matrix.version }}"
-          # Qui dovresti aggiungere i tuoi comandi per:
-          # 1. Fare il checkout del repository che contiene il Dockerfile per questa immagine.
-          #    Esempio: uses: actions/checkout@v4
-          # 2. Costruire la nuova immagine Docker.
-          #    Assicurati che il Dockerfile sia configurato per usare ubuntu:${{ matrix.version }} come base.
-          #    Potrebbe essere necessario un Dockerfile dinamico o più Dockerfile.
-          #    Esempio: docker build -t ghcr.io/neomediatech/ubuntu-${{ matrix.type }}:${{ matrix.version }} .
-          # 3. Pushare la nuova immagine su ghcr.io.
-          #    Esempio: docker push ghcr.io/neomediatech/ubuntu-${{ matrix.type }}:${{ matrix.version }}
-
-          # Esempio placeholder (sostituisci con la tua logica di build e push):
-      #    echo "Simulating build and push for ${{ matrix.type }}:${{ matrix.version }}"
-          # docker build -f path/to/Dockerfile.${{ matrix.type }} \
-          #              --build-arg UBUNTU_VERSION=${{ matrix.version }} \
-          #              -t ghcr.io/neomediatech/ubuntu-${{ matrix.type }}:${{ matrix.version }} .
-          # docker push ghcr.io/neomediatech/ubuntu-${{ matrix.type }}:${{ matrix.version }}
-      #  shell: bash
 
       - name: No update needed message
         if: steps.check_digests.outputs.needs-updating == 'false'
