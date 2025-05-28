@@ -57,10 +57,9 @@ jobs:
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build \
-               --pull \
-               --label "org.opencontainers.image.base.digest=${{ inputs.base_image_digest }}" \
-               -t ${{ steps.vars.outputs.tag }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }} ${{ inputs.dockerdir }}/
+        run: |
+          docker build --pull --label "org.opencontainers.image.base.digest=${{ inputs.base_image_digest }}" \
+          -t ${{ steps.vars.outputs.tag }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }} ${{ inputs.dockerdir }}/
             
       - name: Push Docker image to GHCR
         run: docker push ${{ steps.vars.outputs.tag }}
