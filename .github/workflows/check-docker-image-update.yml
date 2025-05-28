@@ -55,63 +55,32 @@ jobs:
           FULL_BASE_MANIFEST_OUTPUT=$(docker manifest inspect "$BASE_IMAGE" 2>&1)
           #echo "FULL_BASE_MANIFEST_OUTPUT: $FULL_BASE_MANIFEST_OUTPUT"
           
-          # if docker < v25.0.0
-          # Recupera il digest dell'immagine base da Docker Hub
-          # L'output di 'docker manifest inspect' senza --json è testuale.
-          # Cerchiamo la riga "Digest:" e prendiamo il secondo campo.
-          BASE_DIGEST=$(docker manifest inspect "$BASE_IMAGE" 2>&1 | grep -i 'Digest:' | head -n1 | awk '{print $2}')
-
-          echo "BASE_DIGEST: $BASE_DIGEST"
-
-          if [ -z "$BASE_DIGEST" ]; then # Verifica se il digest è vuoto
-            echo "::error::Failed to get digest for base image: $BASE_IMAGE"
-            docker manifest inspect "$BASE_IMAGE" # Mostra l'output completo per debugging
-            echo "::error::Raw output of 'docker manifest inspect $BASE_IMAGE':"
-            echo "$FULL_BASE_MANIFEST_OUTPUT" # STAMPA QUI L'OUTPUT COMPLETO PER DEBUGGING
-            exit 10
-          fi
-          echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
-
-          # Recupera il digest dell'immagine derivata da GHCR
-          DERIVED_DIGEST=$(docker manifest inspect "$DERIVED_IMAGE" 2>&1 | grep -i 'Digest:' | head -n1 | awk '{print $2}')
-          FULL_DERIVED_MANIFEST_OUTPUT=$(docker manifest inspect "$DERIVED_IMAGE" 2>&1)
-
-          if [ -z "$DERIVED_DIGEST" ]; then # Verifica se il digest è vuoto
-            echo "::error::Failed to get digest for derived image: $DERIVED_IMAGE"
-            docker manifest inspect "$DERIVED_IMAGE" # Mostra l'output completo per debugging
-            echo "::error::Raw output of 'docker manifest inspect $DERIVED_IMAGE':"
-            echo "$FULL_DERIVED_MANIFEST_OUTPUT" # STAMPA QUI L'OUTPUT COMPLETO PER DEBUGGING
-            exit 11
-          fi
-          echo "Derived Image Digest ($DERIVED_IMAGE): $DERIVED_DIGEST"
-
-          # if docker > v25.0.0
           # Recupera il digest dell'immagine base da Docker Hub
           # Usiamo 'jq' per parsare l'output JSON in modo robusto, gestendo sia manifest singoli che liste di manifest.
           # `.[0].Digest // .Digest` cerca il digest nel primo elemento di un array (per manifest list)
           # o direttamente nel campo 'Digest' (per manifest singoli).
-          #BASE_MANIFEST_JSON=$(docker manifest inspect "$BASE_IMAGE" --json)
-          #if [ $? -ne 0 ]; then
-          #  echo "::error::Failed to inspect base image: $BASE_IMAGE"
-          #  exit 12 # Fallisce lo step se l'ispezione dell'immagine base fallisce
-          #fi
-          #BASE_DIGEST=$(echo "$BASE_MANIFEST_JSON" | jq -r '.[0].Digest // .Digest')
+          BASE_MANIFEST_JSON=$(docker manifest inspect "$BASE_IMAGE")
+          if [ $? -ne 0 ]; then
+            echo "::error::Failed to inspect base image: $BASE_IMAGE"
+            exit 12 # Fallisce lo step se l'ispezione dell'immagine base fallisce
+          fi
+          BASE_DIGEST=$(echo "$BASE_MANIFEST_JSON" | jq -r '.config.digest')
 
-          #echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
+          echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
           # Recupera il digest dell'immagine derivata da GHCR
-          #DERIVED_MANIFEST_JSON=$(docker manifest inspect "$DERIVED_IMAGE" --json)
-          #if [ $? -ne 0 ]; then
-          #  echo "::error::Failed to inspect derived image: $DERIVED_IMAGE"
+          DERIVED_MANIFEST_JSON=$(docker manifest inspect "$DERIVED_IMAGE" --json)
+          if [ $? -ne 0 ]; then
+            echo "::error::Failed to inspect derived image: $DERIVED_IMAGE"
             # Se l'immagine derivata non esiste o non è accessibile, consideriamo che necessita di aggiornamento
             # o almeno che non è stata trovata, quindi si può forzare un rebuild.
             # Puoi scegliere se far fallire il workflow qui o continuare e segnalare un aggiornamento necessario.
             # Per ora, lo faremo fallire per chiarezza.
-          #  exit 13
-          #fi
-          #DERIVED_DIGEST=$(echo "$DERIVED_MANIFEST_JSON" | jq -r '.[0].Digest // .Digest')
+            exit 13
+          fi
+          DERIVED_DIGEST=$(echo "$DERIVED_MANIFEST_JSON" | jq -r '.config.digest')
 
-          #echo "Derived Image Digest ($DERIVED_IMAGE): $DERIVED_DIGEST"
+          echo "Derived Image Digest ($DERIVED_IMAGE): $DERIVED_DIGEST"
 
           # Confronta i digest
           if [ "$DERIVED_DIGEST" != "$BASE_DIGEST" ]; then
