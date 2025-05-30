@@ -30,6 +30,7 @@ on:
         description: 'The digest (hash) of the base image for the specified architecture.'
         value: ${{ jobs.get_info.outputs.base_image_digest }}
   workflow_dispatch: # Permette di avviare il workflow manualmente dalla UI di GitHub
+    inputs:
       repository:
         description: 'The Docker image repository (e.g., ubuntu).'
         required: true
