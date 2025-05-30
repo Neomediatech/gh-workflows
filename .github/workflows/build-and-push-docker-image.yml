@@ -63,12 +63,13 @@ jobs:
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
           # recupero l'immagine di base dal Dockerfile
           BASE_IMAGE="$(cat ${{ inputs.dockerfile }}|grep ^FROM|awk '{print $2}')"
+          echo "base_image=${BASE_IMAGE}"
           echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
 
       - name: Get Base Image Digest
         id: get_digest
         run: |
-          FULL_BASE_IMAGE="${{ steps.vars.bas_image }}"
+          FULL_BASE_IMAGE="${{ steps.vars.base_image }}"
 
           echo "Inspecting base image: $FULL_BASE_IMAGE"
 
