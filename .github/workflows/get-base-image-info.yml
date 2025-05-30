@@ -1,4 +1,4 @@
-name: Get Base Image Info
+name: Get Docker Image Info
 
 on:
   workflow_call:
