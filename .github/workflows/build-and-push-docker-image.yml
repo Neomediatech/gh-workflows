@@ -55,10 +55,14 @@ jobs:
           REPO_NAME=$(echo "${REPO_LOWER}"|awk -F'/' '{print $2}')
           echo "tag=ghcr.io/${REPO_LOWER}:${{ inputs.dockertag }}" >> $GITHUB_OUTPUT
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+          # recupero l'immagine di base dal Dockerfile
+          BASE_IMAGE="$(cat ${{ inputs.dockerfile }}|grep ^FROM|awk '{print $2}')"
+          echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
         run: |
           docker build --pull --label "org.opencontainers.image.base.digest=${{ inputs.base_image_digest }}" \
+          --label "org.opencontainers.image.base=${{ steps.vars.outputs.base_image }}" \
           -t ${{ steps.vars.outputs.tag }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }} ${{ inputs.dockerdir }}/
             
       - name: Push Docker image to GHCR
@@ -67,10 +71,10 @@ jobs:
       - name: Set INPUT_IMAGE_REF
         run: echo "INPUT_IMAGE_REF=${{ steps.vars.outputs.tag }}" >> $GITHUB_ENV
 
-  get-base-image-info:
-    secrets: inherit
-    needs: [build-and-push]
-    uses: Neomediatech/gh-workflows/.github/workflows/get-base-image-info.yml@main
-    with:
-      repository: ${{ needs.build-and-push.repo_name }}
-      tag: ${{ inputs.dockertag }}
+#  get-base-image-info:
+#    secrets: inherit
+#    needs: [build-and-push]
+#    uses: Neomediatech/gh-workflows/.github/workflows/get-base-image-info.yml@main
+#    with:
+#      repository: ${{ needs.build-and-push.repo_name }}
+#      tag: ${{ inputs.dockertag }}
