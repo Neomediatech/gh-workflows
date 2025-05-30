@@ -66,3 +66,11 @@ jobs:
 
       - name: Set INPUT_IMAGE_REF
         run: echo "INPUT_IMAGE_REF=${{ steps.vars.outputs.tag }}" >> $GITHUB_ENV
+
+  get-base-image-info:
+    secrets: inherit
+    needs: [build-and-push]
+    uses: Neomediatech/gh-workflows/.github/workflows/get-base-image-info.yml@main
+    with:
+      repository: ${{ needs.build-and-push.repo_name }}
+      tag: ${{ inputs.dockertag }}
