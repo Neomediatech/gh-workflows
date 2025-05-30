@@ -58,6 +58,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Install Skopeo (if not already present)
+        run: sudo apt-get update && sudo apt-get install -y skopeo
+
       - name: Get Base Image Digest
         id: get_digest
         run: |
@@ -69,19 +72,10 @@ jobs:
 
           # Ottieni il manifest completo dell'immagine base
           # Reindirizza stderr a stdout per catturare gli errori nell'output
-          MANIFEST_OUTPUT=$(docker manifest inspect "$FULL_BASE_IMAGE" 2>&1)
+          # se è un'immagine ufficiale bisogna aggiungere "docker.io/library"
+          MANIFEST_OUTPUT=$(skopeo inspect docker://"$FULL_BASE_IMAGE" 2>&1)
 
-          # Prova a parsare come Manifest List (immagini multi-arch)
-          # Se l'output non è un Manifest List (es. è un singolo manifest V2),
-          # jq non troverà .manifests e la variabile sarà vuota/nulla.
-          PARSED_DIGEST=$(echo "$MANIFEST_OUTPUT" | jq -r ".manifests[] | select(.platform.architecture == \"$TARGET_ARCH\" and .platform.os == \"$TARGET_OS\") | .digest" 2>/dev/null)
-
-          # Se il parsing come Manifest List non ha prodotto un digest valido,
-          # prova a parsare come singolo Manifest V2 (digest sotto .config.digest).
-          if [ -z "$PARSED_DIGEST" ] || [ "$PARSED_DIGEST" == "null" ]; then
-              echo "Not a multi-arch manifest or no matching platform found. Attempting to parse as single manifest V2."
-              PARSED_DIGEST=$(echo "$MANIFEST_OUTPUT" | jq -r '.config.digest' 2>/dev/null)
-          fi
+          PARSED_DIGEST=$(echo "$MANIFEST_OUTPUT" | jq -r '.Digest' 2>/dev/null)
 
           if [ -z "$PARSED_DIGEST" ] || [ "$PARSED_DIGEST" == "null" ]; then
               echo "::error::Failed to get valid digest for base image: $FULL_BASE_IMAGE for $TARGET_OS/$TARGET_ARCH"
