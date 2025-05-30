@@ -57,6 +57,8 @@ jobs:
         run: |
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           REPO_NAME=$(echo "${REPO_LOWER}"|awk -F'/' '{print $2}')
+          echo "tag=ghcr.io/${REPO_LOWER}:${{ inputs.dockertag }}"
+          echo "repo_name=${REPO_NAME}"
           echo "tag=ghcr.io/${REPO_LOWER}:${{ inputs.dockertag }}" >> $GITHUB_OUTPUT
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
           # recupero l'immagine di base dal Dockerfile
@@ -66,7 +68,7 @@ jobs:
       - name: Get Base Image Digest
         id: get_digest
         run: |
-          FULL_BASE_IMAGE="${{ steps.vars.tag }}"
+          FULL_BASE_IMAGE="${{ steps.vars.bas_image }}"
 
           echo "Inspecting base image: $FULL_BASE_IMAGE"
 
