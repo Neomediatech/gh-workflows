@@ -68,9 +68,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y skopeo
 
       - name: Check image digests for ${{ inputs.image_repo }}:${{ inputs.dockertag }}
-        id: check_digests # Assegniamo un ID a questo step per poter accedere ai suoi output
+        id: check_digests
         run: |
-          # Costruisci i nomi completi delle immagini usando le variabili della matrice
           BASE_IMAGE="${{ inputs.base_image }}:${{ inputs.dockertag }}"
           DERIVED_IMAGE="${{ inputs.image_repo }}:${{ inputs.dockertag }}"
 
@@ -82,18 +81,18 @@ jobs:
             echo "::error::Failed to inspect base image: $BASE_IMAGE"
             exit 12 # Fallisce lo step se l'ispezione dell'immagine base fallisce
           fi
-          BASE_DIGEST=$(echo "$BASE_MANIFEST_JSON" | jq -r '.manifests[] | select(.platform.architecture == "amd64" and .platform.os == "linux") | .digest')
+          BASE_DIGEST=$(echo "$BASE_MANIFEST_JSON" | jq -r '.Digest')
 
           echo "Base Image Digest ($BASE_IMAGE): $BASE_DIGEST"
 
           if [ -z "$BASE_DIGEST" ] || [ "$BASE_DIGEST" == "null" ]; then
             echo "::error::Failed to get valid digest for base image: $BASE_IMAGE"
-            echo "$BASE_MANIFEST_OUTPUT" # Stampa l'output completo per debugging
+            echo "$BASE_MANIFEST_JSON" # Stampa l'output completo per debugging
             exit 1 # --> Lo script termina qui se BASE_DIGEST è nullo/vuoto
           fi
 
           # Recupera il digest dell'immagine derivata da GHCR
-          DERIVED_MANIFEST_JSON=$(docker manifest inspect "$DERIVED_IMAGE")
+          DERIVED_MANIFEST_JSON=$(skopeo inspect docker://"$DERIVED_IMAGE")
           if [ $? -ne 0 ]; then
             echo "::error::Failed to inspect derived image: $DERIVED_IMAGE"
             # Se l'immagine derivata non esiste o non è accessibile, consideriamo che necessita di aggiornamento
@@ -102,12 +101,12 @@ jobs:
             # Per ora, lo faremo fallire per chiarezza.
             exit 13
           fi
-          DERIVED_DIGEST=$(echo "$DERIVED_MANIFEST_JSON" | jq -r '.config.digest')
+          DERIVED_DIGEST=$(echo "$DERIVED_MANIFEST_JSON" | jq -r '.Digest')
 
           echo "Derived Image Digest ($DERIVED_IMAGE): $DERIVED_DIGEST"
           if [ -z "$DERIVED_DIGEST" ] || [ "$DERIVED_DIGEST" == "null" ]; then
             echo "::error::Failed to get valid digest for derived image: $DERIVED_IMAGE"
-            echo "$DERIVED_MANIFEST_OUTPUT" # Stampa l'output completo per debugging
+            echo "$DERIVED_MANIFEST_JSON" # Stampa l'output completo per debugging
             exit 1 # --> Lo script termina qui se DERIVED_DIGEST è nullo/vuoto
           fi
 
