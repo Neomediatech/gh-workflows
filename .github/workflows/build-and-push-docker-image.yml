@@ -95,7 +95,7 @@ jobs:
     outputs:
       base_image_name: ${{ steps.get_digest.outputs.base_image_name }}
       base_image_digest: ${{ steps.get_digest.outputs.base_image_digest }}
-      image_tag: ${{ steps.var.outputs.tag }}
+      image_tag: ${{ steps.vars.outputs.tag }}
 
   build-and-push:
     runs-on: ubuntu-latest
