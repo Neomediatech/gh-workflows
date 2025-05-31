@@ -117,15 +117,15 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build --pull --label "org.opencontainers.image.base.digest=${{ needs.get-base-image-info.base_image_digest }}" \
-          --label "org.opencontainers.image.base=${{ needs.get-base-image-info.base_image_name }}" \
-          -t ${{ needs.get-base-image-info.image_tag }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }} ${{ inputs.dockerdir }}/
+          docker build --pull --label "org.opencontainers.image.base.digest=${{ needs.get-base-image-info.outputs.base_image_digest }}" \
+          --label "org.opencontainers.image.base=${{ needs.get-base-image-info.outputs.base_image_name }}" \
+          -t ${{ needs.get-base-image-info.outputs.image_tag }} -f ${{ inputs.dockerdir }}/${{ inputs.dockerfile }} ${{ inputs.dockerdir }}/
             
       - name: Push Docker image to GHCR
-        run: docker push ${{ needs.get-base-image-info.image_tag }}
+        run: docker push ${{ needs.get-base-image-info.outputs.image_tag }}
 
       - name: Set INPUT_IMAGE_REF
-        run: echo "INPUT_IMAGE_REF=${{ needs.get-base-image-info.image_tag }}" >> $GITHUB_ENV
+        run: echo "INPUT_IMAGE_REF=${{ needs.get-base-image-info.outputs.image_tag }}" >> $GITHUB_ENV
 
 #  get-base-image-info:
 #    secrets: inherit
