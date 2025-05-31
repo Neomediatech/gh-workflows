@@ -1,4 +1,4 @@
-name: Check Base Image Updates
+name: Check Image Updates
 
 on:
   #schedule:
@@ -131,9 +131,11 @@ jobs:
           # Confronta i digest
           if [ "$EXISTING_DERIVED_IMAGE_BASE_DIGEST_LABEL" != "$BASE_DIGEST" ]; then
             echo "::notice file=README.md::The base image ($BASE_IMAGE) has been updated! Rebuild $DERIVED_IMAGE."
+            echo "needs-updating=true"
             echo "needs-updating=true" >> "$GITHUB_OUTPUT"
           else
             echo "The base image ($BASE_IMAGE) has not changed. No rebuild needed for $DERIVED_IMAGE."
+            echo "needs-updating=false"
             echo "needs-updating=false" >> "$GITHUB_OUTPUT"
             echo "base_digest_for_build=$CURRENT_BASE_DIGEST" >> "$GITHUB_OUTPUT" # Passa il digest corrente per la build
           fi
