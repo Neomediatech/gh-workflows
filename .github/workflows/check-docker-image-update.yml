@@ -138,10 +138,11 @@ jobs:
             echo "base_digest_for_build=$CURRENT_BASE_DIGEST" >> "$GITHUB_OUTPUT" # Passa il digest corrente per la build
           fi
         shell: bash
-
       - name: No update needed message
         if: steps.check_digests.outputs.needs-updating == 'false'
         run: |
           echo "No update needed for ${{ matrix.version }}. Skipping rebuild."
           #echo "No update needed for ${{ matrix.type }}:${{ matrix.version }}. Skipping rebuild."
         shell: bash
+    outputs:
+       needs-updating: ${{ steps.check_digests.outputs.needs-updating }}
