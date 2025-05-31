@@ -69,7 +69,7 @@ jobs:
       - name: Get Base Image Digest
         id: get_digest
         run: |
-          FULL_BASE_IMAGE="${{ steps.vars.base_image }}"
+          FULL_BASE_IMAGE="${{ steps.vars.outputs.base_image }}"
 
           echo "Inspecting base image: $FULL_BASE_IMAGE"
 
