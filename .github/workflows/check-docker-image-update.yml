@@ -72,16 +72,12 @@ jobs:
         run: |
           # Costruisci i nomi completi delle immagini usando le variabili della matrice
           BASE_IMAGE="${{ inputs.base_image }}:${{ inputs.dockertag }}"
-          #DERIVED_IMAGE="ghcr.io/neomediatech/ubuntu-${{ matrix.type }}:${{ matrix.version }}"
           DERIVED_IMAGE="${{ inputs.image_repo }}:${{ inputs.dockertag }}"
 
           echo "Checking updates for: $DERIVED_IMAGE based on $BASE_IMAGE"
 
-          # Recupera il digest dell'immagine base da Docker Hub
-          # Usiamo 'jq' per parsare l'output JSON in modo robusto, gestendo sia manifest singoli che liste di manifest.
-          # `.[0].Digest // .Digest` cerca il digest nel primo elemento di un array (per manifest list)
-          # o direttamente nel campo 'Digest' (per manifest singoli).
-          BASE_MANIFEST_JSON=$(docker manifest inspect "$BASE_IMAGE")
+          # Recupera il digest dell'immagine base
+          BASE_MANIFEST_JSON=$(skopeo inspect docker://"$BASE_IMAGE")
           if [ $? -ne 0 ]; then
             echo "::error::Failed to inspect base image: $BASE_IMAGE"
             exit 12 # Fallisce lo step se l'ispezione dell'immagine base fallisce
