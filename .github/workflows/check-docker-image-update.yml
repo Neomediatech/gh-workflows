@@ -24,7 +24,7 @@ on:
         required: false
         type: string
         default: "false"
-  
+
   workflow_call: # Permette di riutilizzare il workflow da un altro repo
     inputs:
       image_repo:
@@ -40,6 +40,11 @@ on:
         description: 'Repo for the base image (eg: ubuntu)'
         required: true
         type: string
+      update_image:
+        description: 'Update image if needed? ("true" o "false")'
+        required: false
+        type: string
+        default: "false"
     outputs:
       needs-updating:
         description: 'If the image needs update. true or false'
