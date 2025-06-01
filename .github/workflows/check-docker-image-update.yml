@@ -200,6 +200,7 @@ jobs:
         uses: ./.github/workflows/build-and-push-docker-image.yml
         with:
           dockertag: ${{ matrix.version }}
+          dockerfile: Dockerfile.${{ matrix.version }}
         #if: ${{ steps.check.outputs.needs-updating == 'true' && inputs.update_image == 'true' }}
     outputs:
        needs-updating: ${{ steps.check_digests.outputs.needs-updating }}
