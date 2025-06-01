@@ -63,9 +63,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }} # Token fornito automaticamente da GitHub Actions
 
-      - name: Install Skopeo (if not already present)
-        # Skopeo è spesso già installato su ubuntu-latest, ma questo garantisce la sua presenza.
-        run: sudo apt-get update && sudo apt-get install -y skopeo
+      - name: Install Skopeo (if not already present)        
+        run: |
+          if [ ! $(which skopeo) ]; then sudo apt-get update && sudo apt-get install -y skopeo ;fi
 
       - name: Check image digests for ${{ inputs.image_repo }}:${{ inputs.dockertag }}
         id: check_digests
