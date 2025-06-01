@@ -38,7 +38,7 @@ on:
     outputs:
       needs-updating:
         description: 'If the image needs update. true or false'
-        value: ${{ jobs.check_digests.outputs.needs-updating }}
+        value: ${{ jobs.check.outputs.needs-updating }}
 
 jobs:
   check:
