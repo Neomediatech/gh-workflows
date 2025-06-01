@@ -84,8 +84,12 @@ jobs:
     permissions:
       contents: read
       packages: write
-    name: "Check ${{ inputs.image_repo }}:${{ inputs.dockertag }} updates"
+    name: "Check ${{ inputs.image_repo }}:${{ matrix.version }} updates"
     needs: [generate_matrix]
+    strategy:
+      matrix:
+        version: ${{ fromJSON(needs.generate_matrix.outputs.versions) }}
+      max-parallel: 1
 
     steps:
       - name: Set up Docker Buildx
@@ -106,11 +110,11 @@ jobs:
         run: |
           if [ ! $(which skopeo) ]; then sudo apt-get update && sudo apt-get install -y skopeo ;fi
 
-      - name: Check image digests for ${{ inputs.image_repo }}:${{ inputs.dockertag }}
+      - name: Check image digests for ${{ inputs.image_repo }}:${{ matrix.version }}
         id: check_digests
         run: |
-          BASE_IMAGE="${{ inputs.base_image }}" # :${{ inputs.dockertag }}
-          DERIVED_IMAGE="${{ inputs.image_repo }}:${{ inputs.dockertag }}"
+          BASE_IMAGE="${{ inputs.base_image }}" # :${{ matrix.version }}
+          DERIVED_IMAGE="${{ inputs.image_repo }}:${{ matrix.version }}"
 
           echo "Checking updates for: $DERIVED_IMAGE based on $BASE_IMAGE"
 
@@ -179,6 +183,7 @@ jobs:
             echo "base_digest_for_build=$CURRENT_BASE_DIGEST" >> "$GITHUB_OUTPUT" # Passa il digest corrente per la build
           fi
         shell: bash
+
       - name: No update needed message
         if: steps.check_digests.outputs.needs-updating == 'false'
         run: |
