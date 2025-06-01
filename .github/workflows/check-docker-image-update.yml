@@ -184,5 +184,23 @@ jobs:
           echo "No update needed for ${{ matrix.version }}. Skipping rebuild."
           #echo "No update needed for ${{ matrix.type }}:${{ matrix.version }}. Skipping rebuild."
         shell: bash
+
+      - name: aaa
+        uses: ./.github/workflows/build-and-push-docker-image.yml
+        with:
+          dockertag: ${{ matrix.version }}
+        if: ${{ steps.check.outputs.needs-updating == 'true' && inputs.update_image == 'true' }}
     outputs:
        needs-updating: ${{ steps.check_digests.outputs.needs-updating }}
+
+  rebuild:
+    secrets: inherit
+    strategy:
+      matrix:
+        version: ${{ fromJSON(needs.generate_matrix.outputs.versions) }}
+      max-parallel: 1
+    uses: ./.github/workflows/build-and-push-docker-image.yml 
+    needs: [generate_matrix,check]
+    with:
+      dockertag: ${{ matrix.version }}
+    if: ${{ needs.check.outputs.needs-updating == 'true' && inputs.update_image == 'true' }}
