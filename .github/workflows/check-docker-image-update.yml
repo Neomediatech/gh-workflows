@@ -70,7 +70,7 @@ jobs:
       - name: Check image digests for ${{ inputs.image_repo }}:${{ inputs.dockertag }}
         id: check_digests
         run: |
-          BASE_IMAGE="${{ inputs.base_image }} # :${{ inputs.dockertag }}"
+          BASE_IMAGE="${{ inputs.base_image }}" # :${{ inputs.dockertag }}
           DERIVED_IMAGE="${{ inputs.image_repo }}:${{ inputs.dockertag }}"
 
           echo "Checking updates for: $DERIVED_IMAGE based on $BASE_IMAGE"
