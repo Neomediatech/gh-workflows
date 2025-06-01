@@ -85,7 +85,8 @@ jobs:
       contents: read
       packages: write
     name: "Check ${{ inputs.image_repo }}:${{ inputs.dockertag }} updates"
-    
+    needs: [generate_matrix]
+
     steps:
       - name: Set up Docker Buildx
         # Questo step è utile per configurare l'ambiente Docker e può essere utile
