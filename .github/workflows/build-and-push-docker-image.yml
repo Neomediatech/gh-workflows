@@ -62,6 +62,7 @@ jobs:
           echo "tag=ghcr.io/${REPO_LOWER}:${{ inputs.dockertag }}" >> $GITHUB_OUTPUT
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
           # recupero l'immagine di base dal Dockerfile
+          echo "Inspecting ${{ inputs.dockerfile }}"
           BASE_IMAGE="$(cat ${{ inputs.dockerfile }}|grep ^FROM|awk '{print $2}')"
           echo "base_image=${BASE_IMAGE}"
           echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
