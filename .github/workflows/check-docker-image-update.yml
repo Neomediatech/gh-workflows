@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       image_repo:
-        description: 'Repo for the image (eg: neomediatech/ubuntu-base)'
+        description: 'Repo for the image (eg: ghcr.io/neomediatech/ubuntu-base)'
         required: true
         type: string
       dockertag:
