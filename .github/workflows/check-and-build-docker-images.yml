@@ -65,6 +65,7 @@ jobs:
       - name: Check if derived image needs update
         id: check
         run: |
+          [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
           BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}"
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST"
 
