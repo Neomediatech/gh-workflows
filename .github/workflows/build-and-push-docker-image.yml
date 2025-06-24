@@ -101,9 +101,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     needs: get-base-image-info
-    permissions:
-      contents: read # Permesso per il checkout del codice
-      packages: write # Permesso per scrivere pacchetti (necessario per GHCR)
+    #permissions:
+    #  contents: read # Permesso per il checkout del codice
+    #  packages: write # Permesso per scrivere pacchetti (necessario per GHCR)
 
     steps:
       - name: Checkout code
