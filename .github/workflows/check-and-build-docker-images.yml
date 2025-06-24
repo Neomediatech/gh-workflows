@@ -105,7 +105,7 @@ jobs:
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
           echo "Building and pushing ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST"
           docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
-            --label "org.opencontainers.image.base=${{ inputs.base-image }}" \
+            --label "org.opencontainers.image.base=${{ inputs.base-image }}:${{ matrix.version }}" \
             -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST -f Dockerfile.${{ matrix.version }} .
           docker push ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST
           REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
