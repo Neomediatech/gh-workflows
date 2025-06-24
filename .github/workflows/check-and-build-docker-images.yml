@@ -1,0 +1,76 @@
+name: Check and Build Docker Images (by Copilot)
+
+on:
+  workflow_call:
+    inputs:
+      base-image:
+        description: 'Base image to check'
+        required: true
+        type: string
+      derived-image-prefix:
+        description: 'Prefix for the derived image (e.g. ghcr.io/org/repo)'
+        required: true
+        type: string
+      versions:
+        description: 'JSON array of versions/tags to check'
+        required: true
+        type: string
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ${{ fromJson(inputs.versions) }}
+
+    steps:
+      # Checkout il repo di questo workflow (utile se hai file di supporto qui)
+      - name: Checkout this workflow repository
+        uses: actions/checkout@v4
+
+      # Checkout il repository chiamante (serve per la build se il Dockerfile/context sono lì)
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step di verifica aggiornamento immagine
+      - name: Check if derived image needs update
+        id: check
+        run: |
+          BASE_IMAGE="${{ inputs.base-image }}"
+          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}"
+
+          echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
+
+          BASE_DIGEST=$(skopeo inspect docker://$BASE_IMAGE | jq -r '.Digest')
+          DERIVED_DIGEST=$(skopeo inspect docker://$DERIVED_IMAGE | jq -r '.Digest' || echo "")
+
+          echo "Base digest: $BASE_DIGEST"
+          echo "Derived digest: $DERIVED_DIGEST"
+
+          if [[ -z "$DERIVED_DIGEST" || "$DERIVED_DIGEST" == "null" ]]; then
+            echo "Derived image not found or not accessible, needs build."
+            echo "needs_build=true" >> $GITHUB_OUTPUT
+          elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
+            echo "Base and derived digests do not match, needs build."
+            echo "needs_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "Image up to date."
+            echo "needs_build=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Build e push SOLO se serve aggiornare
+      - name: Build and push Docker image
+        if: steps.check.outputs.needs_build == 'true'
+        run: |
+          echo "Building and pushing ${{ inputs.derived-image-prefix }}:${{ matrix.version }}"
+          docker build -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }} .
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ${{ inputs.derived-image-prefix }}:${{ matrix.version }}
+
+      # Docker logout (opzionale, buono per pulizia)
+      - name: Docker logout
+        run: docker logout ghcr.io
