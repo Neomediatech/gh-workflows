@@ -20,6 +20,11 @@ on:
         required: false
         type: string
         default: "false"
+      build-test-image:
+        description: 'Whether to build a test image or not (e.g. true or false)'
+        required: false
+        type: string
+        default: "false"
 
 jobs:
   check-and-build:
@@ -27,6 +32,9 @@ jobs:
     strategy:
       matrix:
         version: ${{ fromJson(inputs.versions) }}
+    permissions:
+      contents: read # Permesso per il checkout del codice
+      packages: write # Permesso per scrivere pacchetti (necessario per GHCR)
 
     steps:
       # Checkout il repo di questo workflow (utile se hai file di supporto qui)
@@ -67,14 +75,21 @@ jobs:
             echo "needs_build=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       # Build e push SOLO se serve aggiornare
       - name: Build and push Docker image
         if: steps.check.outputs.needs_build == 'true' && inputs.update-image == 'true'
         run: |
-          echo "Building and pushing ${{ inputs.derived-image-prefix }}:${{ matrix.version }}"
-          docker build -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }} -f Dockerfile.${{ matrix.version }} .
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ${{ inputs.derived-image-prefix }}:${{ matrix.version }}
+          [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
+          echo "Building and pushing ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST"
+          docker build -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST -f Dockerfile.${{ matrix.version }} .
+          docker push ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST
 
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
