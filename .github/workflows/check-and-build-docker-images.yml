@@ -56,19 +56,13 @@ jobs:
         with:
           repository: ${{ inputs.derived-image-repo }}
           ref: ${{ inputs.derived-image-repo-ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GHCR_TOKEN }}
         if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
     
       - name: Print current directory and list files (root)
         run: |
           pwd
           ls -al
-
-      - name: Print tree structure (fino a 2 livelli)
-        run: |
-          ls -alR | head -n 100
-          # oppure se tree è disponibile:
-          # tree -L 2 || true
     
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
