@@ -15,6 +15,11 @@ on:
         description: 'JSON array of versions/tags to check'
         required: true
         type: string
+      update-image:
+        description: 'Whether to update the image or not (e.g. true or false)'
+        required: false
+        type: string
+        default: "false"
 
 jobs:
   check-and-build:
