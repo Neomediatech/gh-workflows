@@ -92,7 +92,7 @@ jobs:
           fi
 
       - name: Debug secret length
-        run: echo "PAT length: ${#GHCR_TOKEN}"
+        run: echo "PAT length:${#GHCR_TOKEN}"
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
