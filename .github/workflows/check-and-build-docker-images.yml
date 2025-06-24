@@ -49,6 +49,17 @@ jobs:
           ref: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Print current directory and list files (root)
+        run: |
+          pwd
+          ls -al
+
+      - name: Print tree structure (fino a 2 livelli)
+        run: |
+          ls -alR | head -n 100
+          # oppure se tree è disponibile:
+          # tree -L 2 || true
+    
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
         id: check
