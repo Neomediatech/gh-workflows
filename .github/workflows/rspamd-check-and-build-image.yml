@@ -16,7 +16,8 @@ jobs:
     with:
       base-image: ghcr.io/rspamd/rspamd-docker:latest
       derived-image-prefix: ghcr.io/neomediatech/rspamd
-      versions: '["latest", "3.8", "3.7", "3.6", "3.5"]'
+      #versions: '["latest", "3.8", "3.7", "3.6", "3.5"]'
+      versions: '["3.9"]'
       derived-image-repo: Neomediatech/rspamd
       derived-image-repo-ref: master
       update-image: "true"
