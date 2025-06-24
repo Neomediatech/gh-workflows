@@ -1,4 +1,4 @@
-name: Rspamd Check Image Updates and Rebuild
+name: PHP Check Image Updates and Rebuild
 
 on:
   #schedule:
