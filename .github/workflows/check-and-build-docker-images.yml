@@ -15,6 +15,11 @@ on:
         description: 'JSON array of versions/tags to check'
         required: true
         type: string
+      type:
+        description: 'JSON array of image type to check'
+        required: false
+        type: string
+        default: '["none"]'
       derived-image-repo:
         description: 'Github repo name (e.g. Neomediatech/rspamd)'
         required: false
@@ -45,6 +50,7 @@ jobs:
     strategy:
       matrix:
         version: ${{ fromJson(inputs.versions) }}
+        type: ${{ fromJson(inputs.type) }}
       max-parallel: 1
 
     steps:
@@ -66,8 +72,9 @@ jobs:
         id: check
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
-          BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}"
-          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST"
+          [[ "${{ matrix.type }}" == "none" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
+          BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
 
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
 
@@ -103,13 +110,20 @@ jobs:
         if: steps.check.outputs.needs_build == 'true' && inputs.update-image == 'true'
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
-          echo "Building and pushing ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST"
+          if [[ "${{ matrix.type }}" == "none" ]]; then
+            IMAGE_TYPE=""
+            DOCKERDIR="."
+          else
+            IMAGE_TYPE="-${{ matrix.type }}"
+            DOCKERDIR="${{ matrix.type }}"
+          fi
+          echo "Building and pushing ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
-            --label "org.opencontainers.image.base=${{ inputs.base-image }}:${{ matrix.version }}" \
-            -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST -f Dockerfile.${{ matrix.version }} .
-          docker push ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST
+            --label "org.opencontainers.image.base=${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE" \
+            -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
+          docker push ${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST
           REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
-          echo "txt_to_copy=${REPO_NAME}_${{ matrix.version }}_trivy-report.txt" >> $GITHUB_OUTPUT
+          echo "txt_to_copy=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE_trivy-report.txt" >> $GITHUB_OUTPUT
 
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
