@@ -65,8 +65,8 @@ jobs:
       - name: Check if derived image needs update
         id: check
         run: |
-          BASE_IMAGE="${{ inputs.base-image }}"
-          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}"
+          BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}"
+          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$TAG_TEST"
 
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
 
