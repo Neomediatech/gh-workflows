@@ -14,11 +14,11 @@ jobs:
       packages: write
     secrets: inherit
     with:
-      base-image: ghcr.io/rspamd/rspamd-docker:latest
+      base-image: ghcr.io/rspamd/rspamd-docker
       derived-image-prefix: ghcr.io/neomediatech/rspamd
       #versions: '["latest", "3.8", "3.7", "3.6", "3.5"]'
-      versions: '["3.9"]'
+      versions: '["latest", "3.12", "3.11", "3.10", "3.9"]'
       derived-image-repo: Neomediatech/rspamd
       derived-image-repo-ref: master
       update-image: "true"
-      build-test-image: "true"
+      build-test-image: "false"
