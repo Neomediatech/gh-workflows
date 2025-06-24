@@ -93,7 +93,7 @@ jobs:
             echo "::warning::Base and derived digests do not match, needs build."
             echo "needs_build=true" >> $GITHUB_OUTPUT
           else
-            echo "Image up to date."
+            echo "::info::Image up to date."
             echo "needs_build=false" >> $GITHUB_OUTPUT
           fi
 
