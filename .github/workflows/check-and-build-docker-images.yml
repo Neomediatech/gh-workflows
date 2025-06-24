@@ -35,15 +35,16 @@ on:
         type: string
         default: "false"
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   check-and-build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         version: ${{ fromJson(inputs.versions) }}
-    permissions:
-      contents: read # Permesso per il checkout del codice
-      packages: write # Permesso per scrivere pacchetti (necessario per GHCR)
 
     steps:
       # Checkout il repo di questo workflow (utile se hai file di supporto qui)
