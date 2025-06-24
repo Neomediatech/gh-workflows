@@ -20,5 +20,5 @@ jobs:
       #type: '["apache", "fpm"]'
       derived-image-repo: Neomediatech/ubuntu-base
       derived-image-repo-ref: master
-      update-image: "false"
+      update-image: "true"
       build-test-image: "false"
