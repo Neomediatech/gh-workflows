@@ -72,7 +72,7 @@ jobs:
         if: steps.check.outputs.needs_build == 'true' && inputs.update-image == 'true'
         run: |
           echo "Building and pushing ${{ inputs.derived-image-prefix }}:${{ matrix.version }}"
-          docker build -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }} .
+          docker build -t ${{ inputs.derived-image-prefix }}:${{ matrix.version }} -f Dockerfile.${{ matrix.version }} .
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push ${{ inputs.derived-image-prefix }}:${{ matrix.version }}
 
