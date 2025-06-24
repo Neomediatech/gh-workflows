@@ -196,6 +196,9 @@ jobs:
           #echo "No update needed for ${{ matrix.type }}:${{ matrix.version }}. Skipping rebuild."
         shell: bash
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Build and Push Docker image  ${{ inputs.image_repo }}:${{ matrix.version }}
         uses: ./.github/workflows/build-and-push-docker-image.yml
         with:
