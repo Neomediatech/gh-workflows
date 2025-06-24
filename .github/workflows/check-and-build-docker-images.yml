@@ -15,6 +15,15 @@ on:
         description: 'JSON array of versions/tags to check'
         required: true
         type: string
+      derived-image-repo:
+        description: 'Github repo name (e.g. Neomediatech/rspamd)'
+        required: false
+        type: string
+      derived-image-repo-ref:
+        description: 'Github repo ref (e.g. "main" or "master")'
+        required: false
+        type: string
+        default: "main"
       update-image:
         description: 'Whether to update the image or not (e.g. true or false)'
         required: false
@@ -45,10 +54,11 @@ jobs:
       - name: Checkout calling repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref }}
+          repository: ${{ inputs.derived-image-repo }}
+          ref: ${{ inputs.derived-image-repo-ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-
+        if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
+    
       - name: Print current directory and list files (root)
         run: |
           pwd
