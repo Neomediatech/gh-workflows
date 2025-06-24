@@ -16,7 +16,7 @@ jobs:
     with:
       base-image: ubuntu
       derived-image-prefix: ghcr.io/neomediatech/ubuntu-base
-      versions: '["24.04", "22.04", "20.04", "18.04"]'
+      versions: '["latest", "24.04", "22.04", "20.04", "18.04"]'
       #type: '["apache", "fpm"]'
       derived-image-repo: Neomediatech/ubuntu-base
       derived-image-repo-ref: master
