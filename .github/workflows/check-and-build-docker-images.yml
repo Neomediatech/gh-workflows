@@ -90,7 +90,7 @@ jobs:
             echo "Derived image not found or not accessible, needs build."
             echo "needs_build=true" >> $GITHUB_OUTPUT
           elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
-            echo "Base and derived digests do not match, needs build."
+            echo "::warning::Base and derived digests do not match, needs build."
             echo "needs_build=true" >> $GITHUB_OUTPUT
           else
             echo "Image up to date."
@@ -103,6 +103,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
+
+      # Notifica l'esistenza di un aggiornamento nel caso si decida di non aggiornare l'immagine
+      - name: Notify update needed
+        run: |
+          [[ "${{ matrix.type }}" == "none" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
+          BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
+          echo "::warning::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
+        if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
 
       # Build e push SOLO se serve aggiornare
       - name: Build and push Docker image
