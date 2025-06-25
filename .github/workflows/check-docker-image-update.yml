@@ -50,6 +50,9 @@ on:
         description: 'If the image needs update. true or false'
         value: ${{ jobs.check.outputs.needs-updating }}
 
+  #repository_dispatch: # Per inviare richieste via curl di compilazione immagini
+  #  types: [build-image] # ascolta eventi chiamati 'build-image'
+
 jobs:
   generate_matrix:
     runs-on: ubuntu-latest
