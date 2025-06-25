@@ -39,6 +39,11 @@ on:
         required: false
         type: string
         default: "false"
+      force-build:
+        description: 'Whether to force the image build (true or false)'
+        required: false
+        type: string
+        default: "false"
 
 permissions:
   contents: write
