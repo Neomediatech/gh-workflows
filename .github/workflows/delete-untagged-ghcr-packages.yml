@@ -2,7 +2,7 @@ name: Delete untagged container versions in all org packages
 
 on:
   #schedule:
-  #  - cron: '0 22 * * *'
+  #  - cron: '0 22 * * *' # Ogni giorno alle 22:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -26,15 +26,15 @@ jobs:
             echo "- $n"
           done
           echo "======================="
+          # Export as JSON array for matrix (single line JSON array)
           json_names=$(echo "$names" | jq -R . | jq -s -c .)
           echo "names=$json_names" >> $GITHUB_OUTPUT
+          # Export as pretty list for output
           package_list=$(echo "$names" | jq -R . | jq -s . | jq -r '. | join(", ")')
           echo "package_list=$package_list" >> $GITHUB_OUTPUT
-
       - name: Output found packages
         run: |
           echo "::notice::Packages found: ${{ steps.packages.outputs.package_list }}"
-
   delete-untagged:
     needs: get-packages
     if: needs.get-packages.outputs.package-names != '[]'
@@ -42,65 +42,16 @@ jobs:
     strategy:
       matrix:
         package-name: ${{ fromJson(needs.get-packages.outputs.package-names) }}
-    outputs:
-      deleted: ${{ steps.del.outputs.deleted }}
     steps:
       - name: Announce package being processed
         run: echo "::notice::Processing package ${{ matrix.package-name }}"
 
       - name: Delete untagged container versions from package
-        id: del
-        env:
-          PACKAGE_NAME: ${{ matrix.package-name }}
-          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}
-        run: |
-          # Esegui la delete e cattura l'output
-          OUT=$(gh api --method DELETE "/orgs/neomediatech/packages/container/${PACKAGE_NAME}/versions" \
-            -F 'package_type=container' \
-            -F 'delete_only_untagged_versions=true' \
-            -F 'min_versions_to_keep=2' 2>&1 || true)
-          echo "$OUT"
-          # Conta quanti 'Deleted version' appaiono nell'output (dipende dalla risposta API)
-          COUNT=$(echo "$OUT" | grep -c 'Deleted version')
-          echo "deleted=$COUNT" >> $GITHUB_OUTPUT
-          echo "$COUNT" > deleted_count.txt
-
-      - name: Save deleted count as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/delete-package-versions@v5
         with:
-          name: deleted-count-${{ matrix.package-name }}
-          path: deleted_count.txt
-
-  write-log:
-    needs: [get-packages, delete-untagged]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download all deleted count artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: deleted_counts
-
-      - name: Compose log file
-        run: |
-          LOGFILE="deleted_packages_log.txt"
-          echo "Deleted packages log - $(date -u +"%Y-%m-%d %H:%M:%S UTC")" > $LOGFILE
-          echo "" >> $LOGFILE
-          for dir in deleted_counts/deleted-count-*; do
-            PKG=$(basename "$dir" | sed 's/deleted-count-//')
-            COUNT=$(cat "$dir/deleted_count.txt")
-            echo "$PKG: $COUNT" >> $LOGFILE
-          done
-          cat $LOGFILE
-
-      - name: Commit and push log
-        env:
-          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          LOGFILE="deleted_packages_log.txt"
-          git add "$LOGFILE"
-          git commit -m "chore: update deleted packages log [skip ci]" || echo "Nothing to commit"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+          owner: neomediatech
+          package-name: ${{ matrix.package-name }}
+          package-type: container
+          min-versions-to-keep: 2
+          delete-only-untagged-versions: true
+          token: ${{ secrets.GHCR_TOKEN }}
