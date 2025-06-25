@@ -20,6 +20,7 @@ jobs:
           echo "Fetching all container packages from org: neomediatech (max 100)..."
           resp=$(gh api "/orgs/neomediatech/packages?package_type=container&per_page=100")
           names=$(echo "$resp" | jq -r '.[].name')
+          echo "::info::[DEBUG] names: $names"
           # Logging
           echo "==== Packages found ===="
           for n in $names; do
