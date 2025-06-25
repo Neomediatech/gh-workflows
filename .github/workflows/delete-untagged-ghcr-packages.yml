@@ -33,8 +33,7 @@ jobs:
       - name: Delete untagged container versions from remote repo
         uses: actions/delete-package-versions@v5
         with:
-          owner: Neomediatech
-          repo: ${{ github.event.inputs.target-repo || inputs.target-repo || 'ubuntu-base' }}
+          owner: neomediatech
           package-name: ${{ github.event.inputs.package-name || inputs.package-name || 'ubuntu-base' }}
           package-type: 'container'
           min-versions-to-keep: 2
