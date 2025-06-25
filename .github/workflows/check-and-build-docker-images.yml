@@ -93,10 +93,10 @@ jobs:
             echo "Derived image not found or not accessible, needs build."
             echo "needs_build=true" >> $GITHUB_OUTPUT
           elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
-            echo "::info::Base and derived digests do not match, needs build."
+            echo "::notice::Base and derived digests do not match, needs build."
             echo "needs_build=true" >> $GITHUB_OUTPUT
           else
-            echo "::info::Image up to date."
+            echo "::notice::Image up to date."
             echo "needs_build=false" >> $GITHUB_OUTPUT
           fi
 
@@ -113,7 +113,7 @@ jobs:
           [[ "${{ matrix.type }}" == "none" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
           BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
-          echo "::info::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
+          echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
         if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
 
       # Build e push SOLO se serve aggiornare
