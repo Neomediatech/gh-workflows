@@ -51,8 +51,8 @@ permissions:
 
 jobs:
   check-and-build:
-    #runs-on: ubuntu-latest
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
+    #runs-on: [self-hosted]
     strategy:
       matrix:
         version: ${{ fromJson(inputs.versions) }}
