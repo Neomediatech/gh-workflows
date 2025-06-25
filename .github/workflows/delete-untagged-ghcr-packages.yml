@@ -15,7 +15,7 @@ jobs:
       - name: Retrieve all container packages in org (with logging)
         id: packages
         env:
-          GH_TOKEN: ${{ secrets.PAT_WITH_DELETE_PACKAGES }}
+          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
           echo "Fetching all container packages from org: neomediatech (max 100)..."
           resp=$(gh api "/orgs/neomediatech/packages?package_type=container&per_page=100")
