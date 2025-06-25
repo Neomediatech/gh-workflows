@@ -1,32 +1,59 @@
-name: Delete old untagged Docker images
+name: Delete untagged container versions in all org packages
 
 on:
   #schedule:
-  #  - cron: '0 22 * * *' # ogni giorno alle 22:00 UTC
+  #  - cron: '0 22 * * *' # Ogni giorno alle 22:00 UTC
   workflow_dispatch:
-    inputs:
-      package-name:
-        description: 'Nome del package container (es: ubuntu-base)'
-        required: true
-        default: 'ubuntu-base'
-  workflow_call:
-    inputs:
-      package-name:
-        description: 'Nome del package container (es: ubuntu-base)'
-        required: true
-        type: string
-        default: 'ubuntu-base'
 
 jobs:
-  delete-untagged-container-versions:
+  get-packages:
     runs-on: ubuntu-latest
+    outputs:
+      package-names: ${{ steps.packages.outputs.names }}
+      package-list: ${{ steps.packages.outputs.package_list }}
     steps:
-      - name: Delete untagged container versions from remote repo
+      - name: Retrieve all container packages in org (with logging)
+        id: packages
+        env:
+          GH_TOKEN: ${{ secrets.PAT_WITH_DELETE_PACKAGES }}
+        run: |
+          echo "Fetching all container packages from org: neomediatech (max 100)..."
+          resp=$(gh api "/orgs/neomediatech/packages?package_type=container&per_page=100")
+          names=$(echo "$resp" | jq -r '.[].name')
+          # Logging
+          echo "==== Packages found ===="
+          for n in $names; do
+            echo "- $n"
+          done
+          echo "======================="
+          # Export as JSON array for matrix
+          json_names=$(echo "$names" | jq -R . | jq -s .)
+          echo "names=$json_names" >> $GITHUB_OUTPUT
+          # Export as pretty list for output
+          package_list=$(echo "$names" | jq -R . | jq -s . | jq -r '. | join(", ")')
+          echo "package_list=$package_list" >> $GITHUB_OUTPUT
+
+      - name: Output found packages
+        run: |
+          echo "::notice::Packages found: ${{ steps.packages.outputs.package_list }}"
+
+  delete-untagged:
+    needs: get-packages
+    if: needs.get-packages.outputs.package-names != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package-name: ${{ fromJson(needs.get-packages.outputs.package-names) }}
+    steps:
+      - name: Announce package being processed
+        run: echo "::notice::Processing package ${{ matrix.package-name }}"
+
+      - name: Delete untagged container versions from package
         uses: actions/delete-package-versions@v5
         with:
           owner: neomediatech
-          package-name: ${{ github.event.inputs.package-name || inputs.package-name || 'ubuntu-base' }}
-          package-type: 'container'
+          package-name: ${{ matrix.package-name }}
+          package-type: container
           min-versions-to-keep: 2
-          delete-only-untagged-versions: 'true'
+          delete-only-untagged-versions: true
           token: ${{ secrets.GHCR_TOKEN }}
