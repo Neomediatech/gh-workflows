@@ -5,21 +5,12 @@ on:
   #  - cron: '0 22 * * *' # ogni giorno alle 22:00 UTC
   workflow_dispatch:
     inputs:
-      target-repo:
-        description: 'Nome del repository da cui eliminare le immagini (es: ubuntu-base)'
-        required: true
-        default: 'ubuntu-base'
       package-name:
         description: 'Nome del package container (es: ubuntu-base)'
         required: true
         default: 'ubuntu-base'
   workflow_call:
     inputs:
-      target-repo:
-        description: 'Nome del repository da cui eliminare le immagini (es: ubuntu-base)'
-        required: true
-        type: string
-        default: 'ubuntu-base'
       package-name:
         description: 'Nome del package container (es: ubuntu-base)'
         required: true
