@@ -22,3 +22,4 @@ jobs:
       derived-image-repo-ref: main
       update-image: "true"
       build-test-image: "false"
+      force-build: "true"
