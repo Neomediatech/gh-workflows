@@ -20,15 +20,14 @@ jobs:
           echo "Fetching all container packages from org: neomediatech (max 100)..."
           resp=$(gh api "/orgs/neomediatech/packages?package_type=container&per_page=100")
           names=$(echo "$resp" | jq -r '.[].name')
-          echo "::info::[DEBUG] names: $names"
           # Logging
           echo "==== Packages found ===="
           for n in $names; do
             echo "- $n"
           done
           echo "======================="
-          # Export as JSON array for matrix
-          json_names=$(echo "$names" | jq -R . | jq -s .)
+          # Export as JSON array for matrix (single line JSON array)
+          json_names=$(echo "$names" | jq -R . | jq -s -c .)
           echo "names=$json_names" >> $GITHUB_OUTPUT
           # Export as pretty list for output
           package_list=$(echo "$names" | jq -R . | jq -s . | jq -r '. | join(", ")')
