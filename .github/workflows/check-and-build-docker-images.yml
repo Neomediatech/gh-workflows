@@ -146,12 +146,9 @@ jobs:
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
-          #git push
           git push https://${{ github.actor }}:${{ secrets.API_TOKEN_GITHUB }}@github.com/Neomediatech/gh-workflows.git
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          #GIT_AUTHOR_NAME: ${{ github.actor }}
-          #GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
 
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
