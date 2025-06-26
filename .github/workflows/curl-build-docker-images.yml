@@ -1,0 +1,20 @@
+name: Build Docker Images via curl
+
+on:
+  repository_dispatch: # Per inviare richieste di compilazione immagini via curl
+    types: [build-image] # ascolta eventi chiamati 'build-image'
+
+permissions:
+  contents: write
+  packages: write
+  
+jobs:
+  build-request:
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
+    steps:
+      - name: Print input values
+        run: |
+          echo "image_repo: ${{ github.event.client_payload.image_repo }}"
+          echo "dockertag: ${{ github.event.client_payload.dockertag }}"
+          echo "all requests: ${{ github.event.client_payload.* }}"
