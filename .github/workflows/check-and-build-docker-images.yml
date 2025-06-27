@@ -65,7 +65,7 @@ jobs:
       - name: Checkout this workflow repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ $MASTER_REPO }}
+          repository: ${{ env.MASTER_REPO }}
           ref: main
           path: workflow
           token: ${{ secrets.API_TOKEN_GITHUB }}
@@ -165,7 +165,7 @@ jobs:
           git branch
           echo "::notice::Remote branch:"
           git ls-remote --heads origin
-          git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/$MASTER_REPO
+          git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
           git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           git push origin main
