@@ -11,3 +11,4 @@ ven 27 giu 2025, 18:36:32, CEST --- ghcr.io/neomediatech/ubuntu-base:22.04 UPDAT
 ven 27 giu 2025, 18:36:55, CEST --- ghcr.io/neomediatech/ubuntu-base:24.04 UPDATED
 ven 27 giu 2025, 18:37:18, CEST --- ghcr.io/neomediatech/ubuntu-base:latest UPDATED
 ven 27 giu 2025, 18:40:20, CEST --- ghcr.io/neomediatech/ubuntu-base:18.04 UPDATED
+ven 27 giu 2025, 18:40:43, CEST --- ghcr.io/neomediatech/ubuntu-base:20.04 UPDATED
