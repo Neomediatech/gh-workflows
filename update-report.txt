@@ -8,3 +8,4 @@ mer 25 giu 2025, 20:35:07, CEST --- ghcr.io/neomediatech/self-hosted-runner:24.0
 ven 27 giu 2025, 18:35:48, CEST --- ghcr.io/neomediatech/ubuntu-base:18.04 UPDATED
 ven 27 giu 2025, 18:36:10, CEST --- ghcr.io/neomediatech/ubuntu-base:20.04 UPDATED
 ven 27 giu 2025, 18:36:32, CEST --- ghcr.io/neomediatech/ubuntu-base:22.04 UPDATED
+ven 27 giu 2025, 18:36:55, CEST --- ghcr.io/neomediatech/ubuntu-base:24.04 UPDATED
