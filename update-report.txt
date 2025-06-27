@@ -39,3 +39,4 @@ ven 27 giu 2025, 20:52:18, CEST --- ghcr.io/neomediatech/php:7.3-fpm UPDATED
 ven 27 giu 2025, 20:54:43, CEST --- ghcr.io/neomediatech/php:7.4-fpm UPDATED
 ven 27 giu 2025, 20:58:46, CEST --- ghcr.io/neomediatech/php:8-fpm UPDATED
 ven 27 giu 2025, 21:03:23, CEST --- ghcr.io/neomediatech/php:8.1-fpm UPDATED
+ven 27 giu 2025, 21:07:31, CEST --- ghcr.io/neomediatech/php:8.2-fpm UPDATED
