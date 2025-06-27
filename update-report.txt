@@ -35,3 +35,4 @@ ven 27 giu 2025, 20:24:36, CEST --- ghcr.io/neomediatech/php:8.4-apache UPDATED
 ven 27 giu 2025, 20:32:12, CEST --- ghcr.io/neomediatech/self-hosted-runner:24.04 UPDATED
 ven 27 giu 2025, 20:42:34, CEST --- ghcr.io/neomediatech/self-hosted-runner:24.04 UPDATED
 ven 27 giu 2025, 20:49:51, CEST --- ghcr.io/neomediatech/php:5.6-fpm UPDATED
+ven 27 giu 2025, 20:52:18, CEST --- ghcr.io/neomediatech/php:7.3-fpm UPDATED
