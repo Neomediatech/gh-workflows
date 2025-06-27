@@ -158,7 +158,10 @@ jobs:
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          
+          echo "::notice::Local branch:"
+          git branch
+          echo "::notice::Remote branch:"
+          git ls-remote --heads origin
           git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/Neomediatech/gh-workflows.git
           git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
