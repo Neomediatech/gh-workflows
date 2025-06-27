@@ -22,56 +22,9 @@ on:
 permissions:
   contents: write
   packages: write
-  
+
 jobs:
-  generate_matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      versions: ${{ steps.set_versions.outputs.versions }}
-    steps:
-      - name: Set Versions for Matrix
-        id: set_versions
-        run: |
-          set -euo pipefail # Fail immediately if any command fails or variable is unset
-
-          INPUT_VERSIONS=$(printf "%s" "${{ inputs.dockertag }}" | tr -d '\n' | xargs)
-
-          if [ -z "$INPUT_VERSIONS" ]; then
-            SELECTED_VERSIONS="$VERSIONS"
-            echo "Building all versions: $SELECTED_VERSIONS"
-          else
-            SELECTED_VERSIONS="$INPUT_VERSIONS"
-            echo "Building selected versions: $SELECTED_VERSIONS"
-          fi
-
-          # Converte la stringa separata da virgole in un array JSON
-          JSON_VERSIONS=$(jq -c -R -s 'split(",") | map(select(length > 0) | gsub("\\n"; ""))' <<< "$SELECTED_VERSIONS")
-
-          printf "versions=%s\n" "$JSON_VERSIONS" >> "$GITHUB_OUTPUT"
-        shell: bash
-
-  update-images:
-    uses: Neomediatech/gh-workflows/.github/workflows/check-and-build-docker-images.yml@main
-    permissions:
-      contents: write
-      packages: write
-    secrets: inherit
+  build-php:
+    uses: Neomediatech/gh-workflows/.github/workflows/build-docker-image.yml@main
     with:
-      #base-image: ${{ github.event.client_payload.base-image }}
-      #derived-image-prefix: ${{ github.event.client_payload.derived-image-prefix }}
-      # accept also 'all' in versions (ToDO)
-      #type: '["apache", "fpm"]'
-      # accept also 'all' in type (ToDO)
-      #derived-image-repo: ${{ github.event.client_payload.derived-image-repo }}
-      #derived-image-repo-ref: ${{ github.event.client_payload.derived-image-repo-ref }}
-      base-image: php
-      derived-image-prefix: ghcr.io/neomediatech/php
-      versions: '["all"]'
-      type: '["all"]'
-      #versions: '["8.4", "8.3", "8.2", "8.1", "7.4"]'
-      #type: '["apache", "fpm"]'
-      derived-image-repo: Neomediatech/php
-      derived-image-repo-ref: master
-      update-image: "true"
-      build-test-image: "false"
-      force-build: "true"
+      example-input: "valore"
