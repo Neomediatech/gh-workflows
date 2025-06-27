@@ -19,7 +19,7 @@ on:
         description: 'JSON array of image type to check'
         required: false
         type: string
-        default: '["none"]'
+        default: '[""]'
       derived-image-repo:
         description: 'Github repo name (e.g. Neomediatech/rspamd)'
         required: false
@@ -81,7 +81,7 @@ jobs:
         id: check
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
-          [[ "${{ matrix.type }}" == "none" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
+          [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
           BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
 
