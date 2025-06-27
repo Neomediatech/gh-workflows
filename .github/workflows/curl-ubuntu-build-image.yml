@@ -1,8 +1,17 @@
+# questo workflow viene chiamato via curl con questa chiamata:
 # devo accettare anche 'all' sia per 'versions' che per 'type'
 # con questo valore impostato devo guardare nel repo la presenza di ogni Dockerfile.* nella root e in ogni directory (solo il 1mo livello)
-# se type è valorizzato guardo nelle sottodirectory altrimenti solo nella root
-# devo poi costruire la matrix e quindi lanciare la richiesta di build per ogni elemento della matrix
-# in gh-workflows/.github/workflows/check-docker-image-update.yml c'è un esempio di costruzione della matrix, magari da rivedere
+# curl -X POST \
+#  -H "Accept: application/vnd.github+json" \
+#  -H "Authorization: Bearer __github_api_key__" \
+#  https://api.github.com/repos/Neomediatech/gh-workflows/dispatches \
+#  -d '{
+#    "event_type": "build-php",
+#    "client_payload": {
+#      "var_1": "valore d iesempio",
+#      "var_2": "altro valore"
+#    }
+#  }'
 
 name: Build Ubuntu Docker Images via curl (draft)
 
