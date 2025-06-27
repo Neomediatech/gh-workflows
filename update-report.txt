@@ -47,3 +47,4 @@ ven 27 giu 2025, 21:15:32, CEST --- ghcr.io/neomediatech/rspamd:3.11 UPDATED
 ven 27 giu 2025, 21:16:02, CEST --- ghcr.io/neomediatech/rspamd:3.12 UPDATED
 ven 27 giu 2025, 21:17:23, CEST --- ghcr.io/neomediatech/rspamd:3.5 UPDATED
 ven 27 giu 2025, 21:19:20, CEST --- ghcr.io/neomediatech/rspamd:3.6 UPDATED
+ven 27 giu 2025, 21:20:24, CEST --- ghcr.io/neomediatech/rspamd:3.7 UPDATED
