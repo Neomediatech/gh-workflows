@@ -3,6 +3,11 @@ name: Discover Dockerfiles and Build Matrix [draft, by copilot & me ;-)]
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      base-image:
+        description: 'Base image to check'
+        required: true
+        type: string
   
 jobs:
   discover-dockerfiles:
