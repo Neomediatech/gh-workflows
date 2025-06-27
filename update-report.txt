@@ -21,3 +21,4 @@ ven 27 giu 2025, 19:34:43, CEST --- ghcr.io/neomediatech/php:7.4-apache UPDATED
 ven 27 giu 2025, 19:38:21, CEST --- ghcr.io/neomediatech/php:8-apache UPDATED
 ven 27 giu 2025, 19:41:55, CEST --- ghcr.io/neomediatech/php:8.1-apache UPDATED
 ven 27 giu 2025, 19:44:54, CEST --- ghcr.io/neomediatech/php:81.old-apache UPDATED
+ven 27 giu 2025, 19:48:38, CEST --- ghcr.io/neomediatech/php:8.2-apache UPDATED
