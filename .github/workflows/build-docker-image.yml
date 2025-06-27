@@ -1,0 +1,92 @@
+name: Discover Dockerfiles and Build Matrix [draft, by copilot & me ;-)]
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  
+jobs:
+  discover-dockerfiles:
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      repo-lower: ${{ steps.set-matrix.outputs.repo-lower }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Find Dockerfiles and build paired matrix
+        id: set-matrix
+        run: |
+          files=$(find . -maxdepth 2 -type f -name 'Dockerfile*' | sort)
+          includes=""
+
+          while IFS= read -r file; do
+            dir=$(dirname "$file" | sed 's|^\./||')
+            dockerfile=$(basename "$file")
+            if [[ $dockerfile == 'Dockerfile' ]]; then
+              version='latest'
+            else
+              version=$(basename "$file"|sed 's/Dockerfile\.\?//')
+            fi
+            # Evita la root vuota come directory
+            if [[ "$dir" == "." ]]; then
+              dir=""
+            fi
+            includes="${includes}{\"directory\":\"$dir\",\"tag\":\"$version\"},"
+          done <<< "$files"
+
+          # Rimuove la virgola finale e crea array include
+          includes="[${includes%,}]"
+
+          echo "matrix={\"include\":$includes}" >> $GITHUB_OUTPUT
+          echo "repo-lower=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Show discovered matrix
+        run: |
+          echo "${{ steps.set-matrix.outputs.matrix }}"
+
+  #use-matrix:
+  #  needs: discover-dockerfiles
+  #  runs-on: [self-hosted]
+  #  strategy:
+  #    matrix:
+  #      include: ${{ fromJson(needs.discover-dockerfiles.outputs.matrix).include }}
+  #  steps:
+  #    - name: Print matrix info
+  #      run: |
+  #        echo "Directory: ${{ matrix.directory }}"
+  #        echo "Dockerfile: ${{ matrix.tag }}"
+  #        echo "Tag: ${{ matrix.tag }}"
+          
+  print-results:
+    needs: discover-dockerfiles
+    runs-on: [self-hosted]
+    steps:
+      - name: Print matrix info
+        run: |
+          echo "matrix: ${{ needs.discover-dockerfiles.outputs.matrix }}"
+          echo "repo-lower: ${{ needs.discover-dockerfiles.outputs.repo-lower }}"
+
+  update-images:
+    needs: discover-dockerfiles
+    uses: Neomediatech/gh-workflows/.github/workflows/check-and-build-docker-images.yml@main
+    permissions:
+      contents: write
+      packages: write
+    secrets: inherit
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.discover-dockerfiles.outputs.matrix).include }}
+    with:
+      base-image: php
+      derived-image-prefix: ghcr.io/${{ needs.discover-dockerfiles.outputs.repo-lower }}
+      #versions: '["8.4", "8.3", "8.2", "8.1", "7.4"]'
+      #type: '["apache", "fpm"]'
+      versions: '["${{ matrix.tag }}"]'
+      type: '["${{ matrix.directory }}"]'
+      derived-image-repo: ${{ needs.discover-dockerfiles.outputs.repo-lower }}
+      derived-image-repo-ref: ${{ github.ref_name }}
+      update-image: "true"
+      build-test-image: "false"
+      force-build: "true"
