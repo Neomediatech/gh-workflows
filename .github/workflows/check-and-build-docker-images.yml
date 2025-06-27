@@ -154,6 +154,7 @@ jobs:
           # update report file
           cd ../workflow
           REPORT_FILE="update-report.txt"
+          echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
