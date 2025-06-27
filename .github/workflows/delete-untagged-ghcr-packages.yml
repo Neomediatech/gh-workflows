@@ -1,8 +1,8 @@
 name: Delete untagged container versions in all org packages
 
 on:
-  #schedule:
-  #  - cron: '0 22 * * *' # Ogni giorno alle 22:00 UTC
+  schedule:
+    - cron: '0 22 * * 6' # Ogni sabato alle 22:00 UTC
   workflow_dispatch:
 
 jobs:
