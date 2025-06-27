@@ -122,7 +122,7 @@ jobs:
       # Notifica l'esistenza di un aggiornamento nel caso si decida di non aggiornare l'immagine
       - name: Notify update needed
         run: |
-          [[ "${{ matrix.type }}" == "none" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
+          [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
           BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
           echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
@@ -134,7 +134,7 @@ jobs:
         if: steps.check.outputs.needs_build == 'true' && inputs.update-image == 'true'
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
-          if [[ "${{ matrix.type }}" == "none" ]]; then
+          if [[ "${{ matrix.type }}" == "" ]]; then
             IMAGE_TYPE=""
             DOCKERDIR="."
           else
