@@ -44,3 +44,4 @@ ven 27 giu 2025, 21:11:23, CEST --- ghcr.io/neomediatech/php:8.3-fpm UPDATED
 ven 27 giu 2025, 21:11:48, CEST --- ghcr.io/neomediatech/php:8.4-fpm UPDATED
 ven 27 giu 2025, 21:14:58, CEST --- ghcr.io/neomediatech/rspamd:3.10 UPDATED
 ven 27 giu 2025, 21:15:32, CEST --- ghcr.io/neomediatech/rspamd:3.11 UPDATED
+ven 27 giu 2025, 21:16:02, CEST --- ghcr.io/neomediatech/rspamd:3.12 UPDATED
