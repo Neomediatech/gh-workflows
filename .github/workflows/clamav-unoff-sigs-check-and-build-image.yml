@@ -1,0 +1,24 @@
+name: ClamAV Unofficial Sigs Check Image Updates and Rebuild
+
+on:
+  #schedule:
+    # Esegui ogni giorno alle 04:00 UTC per controllare gli aggiornamenti.
+  #  - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-images:
+    uses: Neomediatech/gh-workflows/.github/workflows/check-and-build-docker-images.yml@main
+    permissions:
+      contents: write
+      packages: write
+    secrets: inherit
+    with:
+      base-image: debian:trixie
+      derived-image-prefix: ghcr.io/neomediatech/clamav-unofficial-sigs
+      versions: '["latest"]'
+      #type: '["apache", "fpm"]'
+      derived-image-repo: Neomediatech/clamav-unofficial-sigs
+      derived-image-repo-ref: main
+      update-image: "true"
+      build-test-image: "false"
