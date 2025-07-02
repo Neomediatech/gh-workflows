@@ -131,7 +131,11 @@ jobs:
       - name: Notify update needed
         run: |
           [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
-          BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
+            BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
+          else
+            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          fi
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
           echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
         if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
@@ -152,8 +156,13 @@ jobs:
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           echo "Building and pushing $DERIVED_IMAGE"
           cd calling
+          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
+            BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
+          else
+            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          fi          
           docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
-            --label "org.opencontainers.image.base=${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE" \
+            --label "org.opencontainers.image.base=$BASE_IMAGE" \
             -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
           docker push $DERIVED_IMAGE
           REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
