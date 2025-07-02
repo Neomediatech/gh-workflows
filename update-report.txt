@@ -44,3 +44,4 @@ ven 27 giu 2025, 21:20:24, CEST --- ghcr.io/neomediatech/rspamd:3.7 UPDATED
 ven 27 giu 2025, 21:21:24, CEST --- ghcr.io/neomediatech/rspamd:3.8 UPDATED
 ven 27 giu 2025, 21:22:13, CEST --- ghcr.io/neomediatech/rspamd:3.9 UPDATED
 ven 27 giu 2025, 21:22:35, CEST --- ghcr.io/neomediatech/rspamd:latest UPDATED
+mer 2 lug 2025, 17:26:35, CEST --- ghcr.io/neomediatech/clamav-unofficial-sigs:latest UPDATED
