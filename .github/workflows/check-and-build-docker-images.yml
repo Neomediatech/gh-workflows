@@ -86,7 +86,11 @@ jobs:
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
           [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
-          BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
+            BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
+          else
+            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          fi
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
 
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
