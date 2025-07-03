@@ -55,3 +55,4 @@ gio 3 lug 2025, 06:35:18, CEST --- ghcr.io/neomediatech/ubuntu-base:22.04 UPDATE
 gio 3 lug 2025, 14:06:21, CEST --- ghcr.io/neomediatech/lmd:1.4_base UPDATED
 gio 3 lug 2025, 16:14:44, CEST --- ghcr.io/neomediatech/lmd:1.4_base UPDATED
 gio 3 lug 2025, 16:16:00, CEST --- ghcr.io/neomediatech/lmd:22.04 UPDATED
+gio 3 lug 2025, 16:18:43, CEST --- ghcr.io/neomediatech/lmd:22.04.clamav UPDATED
