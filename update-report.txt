@@ -52,3 +52,4 @@ mer 2 lug 2025, 18:40:02, CEST --- ghcr.io/neomediatech/clamav-unofficial-sigs:l
 gio 3 lug 2025, 06:32:23, CEST --- ghcr.io/neomediatech/ubuntu-base:latest UPDATED
 gio 3 lug 2025, 06:33:37, CEST --- ghcr.io/neomediatech/ubuntu-base:24.04 UPDATED
 gio 3 lug 2025, 06:35:18, CEST --- ghcr.io/neomediatech/ubuntu-base:22.04 UPDATED
+gio 3 lug 2025, 14:06:21, CEST --- ghcr.io/neomediatech/lmd:1.4_base UPDATED
