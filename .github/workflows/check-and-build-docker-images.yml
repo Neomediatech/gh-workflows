@@ -44,6 +44,11 @@ on:
         required: false
         type: string
         default: "false"
+      package-name:
+        description: 'The name for the package to build (e.g. neomediatech/rspamd)'
+        required: false
+        type: string
+        default: "default"
 
 permissions:
   contents: write
@@ -153,7 +158,12 @@ jobs:
             IMAGE_TYPE="-${{ matrix.type }}"
             DOCKERDIR="${{ matrix.type }}"
           fi
-          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+          PACKAGE_NAME="${{ inputs.package-name }}"
+          if [[ "$PACKAGE_NAME" != "default" && -n "$PACKAGE_NAME" ]]; then
+            DERIVED_IMAGE="ghcr.io/$PACKAGE_NAME"
+          else
+            DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+          fi
           echo "Building and pushing $DERIVED_IMAGE"
           cd calling
           if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
