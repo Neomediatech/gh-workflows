@@ -56,3 +56,4 @@ gio 3 lug 2025, 14:06:21, CEST --- ghcr.io/neomediatech/lmd:1.4_base UPDATED
 gio 3 lug 2025, 16:14:44, CEST --- ghcr.io/neomediatech/lmd:1.4_base UPDATED
 gio 3 lug 2025, 16:16:00, CEST --- ghcr.io/neomediatech/lmd:22.04 UPDATED
 gio 3 lug 2025, 16:18:43, CEST --- ghcr.io/neomediatech/lmd:22.04.clamav UPDATED
+gio 3 lug 2025, 16:19:06, CEST --- ghcr.io/neomediatech/lmd:latest UPDATED
