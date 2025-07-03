@@ -75,3 +75,4 @@ gio 3 lug 2025, 19:17:43, CEST --- ghcr.io/neomediatech/pbs UPDATED
 gio 3 lug 2025, 19:29:28, CEST --- ghcr.io/neomediatech/pbs:3.4 UPDATED
 gio 3 lug 2025, 19:29:50, CEST --- ghcr.io/neomediatech/pbs:latest UPDATED
 gio 3 lug 2025, 19:50:59, CEST --- ghcr.io/neomediatech/pve:8.4 UPDATED
+gio 3 lug 2025, 19:51:22, CEST --- ghcr.io/neomediatech/pve:latest UPDATED
