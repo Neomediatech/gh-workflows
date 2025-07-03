@@ -9,7 +9,7 @@ on:
         required: true
         type: string
       package-name:
-        description: 'Name for the package to build'
+        description: 'Name for the package to build (e.g. neomediatech/rspamd)'
         required: false
         type: string
   
