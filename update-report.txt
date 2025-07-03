@@ -69,3 +69,4 @@ gio 3 lug 2025, 16:52:16, CEST --- ghcr.io/neomediatech/lmd:22.04.clamav UPDATED
 gio 3 lug 2025, 16:52:44, CEST --- ghcr.io/neomediatech/lmd:latest UPDATED
 gio 3 lug 2025, 16:53:05, CEST --- ghcr.io/neomediatech/lmd:ubuntu-base.20.04 UPDATED
 gio 3 lug 2025, 17:50:55, CEST --- ghcr.io/neomediatech/pbs UPDATED
+gio 3 lug 2025, 17:51:17, CEST --- ghcr.io/neomediatech/pbs UPDATED
