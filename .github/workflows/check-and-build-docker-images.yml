@@ -160,7 +160,7 @@ jobs:
           fi
           PACKAGE_NAME="${{ inputs.package-name }}"
           if [[ "$PACKAGE_NAME" != "default" && -n "$PACKAGE_NAME" ]]; then
-            DERIVED_IMAGE="ghcr.io/$PACKAGE_NAME"
+            DERIVED_IMAGE="ghcr.io/$PACKAGE_NAME:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           else
             DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           fi
