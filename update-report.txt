@@ -71,3 +71,4 @@ gio 3 lug 2025, 16:53:05, CEST --- ghcr.io/neomediatech/lmd:ubuntu-base.20.04 UP
 gio 3 lug 2025, 17:50:55, CEST --- ghcr.io/neomediatech/pbs UPDATED
 gio 3 lug 2025, 17:51:17, CEST --- ghcr.io/neomediatech/pbs UPDATED
 gio 3 lug 2025, 17:56:32, CEST --- ghcr.io/neomediatech/pbs UPDATED
+gio 3 lug 2025, 19:17:43, CEST --- ghcr.io/neomediatech/pbs UPDATED
