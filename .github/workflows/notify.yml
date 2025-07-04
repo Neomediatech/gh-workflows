@@ -42,6 +42,8 @@ on:
         type: string
         description: "Image update result"
     secrets:
+      NOTIFY_CMD:
+        required: true
       NOTIFY_UP:
         required: true
       NOTIFY_ENDPOINT:
@@ -52,12 +54,6 @@ on:
         required: true
       API_TOKEN_GITHUB:
         required: true
-
-    #secrets:
-    #  NOTIFY_UP:
-    #    required: true
-    #  NOTIFY_ENDPOINT:
-    #    required: true
 
 jobs:
   create-report:
@@ -125,7 +121,7 @@ jobs:
           if [ -z "${{ secrets.NOTIFY_UP }}" ]; then
             echo "Secrets not present"
           fi
-          curl --user "${{ secrets.NOTIFY_UP }}" \
+          ${{ secrets.NOTIFY_CMD }} --user "${{ secrets.NOTIFY_UP }}" \
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=Image update ${{ inputs.image-update-result }}" \
                -F "body=${{ inputs.build-result }}" \
