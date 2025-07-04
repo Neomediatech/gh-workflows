@@ -65,6 +65,8 @@ jobs:
       max-parallel: 1
     env:
       MASTER_REPO: "Neomediatech/gh-workflows.git"
+    outputs:
+      build-result: ${{ steps.vars.outputs.build_result }}
     steps:
       # Checkout il repo di questo workflow (utile se hai file di supporto qui)
       - name: Checkout this workflow repository
@@ -182,6 +184,7 @@ jobs:
           REPORT_FILE="update-report.txt"
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
+          echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           echo "::notice::Local branch:"
@@ -208,3 +211,13 @@ jobs:
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
         run: docker logout ghcr.io
+  
+  notify:
+    needs: [check-and-build]
+    uses: Neomediatech/gh-workflows/.github/workflows/apprise-notify.yml@main
+    permissions:
+      contents: write
+      packages: write
+    secrets: inherit
+    with:
+      build-result: "${{needs.check-and-build.outputs.build-result}}"
