@@ -82,6 +82,7 @@ jobs:
       build-result: ${{ steps.vars.outputs.build_result }}
       report-name: ${{ steps.vars.outputs.report_name }}
       image-update-result: ${{ steps.final-vars.outputs.image_update_result }}
+      image-name: ${{ steps.final-vars.outputs.image_name }}
     steps:
       # Checkout il repo di questo workflow (utile se hai file di supporto qui)
       - name: Checkout this workflow repository
@@ -196,6 +197,7 @@ jobs:
           docker push $DERIVED_IMAGE
           REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
           echo "report_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE_report.txt" >> $GITHUB_OUTPUT
+          echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           # update report file
           cd ../workflow
           REPORT_FILE="update-report.txt"
@@ -272,6 +274,7 @@ jobs:
       build-result: "${{needs.check-and-build.outputs.build-result}}"
       report-name: "${{needs.check-and-build.outputs.report-name}}"
       image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
+      docker_image: "${{needs.check-and-build.outputs.image-name}}"
     secrets:
       NOTIFY_CMD: ${{ secrets.NOTIFY_CMD }}
       NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
