@@ -1,4 +1,4 @@
-name: Notifica via Apprise con report e cronologia
+name: Notifica (via Apprise o altro) con report e cronologia
 
 on:
   workflow_dispatch:
