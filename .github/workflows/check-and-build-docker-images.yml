@@ -49,6 +49,17 @@ on:
         required: false
         type: string
         default: "default"
+    secrets:
+      NOTIFY_UP:
+        required: true
+      NOTIFY_ENDPOINT:
+        required: true
+      NOTIFY_OPTIONS:
+        required: true
+      GHCR_TOKEN:
+        required: true
+      API_TOKEN_GITHUB:
+        required: true
 
 permissions:
   contents: write
@@ -253,3 +264,9 @@ jobs:
       build-result: "${{needs.check-and-build.outputs.build-result}}"
       report-name: "${{needs.check-and-build.outputs.report-name}}"
       image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
+    secrets:
+      NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
+      NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
+      NOTIFY_OPTIONS: ${{ secrets.NOTIFY_OPTIONS }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
