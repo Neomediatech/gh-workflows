@@ -41,6 +41,17 @@ on:
         required: true
         type: string
         description: "Image update result"
+    secrets:
+      NOTIFY_UP:
+        required: true
+      NOTIFY_ENDPOINT:
+        required: true
+      NOTIFY_OPTIONS:
+        required: true
+      GHCR_TOKEN:
+        required: true
+      API_TOKEN_GITHUB:
+        required: true
 
     #secrets:
     #  NOTIFY_UP:
