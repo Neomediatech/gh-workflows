@@ -43,14 +43,10 @@ on:
         description: "Image update result"
 
     secrets:
-      NOTIFY_USER:
-        required: true
-      NOTIFY_PASS:
+      NOTIFY_UP:
         required: true
       NOTIFY_ENDPOINT:
         required: true
-      NOTIFY_EMAIL_URL:
-        required: false
 
 jobs:
   create-report:
@@ -115,9 +111,9 @@ jobs:
 
       - name: Invia notifica email con report allegato
         run: |
-          curl --user "${{ secrets.NOTIFY_USER }}:${{ secrets.NOTIFY_PASS }}" \
+          curl --user "${{ secrets.NOTIFY_UP }}" \
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
-               -F "urls=${{ secrets.NOTIFY_EMAIL_URL }}" \
                -F "title=Image update ${{ inputs.image-update-result }}" \
                -F "body=${{ inputs.build-result }}" \
                -F "attach=@${{ inputs.report-name }}"
+               ${{ secrets.NOTIFY_OPTIONS }}
