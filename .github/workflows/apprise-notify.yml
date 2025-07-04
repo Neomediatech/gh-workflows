@@ -2,24 +2,63 @@ name: Notifica via Apprise con report e cronologia
 
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      status:
+        required: false
+        type: string
+        description: "Risultato dell'operazione: success o failure"
+      docker_image:
+        required: false
+        type: string
+        description: "Nome dell'immagine Docker creata"
+      message:
+        required: false
+        type: string
+        description: "Messaggio personalizzato da includere"
+      report_file:
+        required: false
+        type: string
+        default: "report.txt"
+        description: "Nome del file da allegare alla notifica email"
+      notify_url:
+        required: false
+        type: string
+        description: "Override per l'URL di notifica Apprise (push)"
+      email_url:
+        required: false
+        type: string
+        description: "Override per l'URL email Apprise"
+      build-result:
+        required: true
+        type: string
+        description: "Build image result"
+      report-name:
+        required: true
+        type: string
+        description: "Report filename"
+      image-update-result:
+        required: true
+        type: string
+        description: "Image update result"
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  create-report:
+    runs-on: [self-hosted]
     name: Esegui processo
 
     steps:
       - name: Esegui processo e genera report
         run: |
-          echo "🛠️ Job eseguito il: $(date)" > report.txt
-          echo "✅ Stato del job: OK (modifica se vuoi simulare un errore)" >> report.txt
-          echo "📄 Fine log." >> report.txt
+          echo "🛠️ Job eseguito il: $(date)" > ${{ inputs.report-name }}
+          echo "✅ Aggiornamento immagine: ${{ inputs.image-update-result }}" >> ${{ inputs.report-name }}
+          echo "📄 Fine log." >> ${{ inputs.report-name }}
 
       - name: Carica report come artefatto
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ github.run_id }}
-          path: report.txt
+          path: ${{ inputs.report-name }}
           retention-days: 30
 
       - name: Pulisci vecchi artefatti (mantieni ultimi 10)
@@ -34,12 +73,12 @@ jobs:
             cut -d' ' -f2 |
             while read artifact_id; do
               echo "🧹 Elimino artifact ID: $artifact_id"
-              gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$artifact_id
+              echo "TEST gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$artifact_id"
             done
 
   notify:
     runs-on: ubuntu-latest
-    needs: build
+    needs: create-report
     if: always()
 
     steps:
@@ -51,31 +90,20 @@ jobs:
 
       - name: Determina esito job
         id: result
-        run: |
-          if [ "${{ needs.build.result }}" == "success" ]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-            echo "title=✅ Build completata con successo" >> $GITHUB_OUTPUT
-            echo "body=Il job build è stato eseguito correttamente." >> $GITHUB_OUTPUT
-            echo "type=success" >> $GITHUB_OUTPUT
-          else
-            echo "status=failure" >> $GITHUB_OUTPUT
-            echo "title=❌ Build fallita" >> $GITHUB_OUTPUT
-            echo "body=Il job build è fallito. Vedi report allegato." >> $GITHUB_OUTPUT
-            echo "type=failure" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Invia notifica Apprise (es. Discord, Telegram, etc.)
-        run: |
-          curl --user "${{ secrets.APPRISE_USER }}:${{ secrets.APPRISE_PASS }}" \
-               -H "Content-Type: application/json" \
-               -X POST ${{ secrets.APPRISE_ENDPOINT }} \
-               -d '{
-                 "urls": "${{ secrets.APPRISE_NOTIFY_URL }}",
-                 "title": "${{ steps.result.outputs.title }}",
-                 "body": "${{ steps.result.outputs.body }}",
-                 "type": "${{ steps.result.outputs.type }}"
-               }'
-
+        run: |          
+          #if [ "${{ needs.build.result }}" == "success" ]; then
+          #  echo "status=success" >> $GITHUB_OUTPUT
+          #  echo "title=✅ Build completata con successo" >> $GITHUB_OUTPUT
+          #  echo "body=Il job build è stato eseguito correttamente." >> $GITHUB_OUTPUT
+          #  echo "type=success" >> $GITHUB_OUTPUT
+          #else
+          #  echo "status=failure" >> $GITHUB_OUTPUT
+          #  echo "title=❌ Build fallita" >> $GITHUB_OUTPUT
+          #  echo "body=Il job build è fallito. Vedi report allegato." >> $GITHUB_OUTPUT
+          #  echo "type=failure" >> $GITHUB_OUTPUT
+          #fi
+          
+          
       - name: Invia notifica email con report allegato
         run: |
           curl --user "${{ secrets.APPRISE_USER }}:${{ secrets.APPRISE_PASS }}" \
@@ -83,4 +111,4 @@ jobs:
                -F "urls=${{ secrets.APPRISE_EMAIL_URL }}" \
                -F "title=${{ steps.result.outputs.title }}" \
                -F "body=${{ steps.result.outputs.body }}" \
-               -F "attach=@report.txt"
+               -F "attach=@${{ inputs.report-name }}"
