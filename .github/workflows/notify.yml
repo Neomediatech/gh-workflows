@@ -125,5 +125,5 @@ jobs:
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=Image update ${{ inputs.image-update-result }}" \
                -F "body=${{ inputs.build-result }}" \
-               -F "attach=@${{ inputs.report-name }}"
+               -F "attach=@${{ inputs.report-name }}" \
                ${{ secrets.NOTIFY_OPTIONS }}
