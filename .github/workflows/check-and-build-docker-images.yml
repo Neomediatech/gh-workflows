@@ -244,7 +244,7 @@ jobs:
     with:
       build-result: "${{needs.check-and-build.outputs.build-result}}"
       report-name: "${{needs.check-and-build.outputs.report-name}}"
-      image-update: "${{needs.check-and-build.outputs.image-update}}"
+      image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
     secrets:
       NOTIFY_USER: ${{ secrets.NOTIFY_USER }}
       NOTIFY_PASS: ${{ secrets.NOTIFY_PASS }}
