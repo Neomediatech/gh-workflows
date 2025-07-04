@@ -120,10 +120,17 @@ jobs:
         run: |
           if [ -z "${{ secrets.NOTIFY_UP }}" ]; then
             echo "Secrets not present"
+            exit 1
+          fi
+          TITLE="GitHub build image report"
+          if [[ -n "${{ inputs.docker_image }}" ]]; then
+            DOCKER_IMAGE="${{ inputs.docker_image }} "
+          else
+            DOCKER_IMAGE=""
           fi
           ${{ secrets.NOTIFY_CMD }} --user "${{ secrets.NOTIFY_UP }}" \
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
-               -F "title=Image update ${{ inputs.image-update-result }}" \
+               -F "title=$DOCKER_IMAGE$TITLE ${{ inputs.image-update-result }}" \
                -F "body=${{ inputs.build-result }}" \
                -F "attach=@${{ inputs.report-name }}" \
                ${{ secrets.NOTIFY_OPTIONS }}
