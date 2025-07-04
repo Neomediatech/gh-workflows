@@ -1,0 +1,86 @@
+name: Notifica via Apprise con report e cronologia
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Esegui processo
+
+    steps:
+      - name: Esegui processo e genera report
+        run: |
+          echo "🛠️ Job eseguito il: $(date)" > report.txt
+          echo "✅ Stato del job: OK (modifica se vuoi simulare un errore)" >> report.txt
+          echo "📄 Fine log." >> report.txt
+
+      - name: Carica report come artefatto
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ github.run_id }}
+          path: report.txt
+          retention-days: 30
+
+      - name: Pulisci vecchi artefatti (mantieni ultimi 10)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/actions/artifacts |
+            jq -r '.artifacts[] | select(.name | startswith("report-")) | "\(.name) \(.id) \(.created_at)"' |
+            sort -k3 -r |
+            tail -n +11 |
+            cut -d' ' -f2 |
+            while read artifact_id; do
+              echo "🧹 Elimino artifact ID: $artifact_id"
+              gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$artifact_id
+            done
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: build
+    if: always()
+
+    steps:
+      - name: Scarica report
+        uses: actions/download-artifact@v4
+        with:
+          name: report-${{ github.run_id }}
+          path: .
+
+      - name: Determina esito job
+        id: result
+        run: |
+          if [ "${{ needs.build.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "title=✅ Build completata con successo" >> $GITHUB_OUTPUT
+            echo "body=Il job build è stato eseguito correttamente." >> $GITHUB_OUTPUT
+            echo "type=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "title=❌ Build fallita" >> $GITHUB_OUTPUT
+            echo "body=Il job build è fallito. Vedi report allegato." >> $GITHUB_OUTPUT
+            echo "type=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Invia notifica Apprise (es. Discord, Telegram, etc.)
+        run: |
+          curl --user "${{ secrets.APPRISE_USER }}:${{ secrets.APPRISE_PASS }}" \
+               -H "Content-Type: application/json" \
+               -X POST ${{ secrets.APPRISE_ENDPOINT }} \
+               -d '{
+                 "urls": "${{ secrets.APPRISE_NOTIFY_URL }}",
+                 "title": "${{ steps.result.outputs.title }}",
+                 "body": "${{ steps.result.outputs.body }}",
+                 "type": "${{ steps.result.outputs.type }}"
+               }'
+
+      - name: Invia notifica email con report allegato
+        run: |
+          curl --user "${{ secrets.APPRISE_USER }}:${{ secrets.APPRISE_PASS }}" \
+               -X POST ${{ secrets.APPRISE_ENDPOINT }} \
+               -F "urls=${{ secrets.APPRISE_EMAIL_URL }}" \
+               -F "title=${{ steps.result.outputs.title }}" \
+               -F "body=${{ steps.result.outputs.body }}" \
+               -F "attach=@report.txt"
