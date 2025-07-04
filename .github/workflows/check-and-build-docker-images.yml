@@ -241,8 +241,11 @@ jobs:
     permissions:
       contents: write
       packages: write
-    secrets: inherit
     with:
       build-result: "${{needs.check-and-build.outputs.build-result}}"
       report-name: "${{needs.check-and-build.outputs.report-name}}"
       image-update: "${{needs.check-and-build.outputs.image-update}}"
+    secrets:
+      NOTIFY_USER: ${{ secrets.NOTIFY_USER }}
+      NOTIFY_PASS: ${{ secrets.NOTIFY_PASS }}
+      NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
