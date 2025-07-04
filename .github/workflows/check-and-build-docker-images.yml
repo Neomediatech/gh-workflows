@@ -237,7 +237,7 @@ jobs:
   
   notify:
     needs: [check-and-build]
-    uses: Neomediatech/gh-workflows/.github/workflows/apprise-notify.yml@main
+    uses: Neomediatech/gh-workflows/.github/workflows/notify.yml@main
     permissions:
       contents: write
       packages: write
