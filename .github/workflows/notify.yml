@@ -80,15 +80,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api repos/${{ github.repository }}/actions/artifacts |
-            jq -r '.artifacts[] | select(.name | startswith("report-")) | "\(.name) \(.id) \(.created_at)"' |
-            sort -k3 -r |
-            tail -n +11 |
-            cut -d' ' -f2 |
-            while read artifact_id; do
-              echo "🧹 Elimino artifact ID: $artifact_id"
-              echo "TEST gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$artifact_id"
-            done
+          gh api --paginate repos/${{ github.repository }}/actions/artifacts |
+          jq -r '
+            .artifacts
+            | map(select(.name | startswith("report-")))
+            | sort_by(.created_at)
+            | reverse
+            | .[10:]
+            | .[].id
+          ' |
+          while read artifact_id; do
+            echo "🧹 Elimino artifact ID: $artifact_id"
+            gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$artifact_id
+          done
 
   notify:
     runs-on: ubuntu-latest
