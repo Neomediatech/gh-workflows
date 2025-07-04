@@ -82,7 +82,7 @@ jobs:
       build-result: ${{ steps.vars.outputs.build_result }}
       report-name: ${{ steps.vars.outputs.report_name }}
       image-update-result: ${{ steps.final-vars.outputs.image_update_result }}
-      image-name: ${{ steps.final-vars.outputs.image_name }}
+      image-name: ${{ steps.vars.outputs.image_name }}
     steps:
       # Checkout il repo di questo workflow (utile se hai file di supporto qui)
       - name: Checkout this workflow repository
