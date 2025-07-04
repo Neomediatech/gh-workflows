@@ -62,23 +62,23 @@ on:
 jobs:
   create-report:
     runs-on: [self-hosted]
-    name: Esegui processo
+    name: Create report
 
     steps:
-      - name: Esegui processo e genera report
+      - name: Create report
         run: |
           echo "🛠️ Job eseguito il: $(date)" > ${{ inputs.report-name }}
           echo "✅ Aggiornamento immagine: ${{ inputs.image-update-result }}" >> ${{ inputs.report-name }}
           echo "📄 Fine log." >> ${{ inputs.report-name }}
 
-      - name: Carica report come artefatto
+      - name: Upload report
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ github.run_id }}
           path: ${{ inputs.report-name }}
           retention-days: 30
 
-      - name: Pulisci vecchi artefatti (mantieni ultimi 10)
+      - name: Purge old reports (keep latest 10)
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
