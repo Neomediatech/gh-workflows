@@ -232,23 +232,29 @@ jobs:
         id: final-vars
         run: |
           echo "Determining final image_update_result value"
+          IMAGE_UPDATE_STATUS="unknown"
           echo "image_update_result=unknown" >> "$GITHUB_OUTPUT"
           IMAGE_UPDATE="${{ steps.only-notify.outputs.image_update_result }}"
           if [[ "$IMAGE_UPDATE" != "" ]]; then
             echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
           fi
           IMAGE_UPDATE="${{ steps.vars.outputs.image_update_result }}"
           if [[ "$IMAGE_UPDATE" != "" ]]; then
             echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
           fi
           IMAGE_UPDATE="${{ steps.update-not-wanted.outputs.image_update_result }}"
           if [[ "$IMAGE_UPDATE" != "" ]]; then
             echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
           fi
           IMAGE_UPDATE="${{ steps.update-not-needed.outputs.image_update_result }}"
           if [[ "$IMAGE_UPDATE" != "" ]]; then
             echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
           fi
+          echo "image_update_result=$IMAGE_UPDATE_STATUS"
 
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
