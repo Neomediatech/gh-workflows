@@ -68,7 +68,7 @@ jobs:
     outputs:
       build-result: ${{ steps.vars.outputs.build_result }}
       report-name: ${{ steps.vars.outputs.report_name }}
-      image-update: ${{ steps.final-vars.outputs.image_update }}
+      image-update-result: ${{ steps.final-vars.outputs.image_update_result }}
     steps:
       # Checkout il repo di questo workflow (utile se hai file di supporto qui)
       - name: Checkout this workflow repository
@@ -148,7 +148,7 @@ jobs:
           fi
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
           echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
-          echo "image_update=needed" >> $GITHUB_OUTPUT
+          echo "image_update_result=needed" >> $GITHUB_OUTPUT
         if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
 
       # Build e push SOLO se serve aggiornare
@@ -189,7 +189,7 @@ jobs:
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
           echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
-          echo "image_update=done" >> $GITHUB_OUTPUT
+          echo "image_update_result=done" >> $GITHUB_OUTPUT
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           echo "::notice::Local branch:"
@@ -207,7 +207,7 @@ jobs:
         if: inputs.update-image != 'true'
         run: |
           echo "NOT updating image because update-image = ${{ inputs.update-image }}"
-          echo "image_update=user-said-no" >> $GITHUB_OUTPUT
+          echo "image_update_result=user-said-no" >> $GITHUB_OUTPUT
 
       # Notifica che l'immagine non viene aggiornata perché l'immagine di base è già aggiornata'
       - name: Skip image update because base image is updated
@@ -215,21 +215,21 @@ jobs:
         if: steps.check.outputs.needs_build != 'true'
         run: |
           echo "NOT updating image because base image is updated (needs_build = ${{ steps.check.outputs.needs_build }})"
-          echo "image_update=not-needed" >> $GITHUB_OUTPUT
+          echo "image_update_result=not-needed" >> $GITHUB_OUTPUT
 
       - name: Set some result vars
         id: final-vars
         run: |
-          echo "Determining final image_update value"
-          echo "image_update=unknown" >> "$GITHUB_OUTPUT"
-          IMAGE_UPDATE="${{ steps.only-notify.outputs.image_update }}"
-          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
-          IMAGE_UPDATE="${{ steps.vars.outputs.image_update }}"
-          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
-          IMAGE_UPDATE="${{ steps.update-not-wanted.outputs.image_update }}"
-          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
-          IMAGE_UPDATE="${{ steps.update-not-needed.outputs.image_update }}"
-          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+          echo "Determining final image_update_result value"
+          echo "image_update_result=unknown" >> "$GITHUB_OUTPUT"
+          IMAGE_UPDATE="${{ steps.only-notify.outputs.image_update_result }}"
+          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+          IMAGE_UPDATE="${{ steps.vars.outputs.image_update_result }}"
+          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+          IMAGE_UPDATE="${{ steps.update-not-wanted.outputs.image_update_result }}"
+          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
+          IMAGE_UPDATE="${{ steps.update-not-needed.outputs.image_update_result }}"
+          [[ "$IMAGE_UPDATE" != "" ]] && echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
 
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
