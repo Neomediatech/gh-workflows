@@ -42,6 +42,16 @@ on:
         type: string
         description: "Image update result"
 
+    secrets:
+      NOTIFY_USER:
+        required: true
+      NOTIFY_PASS:
+        required: true
+      NOTIFY_ENDPOINT:
+        required: true
+      NOTIFY_EMAIL_URL:
+        required: false
+
 jobs:
   create-report:
     runs-on: [self-hosted]
@@ -102,13 +112,12 @@ jobs:
           #  echo "body=Il job build è fallito. Vedi report allegato." >> $GITHUB_OUTPUT
           #  echo "type=failure" >> $GITHUB_OUTPUT
           #fi
-          
-          
+
       - name: Invia notifica email con report allegato
         run: |
-          curl --user "${{ secrets.APPRISE_USER }}:${{ secrets.APPRISE_PASS }}" \
-               -X POST ${{ secrets.APPRISE_ENDPOINT }} \
-               -F "urls=${{ secrets.APPRISE_EMAIL_URL }}" \
-               -F "title=${{ steps.result.outputs.title }}" \
-               -F "body=${{ steps.result.outputs.body }}" \
+          curl --user "${{ secrets.NOTIFY_USER }}:${{ secrets.NOTIFY_PASS }}" \
+               -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
+               -F "urls=${{ secrets.NOTIFY_EMAIL_URL }}" \
+               -F "title=Image update ${{ inputs.image-update-result }}" \
+               -F "body=${{ inputs.build-result }}" \
                -F "attach=@${{ inputs.report-name }}"
