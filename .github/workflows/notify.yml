@@ -63,6 +63,7 @@ jobs:
     steps:
       - name: Create report
         run: |
+          echo "Report name: ${{ inputs.report-name }}"
           echo "🛠️ Job eseguito il: $(date)" > ${{ inputs.report-name }}
           echo "✅ Aggiornamento immagine: ${{ inputs.image-update-result }}" >> ${{ inputs.report-name }}
           echo "📄 Fine log." >> ${{ inputs.report-name }}
@@ -70,7 +71,7 @@ jobs:
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
-          name: report-${{ github.run_id }}
+          name: report-${{ inputs.report-name }}
           path: ${{ inputs.report-name }}
           retention-days: 30
 
