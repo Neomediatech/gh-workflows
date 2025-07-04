@@ -12,7 +12,13 @@ on:
         description: 'Name for the package to build (e.g. neomediatech/rspamd)'
         required: false
         type: string
+      derived-image-prefix:
+        description: 'Name for the derived image (e.g. ghcr.io/neomediatech/rspamd)'
+        required: false
+        type: string
     secrets:
+      NOTIFY_CMD:
+        required: true
       NOTIFY_UP:
         required: true
       NOTIFY_ENDPOINT:
@@ -108,7 +114,8 @@ jobs:
       max-parallel: 1
     with:
       base-image: ${{ inputs.base-image }}
-      derived-image-prefix: ghcr.io/${{ needs.discover-dockerfiles.outputs.repo-lower }}
+      #derived-image-prefix: ghcr.io/${{ needs.discover-dockerfiles.outputs.repo-lower }}
+      derived-image-prefix: ${{ inputs.derived-image-prefix }}
       #versions: '["8.4", "8.3", "8.2", "8.1", "7.4"]'
       #type: '["apache", "fpm"]'
       versions: '["${{ matrix.tag }}"]'
