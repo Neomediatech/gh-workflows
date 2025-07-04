@@ -196,7 +196,7 @@ jobs:
             -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
           docker push $DERIVED_IMAGE
           REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
-          echo "report_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE_report.txt" >> $GITHUB_OUTPUT
+          echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           # update report file
           cd ../calling
