@@ -213,7 +213,8 @@ jobs:
           git branch
           echo "::notice::Remote branch:"
           git ls-remote --heads origin
-          git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
+          # per puntare al master repo
+          #git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
           git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           git push origin main
