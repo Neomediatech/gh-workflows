@@ -55,6 +55,9 @@ on:
       API_TOKEN_GITHUB:
         required: true
 
+permissions:
+  actions: write
+
 jobs:
   create-report:
     runs-on: [self-hosted]
