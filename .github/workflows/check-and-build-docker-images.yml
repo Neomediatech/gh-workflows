@@ -50,6 +50,8 @@ on:
         type: string
         default: "default"
     secrets:
+      NOTIFY_CMD:
+        required: true
       NOTIFY_UP:
         required: true
       NOTIFY_ENDPOINT:
@@ -271,6 +273,7 @@ jobs:
       report-name: "${{needs.check-and-build.outputs.report-name}}"
       image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
     secrets:
+      NOTIFY_CMD: ${{ secrets.NOTIFY_CMD }}
       NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
       NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
       NOTIFY_OPTIONS: ${{ secrets.NOTIFY_OPTIONS }}
