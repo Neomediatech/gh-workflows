@@ -42,11 +42,11 @@ on:
         type: string
         description: "Image update result"
 
-    secrets:
-      NOTIFY_UP:
-        required: true
-      NOTIFY_ENDPOINT:
-        required: true
+    #secrets:
+    #  NOTIFY_UP:
+    #    required: true
+    #  NOTIFY_ENDPOINT:
+    #    required: true
 
 jobs:
   create-report:
@@ -111,6 +111,9 @@ jobs:
 
       - name: Invia notifica email con report allegato
         run: |
+          if [ -z "${{ secrets.NOTIFY_UP }}" ]; then
+            echo "Secrets not present"
+          fi
           curl --user "${{ secrets.NOTIFY_UP }}" \
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=Image update ${{ inputs.image-update-result }}" \
