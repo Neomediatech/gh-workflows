@@ -199,7 +199,9 @@ jobs:
           echo "report_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE_report.txt" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           # update report file
-          cd ../workflow
+          cd ../calling
+          # per utilizzare il workflow comune:
+          #cd ../workflow
           REPORT_FILE="update-report.txt"
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
