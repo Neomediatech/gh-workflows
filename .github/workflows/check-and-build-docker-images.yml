@@ -67,6 +67,7 @@ jobs:
       MASTER_REPO: "Neomediatech/gh-workflows.git"
     outputs:
       build-result: ${{ steps.vars.outputs.build_result }}
+      report-name: ${{ steps.vars.outputs.report_name }}
     steps:
       # Checkout il repo di questo workflow (utile se hai file di supporto qui)
       - name: Checkout this workflow repository
@@ -178,7 +179,7 @@ jobs:
             -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
           docker push $DERIVED_IMAGE
           REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
-          echo "txt_to_copy=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE_trivy-report.txt" >> $GITHUB_OUTPUT
+          echo "report_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE_report.txt" >> $GITHUB_OUTPUT
           # update report file
           cd ../workflow
           REPORT_FILE="update-report.txt"
@@ -221,3 +222,4 @@ jobs:
     secrets: inherit
     with:
       build-result: "${{needs.check-and-build.outputs.build-result}}"
+      report-name: "${{needs.check-and-build.outputs.report-name}}"
