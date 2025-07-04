@@ -96,3 +96,4 @@ ven 4 lug 2025, 19:42:41, CEST --- ghcr.io/neomediatech/lmd:latest UPDATED
 ven 4 lug 2025, 19:44:05, CEST --- ghcr.io/neomediatech/lmd:ubuntu-base.20.04 UPDATED
 ven 4 lug 2025, 20:05:26, CEST --- ghcr.io/neomediatech/pbs:3.4 UPDATED
 ven 4 lug 2025, 20:06:11, CEST --- ghcr.io/neomediatech/pbs:latest UPDATED
+ven 4 lug 2025, 20:11:15, CEST --- ghcr.io/neomediatech/php:5.6-apache UPDATED
