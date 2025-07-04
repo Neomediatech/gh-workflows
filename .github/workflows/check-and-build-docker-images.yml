@@ -217,7 +217,8 @@ jobs:
           #git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
           git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
-          git push origin main
+          #git push origin main
+          git push origin ${{ github.ref_name }}
 
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
