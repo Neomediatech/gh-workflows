@@ -130,20 +130,19 @@ jobs:
           echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
           echo "REPORT_NAME=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_ENV
-      
+
+          # recupero il primo elemento dell'array "versions"
+          FIRST_VERSION=$(echo '${{ inputs.versions }}' | jq -r '.[0]')
+          echo "FIRST_VERSION=$FIRST_VERSION" >> $GITHUB_ENV
+
+          # recupero il primo elemento dell'array "type"
+          FIRST_TYPE=$(echo '${{ inputs.type }}' | jq -r '.[0]')
+          echo "FIRST_TYPE=$FIRST_TYPE" >> $GITHUB_ENV
+
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
         id: check
         run: |
-          #[[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
-          #[[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
-          #if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
-          #  BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
-          #else
-          #  BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
-          #fi
-          #DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
-
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
 
           BASE_DIGEST=$(skopeo inspect docker://$BASE_IMAGE | jq -r '.Digest')
@@ -230,6 +229,14 @@ jobs:
           REPORT_FILE="update-report.txt"
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
+          
+          # compilo il report per l'ultimo update. se siamo al primo ciclo, sovrascrivo il contenuto del file
+          LAST_REPORT_FILE="last-update-repost.txt"
+          if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
+            echo "$(date) --- $DERIVED_IMAGE UPDATED" > $LAST_REPORT_FILE
+          else
+            echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $LAST_REPORT_FILE
+          fi
           echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
           #echo "image_update_result=done" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
@@ -241,7 +248,7 @@ jobs:
           git ls-remote --heads origin
           # per puntare al master repo
           #git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
-          git add $REPORT_FILE
+          git add $REPORT_FILE $LAST_REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           #git push origin main
           git push origin ${{ github.ref_name }}
