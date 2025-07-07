@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         description: "Nome dell'immagine Docker creata"
+      title:
+        required: false
+        type: string
+        description: "Titolo del report"
+        default: "GitHub build image"
       message:
         required: false
         type: string
@@ -130,7 +135,7 @@ jobs:
             echo "Secrets not present"
             exit 1
           fi
-          TITLE="GitHub build image report"
+          TITLE="${{ inputs.title }}"
           if [[ -n "${{ inputs.docker_image }}" ]]; then
             DOCKER_IMAGE="${{ inputs.docker_image }} "
           else
