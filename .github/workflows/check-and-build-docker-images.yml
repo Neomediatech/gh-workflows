@@ -192,7 +192,8 @@ jobs:
           fi
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
           echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
-          echo "image_update_result=needed" >> $GITHUB_OUTPUT
+          #echo "image_update_result=needed" >> $GITHUB_OUTPUT
+          echo "IMAGE_UPDATE_RESULT=needed" >> $GITHUB_ENV
         #if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image != 'true'
 
@@ -237,7 +238,8 @@ jobs:
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
           echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
-          echo "image_update_result=done" >> $GITHUB_OUTPUT
+          #echo "image_update_result=done" >> $GITHUB_OUTPUT
+          echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           echo "::notice::Local branch:"
@@ -257,7 +259,8 @@ jobs:
         if: inputs.update-image != 'true'
         run: |
           echo "NOT updating image because update-image = ${{ inputs.update-image }}"
-          echo "image_update_result=user-said-no" >> $GITHUB_OUTPUT
+          #echo "image_update_result=user-said-no" >> $GITHUB_OUTPUT
+          echo "IMAGE_UPDATE_RESULT=user-said-no" >> $GITHUB_ENV
 
       # Notifica che l'immagine non viene aggiornata perché l'immagine di base è già aggiornata'
       - name: Skip image update because base image is updated
@@ -265,35 +268,14 @@ jobs:
         if: env.IMAGE_BUILD_NEEDED != 'true'
         run: |
           echo "NOT updating image because base image is updated (needs_build = ${{ steps.check.outputs.needs_build }})"
-          echo "image_update_result=not-needed" >> $GITHUB_OUTPUT
+          #echo "image_update_result=not-needed" >> $GITHUB_OUTPUT
+          echo "IMAGE_UPDATE_RESULT=not-needed" >> $GITHUB_ENV
 
       - name: Set some result vars
         id: final-vars
         run: |
-          echo "Determining final image_update_result value"
-          IMAGE_UPDATE_STATUS="unknown"
-          echo "image_update_result=unknown" >> "$GITHUB_OUTPUT"
-          IMAGE_UPDATE="${{ steps.only-notify.outputs.image_update_result }}"
-          if [[ "$IMAGE_UPDATE" != "" ]]; then
-            echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
-            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
-          fi
-          IMAGE_UPDATE="${{ steps.vars.outputs.image_update_result }}"
-          if [[ "$IMAGE_UPDATE" != "" ]]; then
-            echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
-            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
-          fi
-          IMAGE_UPDATE="${{ steps.update-not-wanted.outputs.image_update_result }}"
-          if [[ "$IMAGE_UPDATE" != "" ]]; then
-            echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
-            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
-          fi
-          IMAGE_UPDATE="${{ steps.update-not-needed.outputs.image_update_result }}"
-          if [[ "$IMAGE_UPDATE" != "" ]]; then
-            echo "image_update_result=$IMAGE_UPDATE" >> "$GITHUB_OUTPUT"
-            IMAGE_UPDATE_STATUS="$IMAGE_UPDATE"
-          fi
-          echo "image_update_result=$IMAGE_UPDATE_STATUS"
+          echo "image_update_result=$IMAGE_UPDATE_RESULT" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_UPDATE_RESULT=$IMAGE_UPDATE_RESULT"
 
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
