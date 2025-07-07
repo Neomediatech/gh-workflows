@@ -1,0 +1,139 @@
+name: Discover Dockerfiles and Build Docker images in bulk
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      base-image:
+        description: 'Base image to check'
+        required: true
+        type: string
+      package-name:
+        description: 'Name for the package to build (e.g. neomediatech/rspamd)'
+        required: false
+        type: string
+      derived-image-prefix:
+        description: 'Name for the derived image (e.g. ghcr.io/neomediatech/rspamd)'
+        required: false
+        type: string
+      force-build:
+        description: 'If image must be updated always ("true"/"false")'
+        required: false
+        type: string
+        default: "true"
+    secrets:
+      NOTIFY_CMD:
+        required: true
+      NOTIFY_UP:
+        required: true
+      NOTIFY_ENDPOINT:
+        required: true
+      NOTIFY_OPTIONS:
+        required: true
+      GHCR_TOKEN:
+        required: true
+      API_TOKEN_GITHUB:
+        required: true
+
+jobs:
+  discover-dockerfiles:
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      repo-lower: ${{ steps.set-matrix.outputs.repo-lower }}
+      package-name: ${{ steps.set-matrix.outputs.package-name }}
+      versions: ${{ steps.set-matrix.outputs.versions }}
+      types: ${{ steps.set-matrix.outputs.types }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Find Dockerfiles and build paired matrix
+        id: set-matrix
+        run: |
+          files=$(find . -maxdepth 2 -type f -name 'Dockerfile*' | sort)
+          includes=""
+          versions=""
+          types=""
+
+          while IFS= read -r file; do
+            dir=$(dirname "$file" | sed 's|^\./||')
+            dockerfile=$(basename "$file")
+            if [[ $dockerfile == 'Dockerfile' ]]; then
+              version='latest'
+            else
+              version=$(basename "$file"|sed 's/Dockerfile\.\?//')
+            fi
+            # Evita la root vuota come directory
+            if [[ "$dir" == "." ]]; then
+              dir=""
+            fi
+            includes="${includes}{\"directory\":\"$dir\",\"tag\":\"$version\"},"
+            if [[ "$versions" == "" ]]; then
+              versions="$version"
+            else
+              versions="$versions\n$version"
+            fi
+            if [[ "$types" == "" ]]; then
+              types="$dir"
+            else
+              types=$types\n$dir"
+            fi
+          done <<< "$files"
+
+          # Rimuove la virgola finale e crea array include
+          includes="[${includes%,}]"
+          
+          versions="[$(echo -e $versions|sort|uniq|tr -d '\n'|sed 's/.$//')]"
+          types="[$(echo -e $types|sort|uniq|tr -d '\n'|sed 's/.$//')]"
+
+          echo "matrix={\"include\":$includes}" >> $GITHUB_OUTPUT
+          echo "repo-lower=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          PACKAGE_NAME="${{ inputs.package-name }}"
+          if [[ -z "$PACKAGE_NAME" ]]; then
+            echo "package-name=default" >> $GITHUB_OUTPUT
+          else
+            echo "package-name=$(echo "${{ inputs.package-name }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          fi
+
+          echo "versions=$versions" >> $GITHUB_OUTPUT
+          echo "types=$types" >> $GITHUB_OUTPUT
+
+      - name: Show discovered matrix
+        run: |
+          echo "${{ steps.set-matrix.outputs.matrix }}"
+          echo "versions: ${{ steps.set-matrix.outputs.versions }}"
+          echo "types: ${{ steps.set-matrix.outputs.types }}"
+          
+  print-results:
+    needs: discover-dockerfiles
+    runs-on: [self-hosted]
+    steps:
+      - name: Print matrix info
+        run: |
+          echo "matrix: ${{ needs.discover-dockerfiles.outputs.matrix }}"
+          echo "repo-lower: ${{ needs.discover-dockerfiles.outputs.repo-lower }}"
+
+  update-images:
+    needs: discover-dockerfiles
+    uses: Neomediatech/gh-workflows/.github/workflows/check-and-build-docker-images.yml@main
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+    secrets: inherit
+    with:
+      base-image: ${{ inputs.base-image }}
+      #derived-image-prefix: ghcr.io/${{ needs.discover-dockerfiles.outputs.repo-lower }}
+      derived-image-prefix: ${{ inputs.derived-image-prefix }}
+      #versions: '["8.4", "8.3", "8.2", "8.1", "7.4"]'
+      #type: '["apache", "fpm"]'
+      versions: '${{ needs.discover-dockerfiles.outputs.versions }}'
+      type: '${{ needs.discover-dockerfiles.outputs.types }}'
+      derived-image-repo: ${{ needs.discover-dockerfiles.outputs.repo-lower }}
+      derived-image-repo-ref: ${{ github.ref_name }}
+      update-image: "true"
+      build-test-image: "false"
+      force-build: ${{ inputs.force-build }}
+      package-name: ${{ needs.discover-dockerfiles.outputs.package-name }}
