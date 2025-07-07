@@ -1,4 +1,4 @@
-name: Discover Dockerfiles and Build Matrix [draft, by copilot & me ;-)]
+name: Discover Dockerfiles and Build Docker images
 
 on:
   workflow_dispatch:
@@ -16,6 +16,11 @@ on:
         description: 'Name for the derived image (e.g. ghcr.io/neomediatech/rspamd)'
         required: false
         type: string
+      force-build:
+        description: 'If image must be updated always ("true"/"false")'
+        required: false
+        type: string
+        default: "true"
     secrets:
       NOTIFY_CMD:
         required: true
@@ -124,5 +129,5 @@ jobs:
       derived-image-repo-ref: ${{ github.ref_name }}
       update-image: "true"
       build-test-image: "false"
-      force-build: "true"
+      force-build: ${{ inputs.force-build }}
       package-name: ${{ needs.discover-dockerfiles.outputs.package-name }}
