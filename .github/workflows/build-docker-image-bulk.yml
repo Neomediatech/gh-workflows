@@ -97,8 +97,11 @@ jobs:
             echo "package-name=$(echo "${{ inputs.package-name }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
           fi
 
+          echo "versions=$versions"
+          echo "types=$types"
           echo "versions=$versions" >> $GITHUB_OUTPUT
           echo "types=$types" >> $GITHUB_OUTPUT
+          
 
       - name: Show discovered matrix
         run: |
