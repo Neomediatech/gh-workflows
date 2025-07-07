@@ -16,7 +16,7 @@ on:
         required: false
         type: string
         description: "Titolo del report"
-        default: "GitHub build image"
+        default: "image build"
       message:
         required: false
         type: string
