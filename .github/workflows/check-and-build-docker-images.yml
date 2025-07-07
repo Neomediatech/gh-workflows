@@ -231,7 +231,7 @@ jobs:
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
           
           # compilo il report per l'ultimo update. se siamo al primo ciclo, sovrascrivo il contenuto del file
-          LAST_REPORT_FILE="last-update-repost.txt"
+          LAST_REPORT_FILE="last-update-report.txt"
           if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
             echo "$(date) --- $DERIVED_IMAGE UPDATED" > $LAST_REPORT_FILE
           else
