@@ -78,7 +78,7 @@ jobs:
             if [[ "$types" == "" ]]; then
               types="$dir"
             else
-              types=$types\n$dir"
+              types="$types\n$dir"
             fi
           done <<< "$files"
 
