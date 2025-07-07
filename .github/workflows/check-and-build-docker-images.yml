@@ -128,6 +128,7 @@ jobs:
           echo "IMAGE_UPDATE_RESULT=unknown" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=none" >> $GITHUB_ENV
           echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+          echo "REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')" >> $GITHUB_ENV
       
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
@@ -184,13 +185,6 @@ jobs:
       - name: Notify update needed
         id: only-notify
         run: |
-          [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
-          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
-            BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
-          else
-            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
-          fi
-          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
           echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
           #echo "image_update_result=needed" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=needed" >> $GITHUB_ENV
@@ -227,7 +221,7 @@ jobs:
             --label "org.opencontainers.image.base=$BASE_IMAGE" \
             -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
           docker push $DERIVED_IMAGE
-          REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
+          #REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
           echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           # update report file
