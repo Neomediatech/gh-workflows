@@ -1,0 +1,28 @@
+name: test
+on:
+  workflow_call:
+
+
+jobs:
+  one-job:
+    runs-on: [self-hosted]
+    strategy:
+      matrix:
+        version: ["ver1","ver2","ver3"]
+        type: ["type1","type2","type3"]
+      max-parallel: 1
+    env:
+      MASTER_REPO: "Neomediatech/gh-workflows.git"
+    #outputs:
+      #tmp-var: ${{ steps.vars.outputs.build_result }}
+    steps:
+      # Set some var
+      - name: Set some var
+        id: set-vars
+        run: |
+          echo "DERIVED_IMAGE=${{ matrix.version }}-${{ matrix.type }}" >> $GITHUB_ENV
+
+      - name: Get some var
+        id: get-vars
+        run: |
+          echo "DERIVED_IMAGE=$DERIVED_IMAGE"
