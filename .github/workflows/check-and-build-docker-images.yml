@@ -274,6 +274,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      actions: write
     with:
       build-result: "${{needs.check-and-build.outputs.build-result}}"
       report-name: "${{needs.check-and-build.outputs.report-name}}"
