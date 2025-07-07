@@ -24,7 +24,7 @@ on:
       report_file:
         required: false
         type: string
-        default: "report.txt"
+        default: "last-update-report.txt"
         description: "Nome del file da allegare alla notifica email"
       notify_url:
         required: false
@@ -143,8 +143,8 @@ jobs:
             exit 1
           fi
           ls calling
-          if [[ -f last-update-report.txt ]]; then
-            cat last-update-report.txt
+          if [[ ! -f calling/last-update-report.txt ]]; then
+            echo "ERROR" > calling/last-update-report.txt
           fi
           TITLE="${{ inputs.title }}"
           if [[ -n "${{ inputs.docker_image }}" ]]; then
@@ -156,5 +156,6 @@ jobs:
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=$DOCKER_IMAGE$TITLE ${{ inputs.image-update-result }}" \
                -F "body=${{ inputs.build-result }}" \
-               -F "attach=@${{ inputs.report-name }}" \
+               -F "attach1=@${{ inputs.report-name }}" \
+               -F "attach2=@calling/last-update-report.txt" \
                ${{ secrets.NOTIFY_OPTIONS }}
