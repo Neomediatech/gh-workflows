@@ -71,14 +71,14 @@ jobs:
             fi
             includes="${includes}{\"directory\":\"$dir\",\"tag\":\"$version\"},"
             if [[ "$versions" == "" ]]; then
-              versions="$version"
+              versions="\"$version\","
             else
-              versions="$versions\n$version"
+              versions="$versions\n\"$version\","
             fi
             if [[ "$types" == "" ]]; then
-              types="$dir"
+              types="\"$dir\","
             else
-              types="$types\n$dir"
+              types="$types\n\"$dir\","
             fi
           done <<< "$files"
 
