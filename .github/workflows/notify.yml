@@ -129,11 +129,22 @@ jobs:
           #  echo "type=failure" >> $GITHUB_OUTPUT
           #fi
 
+      # Checkout del repository chiamante
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: calling
+
       - name: Invia notifica email con report allegato
         run: |
           if [ -z "${{ secrets.NOTIFY_UP }}" ]; then
             echo "Secrets not present"
             exit 1
+          fi
+          ls calling
+          if [[ -f last-update-report.txt ]]; then
+            cat last-update-report.txt
           fi
           TITLE="${{ inputs.title }}"
           if [[ -n "${{ inputs.docker_image }}" ]]; then
