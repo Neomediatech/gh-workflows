@@ -80,7 +80,7 @@ jobs:
       MASTER_REPO: "Neomediatech/gh-workflows.git"
     outputs:
       build-result: ${{ steps.vars.outputs.build_result }}
-      report-name: ${{ steps.vars.outputs.report_name }}
+      report-name: ${{ steps.final-vars.outputs.report_name }}
       image-update-result: ${{ steps.final-vars.outputs.image_update_result }}
       image-name: ${{ steps.vars.outputs.image_name }}
     steps:
@@ -122,13 +122,14 @@ jobs:
           
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           echo "DERIVED_IMAGE=$DERIVED_IMAGE" >> $GITHUB_ENV
-      
+
+          REPO_NAME="$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')"      
           echo "BUILD_RESULT=unknown" >> $GITHUB_ENV
-          echo "REPORT_NAME=unknown_state.txt" >> $GITHUB_ENV
           echo "IMAGE_UPDATE_RESULT=unknown" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=none" >> $GITHUB_ENV
           echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
-          echo "REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')" >> $GITHUB_ENV
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "REPORT_NAME=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_ENV
       
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
@@ -222,7 +223,6 @@ jobs:
             -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
           docker push $DERIVED_IMAGE
           #REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
-          echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           # update report file
           cd ../calling
@@ -270,6 +270,7 @@ jobs:
         run: |
           echo "image_update_result=$IMAGE_UPDATE_RESULT" >> "$GITHUB_OUTPUT"
           echo "IMAGE_UPDATE_RESULT=$IMAGE_UPDATE_RESULT"
+          echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
 
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
