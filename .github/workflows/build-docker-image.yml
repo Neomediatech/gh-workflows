@@ -112,6 +112,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      actions: write
     secrets: inherit
     strategy:
       matrix:
