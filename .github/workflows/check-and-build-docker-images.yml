@@ -102,19 +102,44 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: calling
         if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
-    
-      # Step di verifica aggiornamento immagine
-      - name: Check if derived image needs update
-        id: check
+
+      # Set some var
+      - name: Set some var
+        id: set-vars
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
+          echo "TAG_TEST=$TAG_TEST" >> $GITHUB_ENV
+          
           [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
+          echo "IMAGE_TYPE=$IMAGE_TYPE" >> $GITHUB_ENV
+          
           if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
             BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
           else
             BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
           fi
+          echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
+          
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+          echo "DERIVED_IMAGE=$DERIVED_IMAGE" >> $GITHUB_ENV
+      
+          echo "BUILD_RESULT=unknown" >> $GITHUB_ENV
+          echo "REPORT_NAME=unknown_state.txt" >> $GITHUB_ENV
+          echo "IMAGE_UPDATE_RESULT=unknown" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=none" >> $GITHUB_ENV
+      
+      # Step di verifica aggiornamento immagine
+      - name: Check if derived image needs update
+        id: check
+        run: |
+          #[[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
+          #[[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
+          #if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
+          #  BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
+          #else
+          #  BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+          #fi
+          #DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
 
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
 
