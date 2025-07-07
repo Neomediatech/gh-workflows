@@ -261,7 +261,7 @@ jobs:
         id: update-not-needed
         if: env.IMAGE_BUILD_NEEDED != 'true'
         run: |
-          echo "NOT updating image because base image is updated (needs_build = ${{ steps.check.outputs.needs_build }})"
+          echo "NOT updating image because base image is updated (IMAGE_BUILD_NEEDED = $IMAGE_BUILD_NEEDED)"
           #echo "image_update_result=not-needed" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=not-needed" >> $GITHUB_ENV
 
