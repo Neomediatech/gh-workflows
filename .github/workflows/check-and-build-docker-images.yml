@@ -127,6 +127,7 @@ jobs:
           echo "REPORT_NAME=unknown_state.txt" >> $GITHUB_ENV
           echo "IMAGE_UPDATE_RESULT=unknown" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=none" >> $GITHUB_ENV
+          echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
       
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
@@ -153,18 +154,22 @@ jobs:
 
           if [[ -z "$DERIVED_DIGEST" || "$DERIVED_DIGEST" == "null" ]]; then
             echo "Derived image not found or not accessible, needs build."
-            echo "needs_build=true" >> $GITHUB_OUTPUT
+            #echo "needs_build=true" >> $GITHUB_OUTPUT
+            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
           elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
             echo "::notice::Base and derived digests do not match, needs build."
-            echo "needs_build=true" >> $GITHUB_OUTPUT
+            #echo "needs_build=true" >> $GITHUB_OUTPUT
+            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
           else
             echo "::notice::Image up to date."
-            echo "needs_build=false" >> $GITHUB_OUTPUT
+            #echo "needs_build=false" >> $GITHUB_OUTPUT
+            echo "IMAGE_BUILD_NEEDED=false" >> $GITHUB_ENV
           fi
 
           if [[ ${{ inputs.force-build }} == "true" ]]; then
             echo "::notice::Force build by user (force-build = ${{ inputs.force-build }})"
-            echo "needs_build=true" >> $GITHUB_OUTPUT
+            #echo "needs_build=true" >> $GITHUB_OUTPUT
+            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
           fi
 
       - name: Log in to GitHub Container Registry
@@ -188,12 +193,13 @@ jobs:
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE"
           echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
           echo "image_update_result=needed" >> $GITHUB_OUTPUT
-        if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
+        #if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image != 'true'
 
       # Build e push SOLO se serve aggiornare
       - name: Build and push Docker image
         id: vars
-        if: steps.check.outputs.needs_build == 'true' && inputs.update-image == 'true'
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
           if [[ "${{ matrix.type }}" == "" ]]; then
@@ -256,7 +262,7 @@ jobs:
       # Notifica che l'immagine non viene aggiornata perché l'immagine di base è già aggiornata'
       - name: Skip image update because base image is updated
         id: update-not-needed
-        if: steps.check.outputs.needs_build != 'true'
+        if: env.IMAGE_BUILD_NEEDED != 'true'
         run: |
           echo "NOT updating image because base image is updated (needs_build = ${{ steps.check.outputs.needs_build }})"
           echo "image_update_result=not-needed" >> $GITHUB_OUTPUT
