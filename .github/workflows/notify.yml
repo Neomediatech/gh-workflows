@@ -144,7 +144,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: calling
-          ref: ${{ inputs.new_commit_sha }}
+          ref: ${{ inputs.commit }}
 
       - name: Invia notifica email con report allegato
         run: |
