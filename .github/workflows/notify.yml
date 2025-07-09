@@ -142,7 +142,7 @@ jobs:
             echo "Secrets not present"
             exit 1
           fi
-          ls calling
+          ls -l calling
           if [[ ! -f calling/last-update-report.txt ]]; then
             echo "ERROR" > calling/last-update-report.txt
           fi
@@ -152,7 +152,7 @@ jobs:
           else
             DOCKER_IMAGE=""
           fi
-          ${{ secrets.NOTIFY_CMD }} --user "${{ secrets.NOTIFY_UP }}" \
+          ${{ secrets.NOTIFY_CMD }} --no-progress-meter --user "${{ secrets.NOTIFY_UP }}" \
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=$DOCKER_IMAGE$TITLE ${{ inputs.image-update-result }}" \
                -F "body=${{ inputs.build-result }}" \
