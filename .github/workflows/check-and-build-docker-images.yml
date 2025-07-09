@@ -277,7 +277,8 @@ jobs:
           echo "image_update_result=$IMAGE_UPDATE_RESULT" >> "$GITHUB_OUTPUT"
           echo "IMAGE_UPDATE_RESULT=$IMAGE_UPDATE_RESULT"
           echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
-          echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
+          #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
+          echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
