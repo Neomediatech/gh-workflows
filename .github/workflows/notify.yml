@@ -46,7 +46,7 @@ on:
         required: true
         type: string
         description: "Image update result"
-      new_commit_sha:
+      commit:
         required: false
         type: string
         description: "Commit just pushed"
