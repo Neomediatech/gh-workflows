@@ -285,9 +285,9 @@ jobs:
           # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
           LAST_REPORT_FILE="last-update-report.txt"
           if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
-            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT" > $LAST_REPORT_FILE
+            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
           else
-            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT" >> $LAST_REPORT_FILE
+            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
           fi
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
