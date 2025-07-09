@@ -129,6 +129,10 @@ jobs:
           #  echo "type=failure" >> $GITHUB_OUTPUT
           #fi
 
+      - name: Debug checkout
+        run: |          
+          echo "Checking out: ${{ github.repository }} into calling"
+
       # Checkout del repository chiamante
       - name: Checkout calling repository
         uses: actions/checkout@v4
