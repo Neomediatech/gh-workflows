@@ -297,6 +297,7 @@ jobs:
           git ls-remote --heads origin
           git add $LAST_REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
+          echo "Pushing to: ${{ github.repository }} on branch ${{ github.ref_name }}"
           git push origin ${{ github.ref_name }}
           echo "last-update-report.txt content:"
           cat last-update-report.txt
