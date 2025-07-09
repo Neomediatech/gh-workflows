@@ -165,7 +165,7 @@ jobs:
           ${{ secrets.NOTIFY_CMD }} --no-progress-meter --user "${{ secrets.NOTIFY_UP }}" \
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=$DOCKER_IMAGE$TITLE" \
-               -F "body=@calling/last-update-report.txt" \
+               -F "body=${{ inputs.build-result }}" \
                -F "attach1=@${{ inputs.report-name }}" \
                -F "attach2=@calling/last-update-report.txt" \
                ${{ secrets.NOTIFY_OPTIONS }}
