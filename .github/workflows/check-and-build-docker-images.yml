@@ -298,6 +298,8 @@ jobs:
           git add $LAST_REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           git push origin ${{ github.ref_name }}
+          echo "last-update-report.txt content:"
+          cat last-update-report.txt
 
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
