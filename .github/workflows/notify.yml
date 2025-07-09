@@ -46,6 +46,11 @@ on:
         required: true
         type: string
         description: "Image update result"
+      new_commit_sha:
+        required: false
+        type: string
+        description: "Commit just pushed"
+
     secrets:
       NOTIFY_CMD:
         required: true
@@ -139,6 +144,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: calling
+          ref: ${{ inputs.new_commit_sha }}
 
       - name: Invia notifica email con report allegato
         run: |
