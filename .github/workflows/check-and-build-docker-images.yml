@@ -281,7 +281,7 @@ jobs:
         id: final-report
         run: |
           # update report file
-          cd ../calling
+          cd calling
           # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
           LAST_REPORT_FILE="last-update-report.txt"
           if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
