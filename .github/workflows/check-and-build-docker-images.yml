@@ -188,6 +188,7 @@ jobs:
           echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
           #echo "image_update_result=needed" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=needed" >> $GITHUB_ENV
+          echo "BUILD_RESULT=needed" >> $GITHUB_ENV
         #if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image != 'true'
 
@@ -230,14 +231,8 @@ jobs:
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
           
-          # compilo il report per l'ultimo update. se siamo al primo ciclo, sovrascrivo il contenuto del file
-          LAST_REPORT_FILE="last-update-report.txt"
-          if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
-            echo "$(date) --- $DERIVED_IMAGE UPDATED" > $LAST_REPORT_FILE
-          else
-            echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $LAST_REPORT_FILE
-          fi
           echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
+          echo "BUILD_RESULT=UPDATED" >> $GITHUB_ENV
           #echo "image_update_result=done" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
           git config user.name "neo-github-actions[bot]"
@@ -248,7 +243,7 @@ jobs:
           git ls-remote --heads origin
           # per puntare al master repo
           #git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
-          git add $REPORT_FILE $LAST_REPORT_FILE
+          git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           #git push origin main
           git push origin ${{ github.ref_name }}
@@ -261,6 +256,7 @@ jobs:
           echo "NOT updating image because update-image = ${{ inputs.update-image }}"
           #echo "image_update_result=user-said-no" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=user-said-no" >> $GITHUB_ENV
+          echo "BUILD_RESULT=user-said-no" >> $GITHUB_ENV
 
       # Notifica che l'immagine non viene aggiornata perché l'immagine di base è già aggiornata'
       - name: Skip image update because base image is updated
@@ -270,6 +266,7 @@ jobs:
           echo "NOT updating image because base image is updated (IMAGE_BUILD_NEEDED = $IMAGE_BUILD_NEEDED)"
           #echo "image_update_result=not-needed" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=not-needed" >> $GITHUB_ENV
+          echo "BUILD_RESULT=not-needed" >> $GITHUB_ENV
 
       - name: Set some result vars
         id: final-vars
@@ -279,6 +276,28 @@ jobs:
           echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
           #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Push report
+        id: final-report
+        run: |
+          # update report file
+          cd ../calling
+          # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
+          LAST_REPORT_FILE="last-update-report.txt"
+          if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
+            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT" > $LAST_REPORT_FILE
+          else
+            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT" >> $LAST_REPORT_FILE
+          fi
+          git config user.name "neo-github-actions[bot]"
+          git config user.email "neo-github-actions[bot]@users.noreply.github.com"
+          echo "::notice::Local branch:"
+          git branch
+          echo "::notice::Remote branch:"
+          git ls-remote --heads origin
+          git add $LAST_REPORT_FILE
+          git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
+          git push origin ${{ github.ref_name }}
 
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
