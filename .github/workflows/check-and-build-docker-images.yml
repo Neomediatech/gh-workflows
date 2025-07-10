@@ -278,6 +278,18 @@ jobs:
           #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
+        with:
+          image-ref: ${{ env.DERIVED_IMAGE }} # Usa la variabile d'ambiente
+          format: 'table'
+          output: 'calling/trivy-report.txt'
+          severity: 'HIGH,CRITICAL'
+          #exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+
       - name: Push report
         id: final-report
         run: |
