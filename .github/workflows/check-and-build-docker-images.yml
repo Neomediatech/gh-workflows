@@ -313,7 +313,7 @@ jobs:
           echo "::notice::Remote branch:"
           git ls-remote --heads origin
           git add $LAST_REPORT_FILE $TRIVY_RPT_FILE
-          git commit -m "[bot] Update from ${{ github.workflow }} by ${{ github.workflow_ref }} - $(date)"
+          git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
           echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
           git push origin ${{ inputs.derived-image-repo-ref }}
           
