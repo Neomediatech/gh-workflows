@@ -297,9 +297,9 @@ jobs:
           echo "::notice::Remote branch:"
           git ls-remote --heads origin
           git add $LAST_REPORT_FILE
-          git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
-          echo "Pushing to: ${{ github.repository }} on branch ${{ github.ref_name }}"
-          git push origin ${{ github.ref_name }}
+          git commit -m "Update ${{ inputs.derived-image-repo }} from ${{ github.repository }} - $(date)"
+          echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
+          git push origin ${{ inputs.derived-image-repo-ref }}
           
           NEW_COMMIT_SHA=$(git rev-parse HEAD)
           echo "::notice::Commit SHA appena pushato: $NEW_COMMIT_SHA"
