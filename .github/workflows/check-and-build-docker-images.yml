@@ -301,7 +301,7 @@ jobs:
           CUR_TRIVY_REPORT_FILE="trivy-report.txt"
           if [[ ! -f $CUR_TRIVY_REPORT_FILE ]]; then
             echo "-----------------------------------" > $CUR_TRIVY_REPORT_FILE
-            echo "$(date) --- $DERIVED_IMAGE not scanned" >> $CUR_TRIVY_REPORT_FILE
+            echo "$(date) --- $DERIVED_IMAGE NOT SCANNED" >> $CUR_TRIVY_REPORT_FILE
           else
             echo "-----------------------------------" > tmp_trivy_rpt.txt
             echo "$(date) --- $DERIVED_IMAGE" >> tmp_trivy_rpt.txt
