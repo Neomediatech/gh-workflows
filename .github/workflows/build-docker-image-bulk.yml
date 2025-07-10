@@ -30,7 +30,12 @@ on:
         description: 'The name for the package to check to compare with (e.g. exim4-daemon-heavy)'
         required: false
         type: string
-        
+      skip-type-from-base-image:
+        description: 'Avoid using image type on base image'
+        required: false
+        type: string
+        default: "false"
+
     secrets:
       NOTIFY_CMD:
         required: true
@@ -151,3 +156,4 @@ jobs:
       force-build: ${{ inputs.force-build }}
       package-name: ${{ needs.discover-dockerfiles.outputs.package-name }}
       package-to-check: ${{ inputs.package-to-check }}
+      skip-type-from-base-image: ${{ inputs.skip-type-from-base-image }}
