@@ -21,6 +21,12 @@ on:
         required: false
         type: string
         default: "true"
+      update-image:
+        description: 'Whether to update the image or not (e.g. true or false)'
+        required: false
+        type: string
+        default: "true"
+        
     secrets:
       NOTIFY_CMD:
         required: true
@@ -136,7 +142,7 @@ jobs:
       type: '${{ needs.discover-dockerfiles.outputs.types }}'
       derived-image-repo: ${{ needs.discover-dockerfiles.outputs.repo-lower }}
       derived-image-repo-ref: ${{ github.ref_name }}
-      update-image: "true"
+      update-image: ${{ inputs.update-image }}
       build-test-image: "false"
       force-build: ${{ inputs.force-build }}
       package-name: ${{ needs.discover-dockerfiles.outputs.package-name }}
