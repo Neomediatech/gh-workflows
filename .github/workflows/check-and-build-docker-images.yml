@@ -297,14 +297,17 @@ jobs:
           cd calling
           # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
           LAST_REPORT_FILE="last-update-report.txt"
+          LAST_TRIVY_REPORT_FILE="last-trivy-report.txt"
+          CUR_TRIVY_REPORT_FILE="trivy-report.txt"
+          if [[ ! -f $CUR_TRIVY_REPORT_FILE ]]; then
+            echo "$(date) --- $DERIVED_IMAGE not scanned" > $CUR_TRIVY_REPORT_FILE
+          fi
           if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
             echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
+            cat $CUR_TRIVY_REPORT_FILE > $LAST_TRIVY_REPORT_FILE
           else
             echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
-          fi
-          TRIVY_RPT_FILE="trivy-report.txt"
-          if [[ ! -f "$TRIVY_RPT_FILE" ]]; then
-            echo "$(date) --- $DERIVED_IMAGE not scanned" > "$TRIVY_RPT_FILE"
+            cat $CUR_TRIVY_REPORT_FILE >> $LAST_TRIVY_REPORT_FILE
           fi
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
@@ -312,7 +315,7 @@ jobs:
           git branch
           echo "::notice::Remote branch:"
           git ls-remote --heads origin
-          git add $LAST_REPORT_FILE $TRIVY_RPT_FILE
+          git add $LAST_REPORT_FILE $LAST_TRIVY_REPORT_FILE
           git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
           echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
           git push origin ${{ inputs.derived-image-repo-ref }}
