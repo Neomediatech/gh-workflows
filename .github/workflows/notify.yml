@@ -162,10 +162,11 @@ jobs:
           else
             DOCKER_IMAGE=""
           fi
+          BODY_CONTENT="$(< calling/last-update-report.txt)"
           ${{ secrets.NOTIFY_CMD }} --no-progress-meter --user "${{ secrets.NOTIFY_UP }}" \
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=$DOCKER_IMAGE$TITLE" \
-               -F "body=${{ inputs.build-result }}" \
+               -F "body=$BODY_CONTENT" \
                -F "attach1=@${{ inputs.report-name }}" \
                -F "attach2=@calling/last-update-report.txt" \
                ${{ secrets.NOTIFY_OPTIONS }}
