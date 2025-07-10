@@ -53,6 +53,11 @@ on:
         description: 'The name for the package to check to compare with (e.g. exim4-daemon-heavy)'
         required: false
         type: string
+      skip-type-from-base-image:
+        description: 'Avoid using image type on base image'
+        required: false
+        type: string
+        default: "false"
 
     secrets:
       NOTIFY_CMD:
@@ -118,11 +123,17 @@ jobs:
           
           [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
           echo "IMAGE_TYPE=$IMAGE_TYPE" >> $GITHUB_ENV
-          
-          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
-            BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
+
+          if [[ "${{ inputs.skip-type-from-base-image }}" == "true" ]]; then
+            BASE_IMAGE_TYPE=""
           else
-            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
+            BASE_IMAGE_TYPE="$IMAGE_TYPE"
+          fi
+
+          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
+            BASE_IMAGE="${{ inputs.base-image }}$BASE_IMAGE_TYPE"
+          else
+            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$BASE_IMAGE_TYPE"
           fi
           echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
           
