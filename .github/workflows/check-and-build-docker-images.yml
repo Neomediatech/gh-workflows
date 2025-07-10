@@ -241,12 +241,14 @@ jobs:
           fi
           # estraggo l'immagine di base
           FROM_IMAGE="$(cat $DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
-          PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh $FROM_IMAGE -c "apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
-          if [[ -n $PACKAGE_VERSION ]]; then
-            PACKAGE_LABEL="--label org.opencontainers.package.version=$PACKAGE_VERSION"
+          if [[ -n $BASE_PACKAGE_VERSION ]]; then
+            PACKAGE_LABEL="--label org.opencontainers.package.version=$BASE_PACKAGE_VERSION"
           else
             PACKAGE_LABEL=""
           fi
+          echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
+            --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
+            -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/"
           docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
             --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
