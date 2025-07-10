@@ -156,6 +156,8 @@ jobs:
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://$DERIVED_IMAGE | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             echo "Package version from base image $BASE_IMAGE : $BASE_PACKAGE_VERSION"
             echo "Package version from derived image $DERIVED_IMAGE : $DERIVED_PACKAGE_VERSION"
+            echo "BASE_PACKAGE_VERSION=$BASE_PACKAGE_VERSION" >> $GITHUB_ENV
+            echo "DERIVED_PACKAGE_VERSION=$DERIVED_PACKAGE_VERSION" >> $GITHUB_ENV
           fi
 
           BASE_DIGEST=$(skopeo inspect docker://$BASE_IMAGE | jq -r '.Digest')
@@ -165,18 +167,25 @@ jobs:
           echo "Derived digest: $DERIVED_DIGEST"
           echo "base_image_digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
 
-          if [[ -z "$DERIVED_DIGEST" || "$DERIVED_DIGEST" == "null" ]]; then
-            echo "Derived image not found or not accessible, needs build."
-            #echo "needs_build=true" >> $GITHUB_OUTPUT
-            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
-          elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
-            echo "::notice::Base and derived digests do not match, needs build."
-            #echo "needs_build=true" >> $GITHUB_OUTPUT
-            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+          if [[ -n "${{ inputs.package-to-check }}" ]]; then
+            if [[ $BASE_PACKAGE_VERSION != $DERIVED_PACKAGE_VERSION ]]; then
+              echo "Package version $BASE_PACKAGE_VERSION from base image $BASE_IMAGE differs from package version $DERIVED_PACKAGE_VERSION on derived image $DERIVED_IMAGE"
+              echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+            fi
           else
-            echo "::notice::Image up to date."
-            #echo "needs_build=false" >> $GITHUB_OUTPUT
-            echo "IMAGE_BUILD_NEEDED=false" >> $GITHUB_ENV
+            if [[ -z "$DERIVED_DIGEST" || "$DERIVED_DIGEST" == "null" ]]; then
+              echo "Derived image not found or not accessible, needs build."
+              #echo "needs_build=true" >> $GITHUB_OUTPUT
+              echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+            elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
+              echo "::notice::Base and derived digests do not match, needs build."
+              #echo "needs_build=true" >> $GITHUB_OUTPUT
+              echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+            else
+              echo "::notice::Image up to date."
+              #echo "needs_build=false" >> $GITHUB_OUTPUT
+              echo "IMAGE_BUILD_NEEDED=false" >> $GITHUB_ENV
+            fi
           fi
 
           if [[ ${{ inputs.force-build }} == "true" ]]; then
