@@ -302,14 +302,18 @@ jobs:
           else
             echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
           fi
+          TRIVY_RPT_FILE="trivy-report.txt"
+          if [[ ! -f "$TRIVY_RPT_FILE" ]]; then
+            echo "$(date) --- $DERIVED_IMAGE not scanned" > "$TRIVY_RPT_FILE"
+          fi
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           echo "::notice::Local branch:"
           git branch
           echo "::notice::Remote branch:"
           git ls-remote --heads origin
-          git add $LAST_REPORT_FILE
-          git commit -m "Update ${{ inputs.derived-image-repo }} from ${{ github.repository }} - $(date)"
+          git add $LAST_REPORT_FILE $TRIVY_RPT_FILE
+          git commit -m "[bot] Update from ${{ github.workflow }} by ${{ github.workflow_ref }} - $(date)"
           echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
           git push origin ${{ inputs.derived-image-repo-ref }}
           
