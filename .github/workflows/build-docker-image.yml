@@ -50,7 +50,7 @@ jobs:
       - name: Find Dockerfiles and build paired matrix
         id: set-matrix
         run: |
-          files=$(find . -maxdepth 2 -type f -name 'Dockerfile*' | sort)
+          files=$(find . -maxdepth 2 -type f -name 'Dockerfile*' | sort -r)
           includes=""
 
           while IFS= read -r file; do
