@@ -300,7 +300,13 @@ jobs:
           LAST_TRIVY_REPORT_FILE="last-trivy-report.txt"
           CUR_TRIVY_REPORT_FILE="trivy-report.txt"
           if [[ ! -f $CUR_TRIVY_REPORT_FILE ]]; then
-            echo "$(date) --- $DERIVED_IMAGE not scanned" > $CUR_TRIVY_REPORT_FILE
+            echo "-----------------------------------" > $CUR_TRIVY_REPORT_FILE
+            echo "$(date) --- $DERIVED_IMAGE not scanned" >> $CUR_TRIVY_REPORT_FILE
+          else
+            echo "-----------------------------------" > tmp_trivy_rpt.txt
+            echo "$(date) --- $DERIVED_IMAGE" >> tmp_trivy_rpt.txt
+            cat $CUR_TRIVY_REPORT_FILE >> tmp_trivy_rpt.txt
+            cat tmp_trivy_rpt.txt > $CUR_TRIVY_REPORT_FILE
           fi
           if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
             echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
