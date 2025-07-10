@@ -171,26 +171,24 @@ jobs:
             if [[ $BASE_PACKAGE_VERSION != $DERIVED_PACKAGE_VERSION ]]; then
               echo "Package version $BASE_PACKAGE_VERSION from base image $BASE_IMAGE differs from package version $DERIVED_PACKAGE_VERSION on derived image $DERIVED_IMAGE"
               echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+            else
+              echo "IMAGE_BUILD_NEEDED=false" >> $GITHUB_ENV
             fi
           else
             if [[ -z "$DERIVED_DIGEST" || "$DERIVED_DIGEST" == "null" ]]; then
               echo "Derived image not found or not accessible, needs build."
-              #echo "needs_build=true" >> $GITHUB_OUTPUT
               echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
             elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
               echo "::notice::Base and derived digests do not match, needs build."
-              #echo "needs_build=true" >> $GITHUB_OUTPUT
               echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
             else
               echo "::notice::Image up to date."
-              #echo "needs_build=false" >> $GITHUB_OUTPUT
               echo "IMAGE_BUILD_NEEDED=false" >> $GITHUB_ENV
             fi
           fi
 
           if [[ ${{ inputs.force-build }} == "true" ]]; then
             echo "::notice::Force build by user (force-build = ${{ inputs.force-build }})"
-            #echo "needs_build=true" >> $GITHUB_OUTPUT
             echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
           fi
 
@@ -210,7 +208,6 @@ jobs:
           #echo "image_update_result=needed" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=needed" >> $GITHUB_ENV
           echo "BUILD_RESULT=needed" >> $GITHUB_ENV
-        #if: steps.check.outputs.needs_build == 'true' && inputs.update-image != 'true'
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image != 'true'
 
       # Build e push SOLO se serve aggiornare
