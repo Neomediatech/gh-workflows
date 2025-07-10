@@ -167,6 +167,6 @@ jobs:
                -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
                -F "title=$DOCKER_IMAGE$TITLE" \
                -F "body=$BODY_CONTENT" \
-               -F "attach1=@${{ inputs.report-name }}" \
+               -F "attach1=@calling/last-trivy-report.txt" \
                -F "attach2=@calling/last-update-report.txt" \
                ${{ secrets.NOTIFY_OPTIONS }}
