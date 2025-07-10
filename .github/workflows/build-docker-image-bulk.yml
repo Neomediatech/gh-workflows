@@ -26,6 +26,10 @@ on:
         required: false
         type: string
         default: "true"
+      package-to-check:
+        description: 'The name for the package to check to compare with (e.g. exim4-daemon-heavy)'
+        required: false
+        type: string
         
     secrets:
       NOTIFY_CMD:
@@ -146,3 +150,4 @@ jobs:
       build-test-image: "false"
       force-build: ${{ inputs.force-build }}
       package-name: ${{ needs.discover-dockerfiles.outputs.package-name }}
+      package-to-check: ${{ inputs.package-to-check }}
