@@ -136,7 +136,7 @@ jobs:
             DOCKERDIR="${{ matrix.type }}"
           fi
           # estraggo l'immagine di base
-          FROM_IMAGE="$(cat $DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
+          FROM_IMAGE="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
           echo "Base image taken from Dockerfile.${{ matrix.version }} : $FROM_IMAGE"
           
           if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
