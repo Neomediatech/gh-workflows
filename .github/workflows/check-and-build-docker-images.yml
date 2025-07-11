@@ -194,7 +194,10 @@ jobs:
           echo "base_image_digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
 
           if [[ -n "${{ inputs.package-to-check }}" ]]; then
-            if [[ $BASE_PACKAGE_VERSION != $DERIVED_PACKAGE_VERSION ]]; then
+            if [[ -z "$BASE_PACKAGE_VERSION" || "$BASE_PACKAGE_VERSION" == "null" ]]; then
+              echo "::error::Package version not found! Why??"
+              echo "IMAGE_BUILD_NEEDED=ERROR" >> $GITHUB_ENV
+            elif [[ $BASE_PACKAGE_VERSION != $DERIVED_PACKAGE_VERSION ]]; then
               echo "Package version $BASE_PACKAGE_VERSION from base image $BASE_IMAGE differs from package version $DERIVED_PACKAGE_VERSION on derived image $DERIVED_IMAGE"
               echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
             else
