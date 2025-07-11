@@ -136,6 +136,10 @@ jobs:
             DOCKERDIR="${{ matrix.type }}"
           fi
           # estraggo l'immagine di base
+          echo "calling repo:"
+          ls -l calling
+          echo "this repo:"
+          ls -l
           FROM_IMAGE="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
           echo "Base image taken from Dockerfile.${{ matrix.version }} : $FROM_IMAGE"
           
