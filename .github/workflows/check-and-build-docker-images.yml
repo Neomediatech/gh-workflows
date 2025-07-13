@@ -108,7 +108,7 @@ jobs:
           echo "Checking file existence for combinations..."
           for version in $VERSIONS; do
             for type in $TYPES; do
-              FILE_PATH="calling/${{ matrix.type }}/Dockerfile.${{ matrix.version }}"
+              FILE_PATH="calling/${type}/Dockerfile.${version}"
 
               echo "Checking for file: $FILE_PATH"
               if [ -f "$FILE_PATH" ]; then
