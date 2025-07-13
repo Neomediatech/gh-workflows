@@ -113,7 +113,7 @@ jobs:
               echo "Checking for file: $FILE_PATH"
               if [ -f "$FILE_PATH" ]; then
                 echo "File found: $FILE_PATH. Adding to matrix."
-                VALID_COMBINATIONS=$(echo "$VALID_COMBINATIONS" | jq --arg v "$version" --arg t "$type" '. += [{"version": $v, "type": $t}]')
+                VALID_COMBINATIONS=$(echo "$VALID_COMBINATIONS" | jq -c --arg v "$version" --arg t "$type" '. += [{"version": $v, "type": $t}]')
               else
                 echo "::notice::File not found: $FILE_PATH. Excluding from matrix."
               fi
