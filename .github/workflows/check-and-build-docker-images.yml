@@ -172,8 +172,15 @@ jobs:
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
           echo "TAG_TEST=$TAG_TEST" >> $GITHUB_ENV
           
-          [[ "${{ matrix.type }}" == "" ]] && IMAGE_TYPE="" || IMAGE_TYPE="-${{ matrix.type }}"
+          if [[ "${{ matrix.type }}" == "" || "${{ matrix.type }}" == "." ]]; then
+            IMAGE_TYPE=""
+            DOCKERDIR="."
+          else
+            IMAGE_TYPE="-${{ matrix.type }}"
+            DOCKERDIR="${{ matrix.type }}"
+          fi
           echo "IMAGE_TYPE=$IMAGE_TYPE" >> $GITHUB_ENV
+          echo "DOCKERDIR=$DOCKERDIR" >> $GITHUB_ENV
 
           if [[ "${{ inputs.skip-type-from-base-image }}" == "true" ]]; then
             BASE_IMAGE_TYPE=""
@@ -181,11 +188,6 @@ jobs:
             BASE_IMAGE_TYPE="$IMAGE_TYPE"
           fi
 
-          if [[ "${{ matrix.type }}" == "" ]]; then
-            DOCKERDIR="."
-          else
-            DOCKERDIR="${{ matrix.type }}"
-          fi
           # estraggo l'immagine di base
           echo "calling repo:"
           ls -l calling
@@ -296,13 +298,7 @@ jobs:
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
         run: |
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
-          if [[ "${{ matrix.type }}" == "" ]]; then
-            IMAGE_TYPE=""
-            DOCKERDIR="."
-          else
-            IMAGE_TYPE="-${{ matrix.type }}"
-            DOCKERDIR="${{ matrix.type }}"
-          fi
+
           PACKAGE_NAME="${{ inputs.package-name }}"
           if [[ "$PACKAGE_NAME" != "default" && -n "$PACKAGE_NAME" ]]; then
             DERIVED_IMAGE="ghcr.io/$PACKAGE_NAME:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
