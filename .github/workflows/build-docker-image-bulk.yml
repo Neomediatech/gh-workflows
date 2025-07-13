@@ -81,9 +81,9 @@ jobs:
               version=$(basename "$file"|sed 's/Dockerfile\.\?//')
             fi
             # Evita la root vuota come directory
-            if [[ "$dir" == "." ]]; then
-              dir=""
-            fi
+            #if [[ "$dir" == "." ]]; then
+            #  dir=""
+            #fi
             includes="${includes}{\"directory\":\"$dir\",\"tag\":\"$version\"},"
             if [[ "$versions" == "" ]]; then
               versions="\"$version\","
