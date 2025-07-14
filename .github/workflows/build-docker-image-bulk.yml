@@ -49,6 +49,10 @@ on:
         required: true
       API_TOKEN_GITHUB:
         required: true
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
 
 jobs:
   discover-dockerfiles:
