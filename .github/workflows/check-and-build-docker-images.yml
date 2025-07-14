@@ -302,8 +302,10 @@ jobs:
           PACKAGE_NAME="${{ inputs.package-name }}"
           if [[ "$PACKAGE_NAME" != "default" && -n "$PACKAGE_NAME" ]]; then
             DERIVED_IMAGE="ghcr.io/$PACKAGE_NAME:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+            DOCKER_HUB_IMAGE="$PACKAGE_NAME:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           else
             DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+            DOCKER_HUB_IMAGE="$(echo "${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"|sed 's/ghcr.io\///')"
           fi
           echo "Building and pushing $DERIVED_IMAGE"
           cd calling
@@ -324,6 +326,13 @@ jobs:
             --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
           docker push $DERIVED_IMAGE
+
+          # PUSH ANCHE SU DOCKERHUB
+          echo "::notice::Tagging $DERIVED_IMAGE $DOCKER_HUB_IMAGE"
+          docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push $DOCKER_HUB_IMAGE
+
           #REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
           # update report file
           cd ../calling
