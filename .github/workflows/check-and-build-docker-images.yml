@@ -105,7 +105,7 @@ jobs:
 
           VALID_COMBINATIONS="[]"
 
-          echo "Checking file existence for combinations..."
+          echo "Checking file existence for VERSIONS $VERSIONS and TYPES $TYPES combinations..."
           for version in $VERSIONS; do
             for type in $TYPES; do
               FILE_PATH="calling/${type}/Dockerfile.${version}"
