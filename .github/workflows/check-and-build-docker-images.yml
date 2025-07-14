@@ -72,6 +72,10 @@ on:
         required: true
       API_TOKEN_GITHUB:
         required: true
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
 
 permissions:
   contents: write
@@ -328,10 +332,14 @@ jobs:
           docker push $DERIVED_IMAGE
 
           # PUSH ANCHE SU DOCKERHUB
-          echo "::notice::Tagging $DERIVED_IMAGE $DOCKER_HUB_IMAGE"
-          docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker push $DOCKER_HUB_IMAGE
+          if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
+            echo "::notice::Tagging $DERIVED_IMAGE $DOCKER_HUB_IMAGE"
+            docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            docker push $DOCKER_HUB_IMAGE
+          else
+            echo "::warning::Credenziali DOCKER HUB non fornite, NON carico l'immagine su DockerHUB"
+          fi
 
           #REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
           # update report file
