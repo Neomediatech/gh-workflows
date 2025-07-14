@@ -35,10 +35,6 @@ on:
         required: false
         type: string
         default: "false"
-      versions:
-        description: 'JSON array of versions/tags to check'
-        required: false
-        type: string
 
     secrets:
       NOTIFY_CMD:
