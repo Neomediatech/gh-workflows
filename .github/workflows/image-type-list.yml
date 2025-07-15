@@ -11,7 +11,10 @@ on:
     outputs:
       exit-code:
         description: "Codice di uscita del workflow (per debug o eventuali utilizzi futuri)"
-        value: ${{ jobs.job_1.outputs.job_specific_output }}
+        value: ${{ jobs.job_1.outputs.exit-code }}
+      image-res:
+        description: "Risultato del comando eseguito"
+        value: ${{ jobs.job_1.outputs.image-res }}
       # Puoi anche esporre un output direttamente da uno step se il workflow ha un solo job
       # my_direct_step_output:
       #   description: "Un output diretto da uno step"
@@ -21,18 +24,22 @@ jobs:
   job_1:
     runs-on: [self-hosted]
     outputs:
-      exit-code: ${{ steps.job_1_output.outputs.exit_code }}
+      exit-code: ${{ steps.job_1_output.outputs.exit-code }}
+      image-res: ${{ steps.job_1_output.outputs.image-res }}
     steps:
       - name: Generate an output
         id: job_1_output
         run: |
           echo "::notice file=output.txt::Questo è un output di esempio."
-          echo "exit_code=99" >> $GITHUB_OUTPUT
+          echo "exit-code=99" >> $GITHUB_OUTPUT
 
           case "${{ inputs.image-type }}" in
             "php")
               echo "STATEMENT 1"
               ;;
+            "exim")
+              echo "exit-code=2" >> $GITHUB_OUTPUT
+              echo "image-res=exim 4.98" >> $GITHUB_OUTPUT
             *)
               echo "default STATEMENT"
               ;;
