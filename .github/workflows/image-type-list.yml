@@ -1,0 +1,39 @@
+name: Check and Build Docker Images (by Copilot)
+
+on:
+  workflow_call:
+    inputs:
+      image-type:
+        description: 'Image type taken from gh-workflows/.github/workflows/image-type-list.yml'
+        required: true
+        type: string
+        default: "none"
+    outputs:
+      exit-code:
+        description: "Codice di uscita del workflow (per debug o eventuali utilizzi futuri)"
+        value: ${{ jobs.job_1.outputs.job_specific_output }}
+      # Puoi anche esporre un output direttamente da uno step se il workflow ha un solo job
+      # my_direct_step_output:
+      #   description: "Un output diretto da uno step"
+      #   value: ${{ jobs.my_single_job.outputs.step_output }}
+
+jobs:
+  job_1:
+    runs-on: [self-hosted]
+    outputs:
+      exit-code: ${{ steps.job_1_output.outputs.exit_code }}
+    steps:
+      - name: Generate an output
+        id: job_1_output
+        run: |
+          echo "::notice file=output.txt::Questo è un output di esempio."
+          echo "exit_code=99" >> $GITHUB_OUTPUT
+
+          case "${{ inputs.image-type }}" in
+            "php")
+              STATEMENTS
+              ;;
+            *)
+              STATEMENTS
+              ;;
+          esac
