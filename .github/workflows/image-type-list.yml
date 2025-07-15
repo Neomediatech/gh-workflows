@@ -44,7 +44,7 @@ jobs:
 
           case "${{ inputs.image-type }}" in
             "php")
-              THIS_CMD="$(printf "$DOCKER_CMD" "${{ inputs.derived-image }}" '"php -m|egrep -v ^"\[|^$"|sort|uniq|grep -v Warning"')"
+              THIS_CMD="$(printf "$DOCKER_CMD" "${{ inputs.derived-image }}" 'php -m|egrep -v ^"\[|^$"|sort|uniq|grep -v Warning')"
               echo "THIS_CMD: $THIS_CMD"
               DERIVED_MODULES="$($THIS_CMD)"
               echo "DERIVED_MODULES: $DERIVED_MODULES"
