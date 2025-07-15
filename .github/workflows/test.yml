@@ -25,3 +25,17 @@ jobs:
         id: get-vars
         run: |
           echo "DERIVED_IMAGE=$DERIVED_IMAGE"
+
+  call_reusable_workflow:
+    uses: Neomediatech/gh-workflows/.github/workflows/image-type-list.yml@main
+    with:
+      pass-credentials: true # Necessario se il workflow riutilizzabile accede a risorse private
+      image-type: "exim"
+
+  use_reusable_workflow_outputs:
+    runs-on: [self-hosted]
+    needs: call_reusable_workflow
+    steps:
+      - name: Print output from reusable workflow
+        run: |
+          echo "Output from reusable workflow: ${{ needs.call_reusable_workflow.outputs.exit-code }}"
