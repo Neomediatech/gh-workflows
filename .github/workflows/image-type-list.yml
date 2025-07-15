@@ -40,13 +40,13 @@ jobs:
           echo "::notice::Questo è un output di esempio."
           echo "exit-code=99" >> $GITHUB_OUTPUT
           #  BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root $BASE_IMAGE -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
-          DOCKER_CMD="docker run --rm --entrypoint /bin/sh -u root %s -c %s"
+          DOCKER_CMD="docker run --rm --entrypoint /bin/sh -u root %s -c '%s'"
 
           case "${{ inputs.image-type }}" in
             "php")
-              SHELL_ARGS='php -m|egrep -v "^\[|^$"|sort|uniq|grep -v Warning'
-              printf -v QUOTED_SHELL_ARGS %q "$SHELL_ARGS"
-              THIS_CMD="$(printf "$DOCKER_CMD" "${{ inputs.derived-image }}" "$QUOTED_SHELL_ARGS")"
+              #SHELL_ARGS='php -m|egrep -v "^\[|^$"|sort|uniq|grep -v Warning'
+              SHELL_ARGS='php -m|egrep -v '\''^\\[''|^$''\''|sort|uniq|grep -v Warning'
+              THIS_CMD="$(printf "$DOCKER_CMD" "${{ inputs.derived-image }}" "$SHELL_ARGS")"
               echo "THIS_CMD: $THIS_CMD"
               DERIVED_MODULES="$($THIS_CMD)"
               echo "DERIVED_MODULES: $DERIVED_MODULES"
