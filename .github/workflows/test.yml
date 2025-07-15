@@ -12,10 +12,7 @@ jobs:
       max-parallel: 1
     env:
       MASTER_REPO: "Neomediatech/gh-workflows.git"
-    #outputs:
-      #tmp-var: ${{ steps.vars.outputs.build_result }}
     steps:
-      # Set some var
       - name: Set some var
         id: set-vars
         run: |
@@ -27,9 +24,9 @@ jobs:
           echo "DERIVED_IMAGE=$DERIVED_IMAGE"
 
   call_reusable_workflow:
+    # Rimuovi completamente la riga 'runs-on: ubuntu-latest' da qui
     uses: Neomediatech/gh-workflows/.github/workflows/image-type-list.yml@main
     with:
-      pass-credentials: true # Necessario se il workflow riutilizzabile accede a risorse private
       image-type: "exim"
 
   use_reusable_workflow_outputs:
