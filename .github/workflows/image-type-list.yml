@@ -40,6 +40,7 @@ jobs:
             "exim")
               echo "exit-code=2" >> $GITHUB_OUTPUT
               echo "image-res=exim 4.98" >> $GITHUB_OUTPUT
+              ;;
             *)
               echo "default STATEMENT"
               ;;
