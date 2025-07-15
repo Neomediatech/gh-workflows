@@ -3,25 +3,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  one-job:
-    runs-on: [self-hosted]
-    strategy:
-      matrix:
-        version: ["ver1","ver2","ver3"]
-        type: ["type1","type2","type3"]
-      max-parallel: 1
-    env:
-      MASTER_REPO: "Neomediatech/gh-workflows.git"
-    steps:
-      - name: Set some var
-        id: set-vars
-        run: |
-          echo "DERIVED_IMAGE=${{ matrix.version }}-${{ matrix.type }}" >> $GITHUB_ENV
+  #one-job:
+  #  runs-on: [self-hosted]
+  #  strategy:
+  #    matrix:
+  #      version: ["ver1","ver2","ver3"]
+  #      type: ["type1","type2","type3"]
+  #    max-parallel: 1
+  #  env:
+  #    MASTER_REPO: "Neomediatech/gh-workflows.git"
+  #  steps:
+  #    - name: Set some var
+  #      id: set-vars
+  #      run: |
+  #        echo "DERIVED_IMAGE=${{ matrix.version }}-${{ matrix.type }}" >> $GITHUB_ENV
 
-      - name: Get some var
-        id: get-vars
-        run: |
-          echo "DERIVED_IMAGE=$DERIVED_IMAGE"
+  #    - name: Get some var
+  #      id: get-vars
+  #      run: |
+  #        echo "DERIVED_IMAGE=$DERIVED_IMAGE"
 
   call_reusable_workflow:
     # Rimuovi completamente la riga 'runs-on: ubuntu-latest' da qui
