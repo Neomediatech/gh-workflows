@@ -58,6 +58,10 @@ on:
         required: false
         type: string
         default: "false"
+      image-type:
+        description: 'Image type taken from gh-workflows/.github/workflows/image-type-list.yml'
+        required: false
+        type: string
 
     secrets:
       NOTIFY_CMD:
