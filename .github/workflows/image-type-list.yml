@@ -31,9 +31,9 @@ jobs:
 
           case "${{ inputs.image-type }}" in
             "php")
-              STATEMENTS
+              echo "STATEMENT 1"
               ;;
             *)
-              STATEMENTS
+              echo "default STATEMENT"
               ;;
           esac
