@@ -40,7 +40,7 @@ jobs:
           echo "::notice::Questo è un output di esempio."
           echo "exit-code=99" >> $GITHUB_OUTPUT
           #  BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root $BASE_IMAGE -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
-          DOCKER_CMD="docker run --rm --entrypoint /bin/sh -u root %s -c '%s'"
+          DOCKER_CMD="docker run --rm --entrypoint /bin/sh -u root %s -c %s"
 
           case "${{ inputs.image-type }}" in
             "php")
