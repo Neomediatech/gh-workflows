@@ -45,9 +45,8 @@ jobs:
           case "${{ inputs.image-type }}" in
             "php")
               SHELL_ARGS="-c 'php -m|egrep -v \"^\[|^$\"|sort|uniq|grep -v Warning'"
-              THIS_CMD="$DOCKER_CMD ${{ inputs.derived-image }} $SHELL_ARGS"
-              echo "THIS_CMD: $THIS_CMD"
-              DERIVED_MODULES="$($THIS_CMD)"
+              echo "CMD: $DOCKER_CMD ${{ inputs.derived-image }} $SHELL_ARGS"
+              DERIVED_MODULES="$($DOCKER_CMD ${{ inputs.derived-image }} $SHELL_ARGS)"
               echo "DERIVED_MODULES: $DERIVED_MODULES"
               echo "cmd-res=$DERIVED_MODULES" >> $GITHUB_OUTPUT
               ;;
