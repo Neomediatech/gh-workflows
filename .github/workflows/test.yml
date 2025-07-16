@@ -46,7 +46,7 @@ jobs:
     steps:
       - name: Run Remote Docker Image Check Action
         id: remote_checker # ID per accedere agli output
-        uses: Neomediatech/github-actions/.github/actions/image-type-list@main
+        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
         with:
           image-type: 'php'
           base-image: 'ubuntu:latest'
