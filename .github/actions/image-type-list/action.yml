@@ -18,11 +18,12 @@ inputs:
     required: true
     type: string
     default: "ghcr.io/neomediatech/ubuntu-base:rolling"
+  package-to-check:
+    description: 'The name for the package to check to compare with (e.g. exim4-daemon-heavy)'
+    required: false
+    type: string
 
 outputs:
-  exit-code:
-    description: "Exit code of the operation (for debugging or future use)"
-    value: ${{ steps.main_logic.outputs.exit-code }}
   image-res:
     description: "Result of the executed command"
     value: ${{ steps.main_logic.outputs.cmd-res }}
@@ -37,52 +38,45 @@ runs:
       id: main_logic # Assegniamo un ID a questo step per catturare i suoi output
       shell: bash
       run: |
-        echo "::notice::Esecuzione della logica di controllo immagine."
-        
-        # Inizializza gli output con valori di default o placeholder
-        echo "exit-code=1" >> $GITHUB_OUTPUT # Default non specifico
-        echo "cmd-res=No specific result" >> $GITHUB_OUTPUT
-        echo "update-needed=unknown" >> $GITHUB_OUTPUT
-
         DOCKER_CMD="docker run --rm --entrypoint /bin/sh -u root"
+
+        UPDATE_NEEDED="unknown"
 
         case "${{ inputs.image-type }}" in
           "php")
-            #BASE_PHP_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION")"
-            BASE_PHP_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]')"
-            #DERIVED_PHP_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION")"
-            DERIVED_PHP_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]')"
-            
-            UPDATE_NEEDED="unknown"
-
-            if [[ "$BASE_PHP_VERSION" == "" || "$DERIVED_PHP_VERSION" == "" ]]; then
-              echo "Impossibile determinare le versioni PHP. UPDATE_NEEDED impostato a 'unknown'."
-              UPDATE_NEEDED="unknown"
-            elif [[ "$BASE_PHP_VERSION" != "$DERIVED_PHP_VERSION" ]]; then
-              echo "La versione PHP di base ($BASE_PHP_VERSION) è diversa da quella derivata ($DERIVED_PHP_VERSION)."
-              UPDATE_NEEDED="true"
-            else
-              echo "Le versioni PHP sono identiche: $BASE_PHP_VERSION."
-              UPDATE_NEEDED="false"
-            fi
-            
-            echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
-            echo "exit-code=0" >> $GITHUB_OUTPUT # Successo logico
-            echo "cmd-res=PHP_BASE_VERSION=${BASE_PHP_VERSION},PHP_DERIVED_VERSION=${DERIVED_PHP_VERSION}" >> $GITHUB_OUTPUT
-            
-            echo "BASE_PHP_VERSION: $BASE_PHP_VERSION"
-            echo "DERIVED_PHP_VERSION: $DERIVED_PHP_VERSION"
-            echo "Update needed: $UPDATE_NEEDED"
+            #BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION")"
+            BASE_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]')"
+            #DERIVED_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION")"
+            DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]')"
             ;;
           "exim")
-            echo "exit-code=2" >> $GITHUB_OUTPUT
-            echo "cmd-res=exim 4.98" >> $GITHUB_OUTPUT
-            echo "update-needed=unknown" >> $GITHUB_OUTPUT # Anche qui, per coerenza
+            echo "ToDO"
             ;;
           *)
-            echo "Tipo di immagine non riconosciuto: ${{ inputs.image-type }}. Lascio il comportamento di default."
-            echo "exit-code=99" >> $GITHUB_OUTPUT # Codice per tipo non gestito
-            echo "cmd-res=Unhandled image type: ${{ inputs.image-type }}" >> $GITHUB_OUTPUT
-            echo "update-needed=unknown" >> $GITHUB_OUTPUT
+            if [[ "${{ inputs.package-to-check }}" != "" ]]; then
+              BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
+              DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
+            else
+              echo "::warning:: package-to-check non fornito, non posso eseguire il check"
+              BASE_PACKAGE_VERSION=""
+              DERIVED_PACKAGE_VERSION=""
+            fi
             ;;
         esac
+
+        echo "BASE_PACKAGE_VERSION: $BASE_PACKAGE_VERSION"
+        echo "DERIVED_PACKAGE_VERSION: $DERIVED_PACKAGE_VERSION"
+        echo "Update needed: $UPDATE_NEEDED"
+
+        if [[ "$BASE_PACKAGE_VERSION" == "" || "$DERIVED_PACKAGE_VERSION" == "" ]]; then
+          echo "Impossibile determinare le versioni. UPDATE_NEEDED impostato a 'unknown'."
+          UPDATE_NEEDED="unknown"
+        elif [[ "$BASE_PACKAGE_VERSION" != "$DERIVED_PACKAGE_VERSION" ]]; then
+          echo "La versione di base ($BASE_PACKAGE_VERSION) è diversa da quella derivata ($DERIVED_PACKAGE_VERSION)."
+          UPDATE_NEEDED="true"
+        else
+          echo "Le versioni sono identiche: $BASE_PACKAGE_VERSION."
+          UPDATE_NEEDED="false"
+        fi
+
+        echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
