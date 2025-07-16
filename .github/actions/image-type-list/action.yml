@@ -1,0 +1,87 @@
+# .github/actions/image-type-list/action.yml
+name: 'Get image type'
+description: 'Get imaghe type and return if update is needed.'
+
+inputs:
+  image-type:
+    description: 'Image type chosen from below list (php, exim, rspamd, ssh, others)'
+    required: false
+    type: string
+    default: "none"
+  base-image:
+    description: 'Image to use for executing commands (example: ubuntu:rolling)'
+    required: true
+    type: string
+    default: "ubuntu:rolling"
+  derived-image:
+    description: 'Image to use for executing commands (example: ghcr.io/neomediatech/ubuntu-base:rolling)'
+    required: true
+    type: string
+    default: "ghcr.io/neomediatech/ubuntu-base:rolling"
+
+outputs:
+  exit-code:
+    description: "Exit code of the operation (for debugging or future use)"
+    value: ${{ steps.main_logic.outputs.exit-code }}
+  image-res:
+    description: "Result of the executed command"
+    value: ${{ steps.main_logic.outputs.cmd-res }}
+  update-needed:
+    description: "Whether the derived-image needs updating (true/false/unknown)"
+    value: ${{ steps.main_logic.outputs.update-needed }}
+
+runs:
+  using: "composite" # Indichiamo che è una Composite Action
+  steps:
+    - name: Execute Image Check Logic
+      id: main_logic # Assegniamo un ID a questo step per catturare i suoi output
+      shell: bash
+      run: |
+        echo "::notice::Esecuzione della logica di controllo immagine."
+        
+        # Inizializza gli output con valori di default o placeholder
+        # Questo è importante perché non tutte le branch della 'case' impostano tutti gli output.
+        echo "exit-code=1" >> $GITHUB_OUTPUT # Default non specifico
+        echo "cmd-res=No specific result" >> $GITHUB_OUTPUT
+        echo "update-needed=unknown" >> $GITHUB_OUTPUT
+
+        DOCKER_CMD="docker run --rm --entrypoint /bin/sh -u root"
+
+        case "${{ inputs.image-type }}" in
+          "php")
+            BASE_PHP_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION" || echo "")" # Gestisci il caso in cui il comando fallisca
+            DERIVED_PHP_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION" || echo "")" # Gestisci il caso in cui il comando fallisca
+            
+            UPDATE_NEEDED="unknown" # Default per la logica PHP
+
+            if [[ "$BASE_PHP_VERSION" == "" || "$DERIVED_PHP_VERSION" == "" ]]; then
+              echo "Impossibile determinare le versioni PHP. UPDATE_NEEDED impostato a 'unknown'."
+              UPDATE_NEEDED="unknown"
+            elif [[ "$BASE_PHP_VERSION" != "$DERIVED_PHP_VERSION" ]]; then
+              echo "La versione PHP di base ($BASE_PHP_VERSION) è diversa da quella derivata ($DERIVED_PHP_VERSION)."
+              UPDATE_NEEDED="true"
+            else
+              echo "Le versioni PHP sono identiche: $BASE_PHP_VERSION."
+              UPDATE_NEEDED="false"
+            fi
+            
+            echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
+            echo "exit-code=0" >> $GITHUB_OUTPUT # Successo logico
+            echo "cmd-res=PHP_BASE_VERSION=${BASE_PHP_VERSION},PHP_DERIVED_VERSION=${DERIVED_PHP_VERSION}" >> $GITHUB_OUTPUT
+            
+            echo "BASE_PHP_VERSION: $BASE_PHP_VERSION"
+            echo "DERIVED_PHP_VERSION: $DERIVED_PHP_VERSION"
+            echo "Update needed: $UPDATE_NEEDED"
+            ;;
+          "exim")
+            echo "exit-code=2" >> $GITHUB_OUTPUT
+            echo "cmd-res=exim 4.98" >> $GITHUB_OUTPUT
+            echo "update-needed=unknown" >> $GITHUB_OUTPUT # Anche qui, per coerenza
+            ;;
+          *)
+            echo "Tipo di immagine non riconosciuto: ${{ inputs.image-type }}. Lascio il comportamento di default."
+            echo "exit-code=99" >> $GITHUB_OUTPUT # Codice per tipo non gestito
+            echo "cmd-res=Unhandled image type: ${{ inputs.image-type }}" >> $GITHUB_OUTPUT
+            echo "update-needed=unknown" >> $GITHUB_OUTPUT
+            ;;
+        esac
