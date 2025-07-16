@@ -240,13 +240,13 @@ jobs:
           image-type: '${{ inputs.image-type }}'
           base-image: '$BASE_IMAGE'
           derived-image: '$DERIVED_IMAG'
-          if: ${{ inputs.image-type != '' && inputs.image-type != "none" }}
+          if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
       - name: Set vars from Check image type action
         run: |
           echo "Update Needed: ${{ steps.check-image.outputs.update-needed }}"
           echo "UPDATE_NEEDED=${{ steps.check-image.outputs.update-needed }}" >> $GITHUB_ENV
-          if: ${{ inputs.image-type != '' && inputs.image-type != "none" }}
+          if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
