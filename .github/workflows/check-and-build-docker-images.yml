@@ -62,6 +62,7 @@ on:
         description: 'Image type taken from gh-workflows/.github/workflows/image-type-list.yml'
         required: false
         type: string
+        default: "none"
 
     secrets:
       NOTIFY_CMD:
@@ -132,7 +133,7 @@ jobs:
           echo "matrix=$VALID_COMBINATIONS" >> "$GITHUB_OUTPUT"
 
   check-and-build:
-    needs: prepare-matrix
+    needs: [prepare-matrix]
     #runs-on: ubuntu-latest
     runs-on: [self-hosted]
     strategy:
@@ -232,6 +233,23 @@ jobs:
           FIRST_TYPE=$(echo '${{ inputs.type }}' | jq -r '.[0]')
           echo "FIRST_TYPE=$FIRST_TYPE" >> $GITHUB_ENV
 
+      # DA FARE
+      # se ${{ inputs.image-type}} == "none" lo script prosegue con il resto delle verifiche
+      # altrimenti occorre lanciare il workflow riutilizzabile
+      #- name: Run Remote Docker Image Check Action
+      #  id: remote_checker # ID per accedere agli output
+      #  uses: Neomediatech/github-actions/.github/actions/image-type-list@main
+      #  with:
+      #    image-type: 'php'
+      #    base-image: 'ubuntu:latest'
+      #    derived-image: 'ghcr.io/your-org/your-image:latest'
+
+      #- name: Process Remote Action Outputs
+      #  run: |
+      #    echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
+      #    echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
+      #    echo "cmd-res: ${{ needs.call_reusable_workflow.outputs.cmd-res }}"
+
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
         id: check
@@ -253,7 +271,7 @@ jobs:
           echo "Base digest: $BASE_DIGEST"
           echo "Derived digest: $DERIVED_DIGEST"
           echo "base_image_digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
-
+        
           if [[ -n "${{ inputs.package-to-check }}" ]]; then
             if [[ -z "$BASE_PACKAGE_VERSION" || "$BASE_PACKAGE_VERSION" == "null" ]]; then
               echo "::error::Package version not found! Why??"
