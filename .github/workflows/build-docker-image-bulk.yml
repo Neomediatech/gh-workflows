@@ -73,7 +73,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Find Dockerfiles and build paired matrix
+      - name: Find Dockerfiles and build paired matrix (and show it)
         id: set-matrix
         run: |
           files=$(find . -maxdepth 2 -type f -name 'Dockerfile*' | sort -r)
@@ -113,7 +113,10 @@ jobs:
           types="[$(echo -e "$types"|sort|uniq|tr -d '\n'|sed 's/.$//')]"
 
           echo "matrix={\"include\":$includes}" >> $GITHUB_OUTPUT
-          echo "repo-lower=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          
+          REPO_LOWER="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+          echo "repo-lower=$REPO_LOWER" >> $GITHUB_OUTPUT
+          
           PACKAGE_NAME="${{ inputs.package-name }}"
           if [[ -z "$PACKAGE_NAME" ]]; then
             echo "package-name=default" >> $GITHUB_OUTPUT
@@ -121,26 +124,13 @@ jobs:
             echo "package-name=$(echo "${{ inputs.package-name }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
           fi
 
-          echo "versions=$versions"
-          echo "types=$types"
+          echo "matrix: {\"include\":$includes}"
+          echo "versions: $versions"
+          echo "types: $types"
+          echo "repo-lower: $REPO_LOWER"
+          
           echo "versions=$versions" >> $GITHUB_OUTPUT
           echo "types=$types" >> $GITHUB_OUTPUT
-          
-
-      - name: Show discovered matrix
-        run: |
-          echo "${{ steps.set-matrix.outputs.matrix }}"
-          echo "versions: ${{ steps.set-matrix.outputs.versions }}"
-          echo "types: ${{ steps.set-matrix.outputs.types }}"
-          
-  print-results:
-    needs: discover-dockerfiles
-    runs-on: [self-hosted]
-    steps:
-      - name: Print matrix info
-        run: |
-          echo "matrix: ${{ needs.discover-dockerfiles.outputs.matrix }}"
-          echo "repo-lower: ${{ needs.discover-dockerfiles.outputs.repo-lower }}"
 
   update-images:
     needs: discover-dockerfiles
