@@ -23,20 +23,43 @@ jobs:
   #      run: |
   #        echo "DERIVED_IMAGE=$DERIVED_IMAGE"
 
-  call_reusable_workflow:
-    # Rimuovi completamente la riga 'runs-on: ubuntu-latest' da qui
-    uses: Neomediatech/gh-workflows/.github/workflows/image-type-list.yml@main
-    with:
-      image-type: "php"
-      base-image: "php:8.4-apache"
-      derived-image: "ghcr.io/neomediatech/php:8.4-apache"
+  #call_reusable_workflow:
+  #  # Rimuovi completamente la riga 'runs-on: ubuntu-latest' da qui
+  #  uses: Neomediatech/gh-workflows/.github/workflows/image-type-list.yml@main
+  #  with:
+  #    image-type: "php"
+  #    base-image: "php:8.4-apache"
+  #    derived-image: "ghcr.io/neomediatech/php:8.4-apache"
         
-  use_reusable_workflow_outputs:
+  #use_reusable_workflow_outputs:
+  #  runs-on: [self-hosted]
+  #  needs: call_reusable_workflow
+  #  steps:
+  #    - name: Print output from reusable workflow
+  #      run: |
+  #        echo "Output from reusable workflow:"
+  #        echo "exit-code: ${{ needs.call_reusable_workflow.outputs.exit-code }}"
+  #        echo "cmd-res: ${{ needs.call_reusable_workflow.outputs.cmd-res }}"
+
+  use_actions:
     runs-on: [self-hosted]
-    needs: call_reusable_workflow
     steps:
       - name: Print output from reusable workflow
         run: |
           echo "Output from reusable workflow:"
           echo "exit-code: ${{ needs.call_reusable_workflow.outputs.exit-code }}"
+
+      - name: Run Remote Docker Image Check Action
+        id: remote_checker # ID per accedere agli output
+        uses: Neomediatech/github-actions/.github/actions/image-type-list@main
+        with:
+          image-type: 'php'
+          base-image: 'ubuntu:latest'
+          derived-image: 'ghcr.io/your-org/your-image:latest'
+
+      - name: Process Remote Action Outputs
+        run: |
+          echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
+          echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
           echo "cmd-res: ${{ needs.call_reusable_workflow.outputs.cmd-res }}"
+
