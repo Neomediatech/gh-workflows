@@ -5,7 +5,7 @@ on:
     inputs:
       image-type:
         description: 'Image type choosen from below list (php,exim,rspamd,ssh,others)'
-        required: true
+        required: false
         type: string
         default: "none"
       base-image:
@@ -78,6 +78,7 @@ jobs:
               echo "cmd-res=exim 4.98" >> $GITHUB_OUTPUT
               ;;
             *)
+              # lasciare il comportamento di default da parte di check-and-build-docker-images.yml
               echo "default STATEMENT"
               ;;
           esac
