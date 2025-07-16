@@ -59,10 +59,10 @@ jobs:
               #MODULES_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "$SHELL_ARGS")"
               BASE_PHP_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION")"
               DERIVED_PHP_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION")"
-              if [[ $BASE_PHP_VERSION == "" || $DERIVED_PHP_VERSION = "" ]]; then
+              if [[ "$BASE_PHP_VERSION" == "" || "$DERIVED_PHP_VERSION" == "" ]]; then
                 UPDATE_NEEDED="unknown"
                 echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
-              elif [[ $BASE_PHP_VERSION != $DERIVED_PHP_VERSION ]]; then
+              elif [[ "$BASE_PHP_VERSION" != "$DERIVED_PHP_VERSION" ]]; then
                 UPDATE_NEEDED="true"
                 echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
               else
