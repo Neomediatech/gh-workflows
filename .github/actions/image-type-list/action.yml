@@ -63,7 +63,6 @@ runs:
 
         echo "BASE_PACKAGE_VERSION: $BASE_PACKAGE_VERSION"
         echo "DERIVED_PACKAGE_VERSION: $DERIVED_PACKAGE_VERSION"
-        echo "Update needed: $UPDATE_NEEDED"
 
         if [[ "$BASE_PACKAGE_VERSION" == "" || "$DERIVED_PACKAGE_VERSION" == "" ]]; then
           echo "Impossibile determinare le versioni. UPDATE_NEEDED impostato a 'unknown'."
@@ -75,5 +74,5 @@ runs:
           echo "Le versioni sono identiche: $BASE_PACKAGE_VERSION."
           UPDATE_NEEDED="false"
         fi
-
+        echo "Update needed: $UPDATE_NEEDED"
         echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
