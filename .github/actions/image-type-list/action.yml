@@ -49,9 +49,6 @@ runs:
             #DERIVED_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]')"
             ;;
-          "exim")
-            echo "ToDO"
-            ;;
           *)
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
               BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
