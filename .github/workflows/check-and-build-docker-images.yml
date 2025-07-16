@@ -239,7 +239,7 @@ jobs:
         with:
           image-type: '${{ inputs.image-type }}'
           base-image: '$BASE_IMAGE'
-          derived-image: '$DERIVED_IMAG'
+          derived-image: '$DERIVED_IMAGE'
         if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
       - name: Set vars from Check image type action
