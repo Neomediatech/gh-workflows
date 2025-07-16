@@ -49,12 +49,10 @@ jobs:
         uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
         with:
           image-type: 'php'
-          base-image: 'ubuntu:latest'
-          derived-image: 'ghcr.io/your-org/your-image:latest'
+          base-image: 'php:8.4-apache'
+          derived-image: 'ghcr.io/neomediatech/php:8.4-apache'
 
       - name: Process Remote Action Outputs
         run: |
           echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
           echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
-          echo "cmd-res: ${{ needs.call_reusable_workflow.outputs.cmd-res }}"
-
