@@ -1,4 +1,4 @@
-name: Check and Build Docker Images (by Copilot)
+name: Get image types
 
 on:
   workflow_call:
@@ -26,6 +26,9 @@ on:
       image-res:
         description: "Risultato del comando eseguito"
         value: ${{ jobs.job_1.outputs.cmd-res }}
+      update-needed:
+        description: "Se la derived-image necessita di aggiornamento"
+        value: ${{ jobs.job_1.outputs.update-needed }}
 
 jobs:
   job_1:
