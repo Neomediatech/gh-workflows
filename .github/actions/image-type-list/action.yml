@@ -40,7 +40,6 @@ runs:
         echo "::notice::Esecuzione della logica di controllo immagine."
         
         # Inizializza gli output con valori di default o placeholder
-        # Questo è importante perché non tutte le branch della 'case' impostano tutti gli output.
         echo "exit-code=1" >> $GITHUB_OUTPUT # Default non specifico
         echo "cmd-res=No specific result" >> $GITHUB_OUTPUT
         echo "update-needed=unknown" >> $GITHUB_OUTPUT
