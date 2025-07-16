@@ -235,7 +235,7 @@ jobs:
 
       - name: Check image type
         id: check-image
-        uses: Neomediatech/github-actions/.github/actions/image-type-list@main
+        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
         with:
           image-type: '${{ inputs.image-type }}'
           base-image: '$BASE_IMAGE'
