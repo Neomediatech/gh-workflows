@@ -233,22 +233,20 @@ jobs:
           FIRST_TYPE=$(echo '${{ inputs.type }}' | jq -r '.[0]')
           echo "FIRST_TYPE=$FIRST_TYPE" >> $GITHUB_ENV
 
-      # DA FARE
-      # se ${{ inputs.image-type}} == "none" lo script prosegue con il resto delle verifiche
-      # altrimenti occorre lanciare il workflow riutilizzabile
-      #- name: Run Remote Docker Image Check Action
-      #  id: remote_checker # ID per accedere agli output
-      #  uses: Neomediatech/github-actions/.github/actions/image-type-list@main
-      #  with:
-      #    image-type: 'php'
-      #    base-image: 'ubuntu:latest'
-      #    derived-image: 'ghcr.io/your-org/your-image:latest'
+      - name: Check image type
+        id: check-image
+        uses: Neomediatech/github-actions/.github/actions/image-type-list@main
+        with:
+          image-type: '${{ inputs.image-type }}'
+          base-image: '$BASE_IMAGE'
+          derived-image: '$DERIVED_IMAG'
+          if: ${{ inputs.image-type != '' && inputs.image-type != "none" }}
 
-      #- name: Process Remote Action Outputs
-      #  run: |
-      #    echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
-      #    echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
-      #    echo "cmd-res: ${{ needs.call_reusable_workflow.outputs.cmd-res }}"
+      - name: Set vars from Check image type action
+        run: |
+          echo "Update Needed: ${{ steps.check-image.outputs.update-needed }}"
+          echo "UPDATE_NEEDED=${{ steps.check-image.outputs.update-needed }}" >> $GITHUB_ENV
+          if: ${{ inputs.image-type != '' && inputs.image-type != "none" }}
 
       # Step di verifica aggiornamento immagine
       - name: Check if derived image needs update
