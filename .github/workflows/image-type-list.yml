@@ -33,6 +33,7 @@ jobs:
     outputs:
       exit-code: ${{ steps.job_1_output.outputs.exit-code }}
       image-res: ${{ steps.job_1_output.outputs.cmd-res }}
+      update-needed: ${{ steps.job_1_output.outputs.update-needed }}
     steps:
       - name: Generate an output
         id: job_1_output
@@ -44,18 +45,33 @@ jobs:
 
           case "${{ inputs.image-type }}" in
             "php")
-              SHELL_ARGS="php -m|egrep -v '^\[|^$'|sort|uniq|grep -v Warning"
-              echo "CMD: $DOCKER_CMD ${{ inputs.derived-image }} -c \"$SHELL_ARGS\""
-              DERIVED_MODULES="$($DOCKER_CMD ${{ inputs.derived-image }} -c "$SHELL_ARGS")"
-              echo "DERIVED_MODULES:"
-              echo "$DERIVED_MODULES"
-              BASE_MODULES="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SHELL_ARGS")"
-              echo "BASE_MODULES:"
-              echo "$BASE_MODULES"
-              UNIQUE_MODULES="$(comm -2 -3 <(echo "$DERIVED_MODULES" |sort ) <(echo "$BASE_MODULES" | sort))"
-              echo "UNIQUE_MODULES:"
-              echo "$UNIQUE_MODULES"
-              echo "cmd-res=$UNIQUE_MODULES" >> $GITHUB_OUTPUT
+              #SHELL_ARGS="php -m|egrep -v '^\[|^$'|sort|uniq|grep -v Warning"
+              #echo "CMD: $DOCKER_CMD ${{ inputs.derived-image }} -c \"$SHELL_ARGS\""
+              #DERIVED_MODULES="$($DOCKER_CMD ${{ inputs.derived-image }} -c "$SHELL_ARGS")"
+              #echo "DERIVED_MODULES:"
+              #echo "$DERIVED_MODULES"
+              #BASE_MODULES="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SHELL_ARGS")"
+              #echo "BASE_MODULES:"
+              #echo "$BASE_MODULES"
+              #UNIQUE_MODULES="$(comm -2 -3 <(echo "$DERIVED_MODULES" |sort ) <(echo "$BASE_MODULES" | sort))"
+              #echo "UNIQUE_MODULES:"
+              #echo "$UNIQUE_MODULES"
+              #MODULES_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "$SHELL_ARGS")"
+              BASE_PHP_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION")"
+              DERIVED_PHP_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION")"
+              if [[ $BASE_PHP_VERSION == "" || $DERIVED_PHP_VERSION = "" ]]; then
+                UPDATE_NEEDED="unknown"
+                echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
+              elif [[ $BASE_PHP_VERSION != $DERIVED_PHP_VERSION ]]; then
+                UPDATE_NEEDED="true"
+                echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
+              else
+                UPDATE_NEEDED="false"
+                echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
+              fi
+              echo "BASE_PHP_VERSION: $BASE_PHP_VERSION"
+              echo "DERIVED_PHP_VERSION: $DERIVED_PHP_VERSION"
+              echo "Update needed: $UPDATE_NEEDED
               ;;
             "exim")
               echo "exit-code=2" >> $GITHUB_OUTPUT
