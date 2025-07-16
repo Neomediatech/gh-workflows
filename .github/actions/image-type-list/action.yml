@@ -53,8 +53,8 @@ runs:
             DOVECOT_GPG_REPO="https://repo.dovecot.org/DOVECOT-REPO-GPG-2.4"
             PKG_INST="curl gpg gpg-agent apt-transport-https ca-certificates"
             BASE_PACKAGE_VERSION_TMP="$($DOCKER_CMD -v ./temp:/temp ${{ inputs.base-image }} -c "apt-get update 1>/dev/null ; apt-get install -y --no-install-recommends $PKG_INST 1>/dev/null; curl -s $DOVECOT_GPG_REPO | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg ; echo 'deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main' > /etc/apt/sources.list.d/dovecot.list ; apt-get update 1>/dev/null ; echo $(apt-cache policy dovecot-core |grep Candidat|awk '{print $2}') > /temp/version.txt")"
-            BASE_PACKAGE_VERSION="$(cat ./temp/version.txt)"
             ls -lah
+            BASE_PACKAGE_VERSION="$(cat ./temp/version.txt)"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             ;;
           *)
