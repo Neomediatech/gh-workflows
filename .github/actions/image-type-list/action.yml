@@ -48,10 +48,10 @@ runs:
 
         case "${{ inputs.image-type }}" in
           "php")
-            BASE_PHP_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION" || echo "")" # Gestisci il caso in cui il comando fallisca
-            DERIVED_PHP_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION" || echo "")" # Gestisci il caso in cui il comando fallisca
+            BASE_PHP_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION")"
+            DERIVED_PHP_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION")"
             
-            UPDATE_NEEDED="unknown" # Default per la logica PHP
+            UPDATE_NEEDED="unknown"
 
             if [[ "$BASE_PHP_VERSION" == "" || "$DERIVED_PHP_VERSION" == "" ]]; then
               echo "Impossibile determinare le versioni PHP. UPDATE_NEEDED impostato a 'unknown'."
