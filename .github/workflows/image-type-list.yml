@@ -71,7 +71,7 @@ jobs:
               fi
               echo "BASE_PHP_VERSION: $BASE_PHP_VERSION"
               echo "DERIVED_PHP_VERSION: $DERIVED_PHP_VERSION"
-              echo "Update needed: $UPDATE_NEEDED
+              echo "Update needed: $UPDATE_NEEDED"
               ;;
             "exim")
               echo "exit-code=2" >> $GITHUB_OUTPUT
