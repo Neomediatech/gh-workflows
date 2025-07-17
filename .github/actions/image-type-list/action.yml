@@ -69,8 +69,8 @@ runs:
             cat $SH_CMD_FILE
             echo "Permessi di $SH_CMD_FILE: $(stat -c '%a %n' "$SH_CMD_FILE")"
             ls -lah ~
-            echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v $SH_CMD_FILE:$SH_CMD_FILE ${{ inputs.base-image }} -c \"$SH_CMD_FILE\""
-            $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v $SH_CMD_FILE:$SH_CMD_FILE ${{ inputs.base-image }} -c "$SH_CMD_FILE"
+            echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:~/temp ${{ inputs.base-image }} -c \"$SH_CMD_FILE\""
+            $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:~/temp ${{ inputs.base-image }} -c "$SH_CMD_FILE"
             echo "ok?"
             ls -lah /tmp
             BASE_PACKAGE_VERSION="$(cat /tmp/dovecot/version.txt)"
