@@ -55,7 +55,7 @@ runs:
  
             BASE_PACKAGE_VERSION_TMP="$($DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c '$SH_CMD')"
             SH_CMD_FILE="$(mktemp)"
-            echo '#!/bin/sh' > $SH_CMD_FILE
+            #echo '#!/bin/sh' > $SH_CMD_FILE
             echo "apt-get update 1>/dev/null ; apt-get install -y --no-install-recommends $PKG_INST 1>/dev/null" >> $SH_CMD_FILE
             echo "curl -s $DOVECOT_GPG_REPO | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg" >> $SH_CMD_FILE
             echo "echo 'deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main' > /etc/apt/sources.list.d/dovecot.list" >> $SH_CMD_FILE
@@ -63,6 +63,7 @@ runs:
             echo "apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print $2}') > /tmp/dovecot/version.txt"
             chmod +x $SH_CMD_FILE
             cat $SH_CMD_FILE
+            ls -lah /tmp
             $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v $SH_CMD_FILE:$SH_CMD_FILE ${{ inputs.base-image }} -c "$SH_CMD_FILE"
             ls -lah /tmp
             BASE_PACKAGE_VERSION="$(cat /tmp/dovecot/version.txt)"
