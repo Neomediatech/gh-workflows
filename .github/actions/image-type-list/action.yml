@@ -54,8 +54,7 @@ runs:
             PKG_INST="curl gpg gpg-agent apt-transport-https ca-certificates"
  
             BASE_PACKAGE_VERSION_TMP="$($DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c '$SH_CMD')"
-            mkdir /temp
-            SH_CMD_FILE="$(mktemp /temp/dovecot_script_XXXXXX.sh)"
+            SH_CMD_FILE="$(mktemp ~/dovecot_script_XXXXXX.sh)"
             echo '#!/bin/sh' > $SH_CMD_FILE
             echo "apt-get update 1>/dev/null ; apt-get install -y --no-install-recommends $PKG_INST 1>/dev/null" >> $SH_CMD_FILE
             echo "curl -s $DOVECOT_GPG_REPO | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg" >> $SH_CMD_FILE
@@ -71,7 +70,7 @@ runs:
             ls -lah /tmp
             BASE_PACKAGE_VERSION="$(cat /tmp/dovecot/version.txt)"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
-            rm -rf /temp /tmp/dovecot $SH_CMD_FILE
+            rm -rf /tmp/dovecot $SH_CMD_FILE
             ;;
           *)
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
