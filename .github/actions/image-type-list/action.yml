@@ -61,7 +61,7 @@ runs:
             echo "echo 'deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main' > /etc/apt/sources.list.d/dovecot.list" >> $SH_CMD_FILE
             echo "apt-get update 1>/dev/null" >> $SH_CMD_FILE
             echo "apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print $2}') > /tmp/dovecot/version.txt" >> $SH_CMD_FILE
-            chmod +777 $SH_CMD_FILE
+            chmod 777 $SH_CMD_FILE
             cat $SH_CMD_FILE
             echo "Permessi di $SH_CMD_FILE: $(stat -c '%a %n' "$SH_CMD_FILE")"
             ls -lah /tmp
