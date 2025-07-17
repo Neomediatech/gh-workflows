@@ -58,6 +58,8 @@ runs:
             chmod 777 ~/temp
             SH_CMD_FILE="$(mktemp ~/temp/dovecot_script_XXXXXX.sh)"
             echo '#!/bin/sh' > $SH_CMD_FILE
+            echo "set -x" >> $SH_CMD_FILE
+            echo "echo 'start apt...'" >> $SH_CMD_FILE
             echo "apt-get update 1>/dev/null ; apt-get install -y --no-install-recommends $PKG_INST 1>/dev/null" >> $SH_CMD_FILE
             echo "curl -s $DOVECOT_GPG_REPO | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg" >> $SH_CMD_FILE
             echo "echo 'deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main' > /etc/apt/sources.list.d/dovecot.list" >> $SH_CMD_FILE
