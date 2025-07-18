@@ -51,7 +51,7 @@ runs:
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]')"
             ;;
           "dovecot")
-            SH_CMD=$(cat <<'            EOF'
+            SH_CMD=$(cat <<<'            EOF'
             #!/bin/sh
             set -x
             apt-get update 1>/dev/null
