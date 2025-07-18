@@ -1,0 +1,94 @@
+# .github/actions/discover-dockerfiles/action.yml
+name: 'Discover Dockerfiles'
+description: 'Discover Dockerfiles in a repository (and on one level subfolders) and return an array of elements found, to be used in a matrix.'
+
+inputs:
+  subfolders-levels:
+    description: 'How many subfolder levels to search (e.g. 3)'
+    required: false
+    type: string
+    default: "1"
+
+outputs:
+  matrix:
+    value: ${{ steps.set-matrix.outputs.matrix }}
+  repo-lower:
+    description: "Lowercase repository name"
+    value: ${{ steps.set-matrix.outputs.repo-lower }}
+  package-name:
+    value: ${{ steps.set-matrix.outputs.package-name }}
+  versions:
+    value: ${{ steps.set-matrix.outputs.versions }}
+  types:
+    value: ${{ steps.set-matrix.outputs.types }}
+
+runs:
+  # Indica una Composite Action
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Find Dockerfiles and build paired matrix (and show it)
+      id: set-matrix
+      run: |
+        if [[ "${{ inputs.subfolders-levels }}" != "" ]]; then
+          DEPTH=$[${{ inputs.subfolders-levels }}+1]
+        else
+          DEPTH=2
+        fi
+        files=$(find . -maxdepth $DEPTH -type f -name 'Dockerfile*' | sort -r)
+        includes=""
+        versions=""
+        types=""
+
+        while IFS= read -r file; do
+          dir=$(dirname "$file" | sed 's|^\./||')
+          dockerfile=$(basename "$file")
+          if [[ $dockerfile == 'Dockerfile' ]]; then
+            version='latest'
+          else
+            version=$(basename "$file"|sed 's/Dockerfile\.\?//')
+          fi
+          # Evita la root vuota come directory
+          #if [[ "$dir" == "." ]]; then
+          #  dir=""
+          #fi
+          includes="${includes}{\"directory\":\"$dir\",\"tag\":\"$version\"},"
+          if [[ "$versions" == "" ]]; then
+            versions="\"$version\","
+          else
+            versions="$versions\n\"$version\","
+          fi
+          if [[ "$types" == "" ]]; then
+            types="\"$dir\","
+          else
+            types="$types\n\"$dir\","
+          fi
+        done <<< "$files"
+
+        # Rimuove la virgola finale e crea array include
+        includes="[${includes%,}]"
+          
+        versions="[$(echo -e "$versions"|sort -r|uniq|tr -d '\n'|sed 's/.$//')]"
+        types="[$(echo -e "$types"|sort|uniq|tr -d '\n'|sed 's/.$//')]"
+
+        echo "matrix={\"include\":$includes}" >> $GITHUB_OUTPUT
+          
+        REPO_LOWER="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+        echo "repo-lower=$REPO_LOWER" >> $GITHUB_OUTPUT
+          
+        PACKAGE_NAME="${{ inputs.package-name }}"
+        if [[ -z "$PACKAGE_NAME" ]]; then
+          echo "package-name=default" >> $GITHUB_OUTPUT
+        else
+          echo "package-name=$(echo "${{ inputs.package-name }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        fi
+
+        echo "matrix: {\"include\":$includes}"
+        echo "versions: $versions"
+        echo "types: $types"
+        echo "repo-lower: $REPO_LOWER"
+          
+        echo "versions=$versions" >> $GITHUB_OUTPUT
+        echo "types=$types" >> $GITHUB_OUTPUT
