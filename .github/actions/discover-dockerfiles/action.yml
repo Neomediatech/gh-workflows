@@ -8,6 +8,11 @@ inputs:
     required: false
     type: string
     default: "1"
+  repository:
+    description: 'Repository name (e.g. "Neomediatech/php")'
+    required: false
+    type: string
+    default: ""
 
 outputs:
   matrix:
@@ -26,8 +31,17 @@ runs:
   # Indica una Composite Action
   using: "composite"
   steps:
-    - name: Checkout repository
+    - name: Checkout repository ${{ github.repository }}
       uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+      if: ${{ inputs.repository == "" }}
+
+    - name: Checkout repository ${{ inputs.repository }}
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+      if: ${{ inputs.repository != "" }}
 
     - name: Find Dockerfiles and build paired matrix (and show it)
       id: set-matrix
