@@ -241,6 +241,7 @@ jobs:
           base-image: '$BASE_IMAGE'
           derived-image: '$DERIVED_IMAGE'
           package-to-check: "${{ inputs.package-to-check }}"
+          image-version: ${{ matrix.version }}
         if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
       - name: Set vars from Check image type action
