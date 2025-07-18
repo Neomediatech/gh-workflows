@@ -53,20 +53,16 @@ runs:
             SH_CMD='\
             #!/bin/sh\
             set -x;\
-            apt-get update 1>/dev/null;\
-            apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null;\
-            curl -s https://repo.dovecot.org/DOVECOT-REPO-GPG-2.4 | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg;\
+            apt-get update 1>/dev/null 2>/dev/null;\
+            apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null 2>/dev/null;\
+            curl -s https://repo.dovecot.org/DOVECOT-REPO-GPG-2.4 | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg 1>/dev/null 2>/dev/null;\
             echo "deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main" > /etc/apt/sources.list.d/dovecot.list;\
-            apt-get update 1>/dev/null;\
-            apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk "{print \$2}" > /tmp/dovecot/version.txt\
+            apt-get update 1>/dev/null 2>/dev/null;\
+            apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk "{print \$2}"
             '
-            echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c $SH_CMD"
-            $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c "$SH_CMD"
-            echo "ok?"
-            
-            BASE_PACKAGE_VERSION="$(cat /tmp/dovecot/version.txt)"
+            echo "Running $DOCKER_CMD ${{ inputs.base-image }} -c $SH_CMD"
+            BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
-            rm -rf /tmp/dovecot
             ;;
           *)
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
