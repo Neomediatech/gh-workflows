@@ -65,5 +65,3 @@ jobs:
           echo "Matrix: ${{ steps.discover-dockerfiles.outputs.matrix }}"
           echo "Repo lower: ${{ steps.discover-dockerfiles.outputs.repo-lower }}"
           echo "package-name: ${{ steps.discover-dockerfiles.outputs.package-name }}"
-          echo "versions: ${{ steps.discover-dockerfiles.outputs.versions }}"
-          echo "types: ${{ steps.discover-dockerfiles.outputs.types }}"
