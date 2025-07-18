@@ -22,10 +22,6 @@ outputs:
     value: ${{ steps.set-matrix.outputs.repo-lower }}
   package-name:
     value: ${{ steps.set-matrix.outputs.package-name }}
-  versions:
-    value: ${{ steps.set-matrix.outputs.versions }}
-  types:
-    value: ${{ steps.set-matrix.outputs.types }}
 
 runs:
   # Indica una Composite Action
@@ -56,38 +52,12 @@ runs:
           else
             version=$(basename "$file"|sed 's/Dockerfile\.\?//')
           fi
-          # Evita la root vuota come directory
-          #if [[ "$dir" == "." ]]; then
-          #  dir=""
-          #fi
           IMAGE_VERSIONS=$(echo "$IMAGE_VERSIONS" | jq -c --arg v "$version" --arg t "$dir" '. += [{"version": $v, "type": $t}]')
-
-          includes="${includes}{\"directory\":\"$dir\",\"tag\":\"$version\"},"
-          if [[ "$versions" == "" ]]; then
-            versions="\"$version\","
-          else
-            versions="$versions\n\"$version\","
-          fi
-          if [[ "$types" == "" ]]; then
-            types="\"$dir\","
-          else
-            types="$types\n\"$dir\","
-          fi
         done <<< "$files"
         echo "::warning::IMAGE_VERSIONS $IMAGE_VERSIONS"
-              #if [ -f "$FILE_PATH" ]; then
-              #  echo "File found: $FILE_PATH. Adding to matrix."
-              #  VALID_COMBINATIONS=$(echo "$VALID_COMBINATIONS" | jq -c --arg v "$version" --arg t "$type" '. += [{"version": $v, "type": $t}]')
-              #else
-              #  echo "::notice::File not found: $FILE_PATH. Excluding from matrix."
-              #fi
         # Rimuove la virgola finale e crea array include
-        includes="[${includes%,}]"
-          
-        versions="[$(echo -e "$versions"|sort -r|uniq|tr -d '\n'|sed 's/.$//')]"
-        types="[$(echo -e "$types"|sort|uniq|tr -d '\n'|sed 's/.$//')]"
 
-        echo "matrix={\"include\":$includes}" >> $GITHUB_OUTPUT
+        echo "matrix=$IMAGE_VERSIONS" >> $GITHUB_OUTPUT
           
         REPO_LOWER="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
         echo "repo-lower=$REPO_LOWER" >> $GITHUB_OUTPUT
@@ -99,10 +69,5 @@ runs:
           echo "package-name=$(echo "${{ inputs.package-name }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
         fi
 
-        echo "matrix: {\"include\":$includes}"
-        echo "versions: $versions"
-        echo "types: $types"
+        echo "matrix: $IMAGE_VERSIONS"
         echo "repo-lower: $REPO_LOWER"
-          
-        echo "versions=$versions" >> $GITHUB_OUTPUT
-        echo "types=$types" >> $GITHUB_OUTPUT
