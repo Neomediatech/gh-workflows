@@ -35,7 +35,7 @@ outputs:
     description: "Whether the derived-image needs updating (true/false/unknown)"
     value: ${{ steps.main_logic.outputs.update-needed }}
   base-img-pkg-ver:
-    descritpion: "Package versione taken from base image"
+    description: "Package versione taken from base image"
     value: ${{ steps.main_logic.outputs.base-img-pkg-ver }}
 
 runs:
