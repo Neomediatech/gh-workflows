@@ -34,6 +34,9 @@ outputs:
   update-needed:
     description: "Whether the derived-image needs updating (true/false/unknown)"
     value: ${{ steps.main_logic.outputs.update-needed }}
+  base-img-pkg-ver:
+    descritpion: "Package versione taken from base image"
+    value: ${{ steps.main_logic.outputs.base-img-pkg-ver }}
 
 runs:
   # Indica una Composite Action
@@ -95,3 +98,4 @@ runs:
         fi
         echo "Update needed: $UPDATE_NEEDED"
         echo "update-needed=$UPDATE_NEEDED" >> $GITHUB_OUTPUT
+        echo "base-img-pkg-ver=$BASE_PACKAGE_VERSION" >> $GITHUB_OUTPUT
