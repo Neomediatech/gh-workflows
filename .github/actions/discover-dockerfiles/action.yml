@@ -38,6 +38,7 @@ runs:
 
     - name: Find Dockerfiles and build paired matrix (and show it)
       id: set-matrix
+      shell: bash
       run: |
         DEPTH=$[${{ inputs.subfolders-levels }}+1]
         files=$(find . -maxdepth $DEPTH -type f -name 'Dockerfile*' | sort -r)
