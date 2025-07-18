@@ -248,6 +248,8 @@ jobs:
         run: |
           echo "Update Needed: ${{ steps.check-image.outputs.update-needed }}"
           echo "UPDATE_NEEDED=${{ steps.check-image.outputs.update-needed }}" >> $GITHUB_ENV
+          echo "Base image package version: ${{ steps.check-image.outputs.base-img-pkg-ver }}"
+          echo "BASE_PACKAGE_VERSION=${{ steps.check-image.outputs.base-img-pkg-ver }}" >> $GITHUB_ENV
         if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
       # Step di verifica aggiornamento immagine
@@ -257,7 +259,9 @@ jobs:
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
 
           if [[ -n "${{ inputs.package-to-check }}" ]]; then
-            BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root $BASE_IMAGE -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
+            if [[ -z "$BASE_PACKAGE_VERSION" ]]; then
+              BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root $BASE_IMAGE -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
+            fi
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://$DERIVED_IMAGE | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             echo "Package version from base image $BASE_IMAGE : $BASE_PACKAGE_VERSION"
             echo "Package version from derived image $DERIVED_IMAGE : $DERIVED_PACKAGE_VERSION"
