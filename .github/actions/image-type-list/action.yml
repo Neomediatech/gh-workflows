@@ -60,8 +60,7 @@ runs:
             echo 'deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main' > /etc/apt/sources.list.d/dovecot.list
             apt-get update 1>/dev/null
             apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}' > /tmp/dovecot/version.txt
-            EOF
-            )
+            EOF)
             echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c \"$SH_CMD\""
             $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c "$SH_CMD"
             echo "ok?"
