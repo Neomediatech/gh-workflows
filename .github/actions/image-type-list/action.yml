@@ -54,6 +54,7 @@ runs:
             PKG_INST="curl gpg gpg-agent apt-transport-https ca-certificates"
  
             BASE_PACKAGE_VERSION_TMP="$($DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c '$SH_CMD')"
+            MYHOME=~
             mkdir -p ~/temp
             chmod 777 ~/temp
             SH_CMD_FILE="$(mktemp ~/temp/dovecot_script_XXXXXX.sh)"
@@ -69,13 +70,13 @@ runs:
             cat $SH_CMD_FILE
             echo "Permessi di $SH_CMD_FILE: $(stat -c '%a %n' "$SH_CMD_FILE")"
             ls -lah ~
-            echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:~/temp ${{ inputs.base-image }} -c \"$SH_CMD_FILE\""
-            $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:~/temp ${{ inputs.base-image }} -c "$SH_CMD_FILE"
+            echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:$MYHOME/temp ${{ inputs.base-image }} -c \"$SH_CMD_FILE\""
+            $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:$MYHOME/temp ${{ inputs.base-image }} -c "$SH_CMD_FILE"
             echo "ok?"
             ls -lah /tmp
             BASE_PACKAGE_VERSION="$(cat /tmp/dovecot/version.txt)"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
-            rm -rf /tmp/dovecot $SH_CMD_FILE
+            rm -rf /tmp/dovecot $MYHOME/temp
             ;;
           *)
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
