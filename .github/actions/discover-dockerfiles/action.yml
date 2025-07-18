@@ -31,26 +31,15 @@ runs:
   # Indica una Composite Action
   using: "composite"
   steps:
-    - name: Checkout repository ${{ github.repository }}
+    - name: Checkout repository
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.repository }}
-      if: ${{ inputs.repository == "" }}
-
-    - name: Checkout repository ${{ inputs.repository }}
-      uses: actions/checkout@v4
-      with:
-        repository: ${{ inputs.repository }}
-      if: ${{ inputs.repository != "" }}
 
     - name: Find Dockerfiles and build paired matrix (and show it)
       id: set-matrix
       run: |
-        if [[ "${{ inputs.subfolders-levels }}" != "" ]]; then
-          DEPTH=$[${{ inputs.subfolders-levels }}+1]
-        else
-          DEPTH=2
-        fi
+        DEPTH=$[${{ inputs.subfolders-levels }}+1]
         files=$(find . -maxdepth $DEPTH -type f -name 'Dockerfile*' | sort -r)
         includes=""
         versions=""
