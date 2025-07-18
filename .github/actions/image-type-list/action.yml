@@ -65,15 +65,15 @@ runs:
             echo "curl -s $DOVECOT_GPG_REPO | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg" >> $SH_CMD_FILE
             echo "echo 'deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main' > /etc/apt/sources.list.d/dovecot.list" >> $SH_CMD_FILE
             echo "apt-get update 1>/dev/null" >> $SH_CMD_FILE
-            echo "apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print $2}') > /tmp/dovecot/version.txt" >> $SH_CMD_FILE
+            echo "apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print $2}' > /tmp/dovecot/version.txt" >> $SH_CMD_FILE
             chmod 777 $SH_CMD_FILE
             cat $SH_CMD_FILE
             echo "Permessi di $SH_CMD_FILE: $(stat -c '%a %n' "$SH_CMD_FILE")"
-            ls -lah ~
-            echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:$MYHOME/temp ${{ inputs.base-image }} -c \"$SH_CMD_FILE\""
-            $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:$MYHOME/temp ${{ inputs.base-image }} -c "$SH_CMD_FILE"
+            ls -lah ~/temp
+            echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:$MYHOME/temp ${{ inputs.base-image }} -c \"ls -lah ~/temp;$SH_CMD_FILE\""
+            $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot -v ~/temp:$MYHOME/temp ${{ inputs.base-image }} -c "ls -lah ~/temp;$SH_CMD_FILE"
             echo "ok?"
-            ls -lah /tmp
+            
             BASE_PACKAGE_VERSION="$(cat /tmp/dovecot/version.txt)"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             rm -rf /tmp/dovecot $MYHOME/temp
