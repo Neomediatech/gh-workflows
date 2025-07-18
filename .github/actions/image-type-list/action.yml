@@ -39,7 +39,6 @@ runs:
       id: main_logic # Assegniamo un ID a questo step per catturare i suoi output
       shell: bash
       run: |
-        set -x
         DOCKER_CMD="docker run --rm --entrypoint /bin/sh -u root"
         UPDATE_NEEDED="unknown"
 
@@ -53,12 +52,12 @@ runs:
           "dovecot")
             SH_CMD='\
             #!/bin/sh\
-            set -x\
-            apt-get update 1>/dev/null\
-            apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null\
-            curl -s https://repo.dovecot.org/DOVECOT-REPO-GPG-2.4 | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg\
-            echo "deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main" > /etc/apt/sources.list.d/dovecot.list\
-            apt-get update 1>/dev/null\
+            set -x;\
+            apt-get update 1>/dev/null;\
+            apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null;\
+            curl -s https://repo.dovecot.org/DOVECOT-REPO-GPG-2.4 | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg;\
+            echo "deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main" > /etc/apt/sources.list.d/dovecot.list;\
+            apt-get update 1>/dev/null;\
             apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk "{print \$2}" > /tmp/dovecot/version.txt\
             '
             echo "Running $DOCKER_CMD -v /tmp/dovecot:/tmp/dovecot ${{ inputs.base-image }} -c $SH_CMD"
