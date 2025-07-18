@@ -233,7 +233,7 @@ jobs:
           FIRST_TYPE=$(echo '${{ inputs.type }}' | jq -r '.[0]')
           echo "FIRST_TYPE=$FIRST_TYPE" >> $GITHUB_ENV
 
-      - name: Check image type
+      - name: Check image update
         id: check-image
         uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
         with:
@@ -297,6 +297,12 @@ jobs:
           if [[ ${{ inputs.force-build }} == "true" ]]; then
             echo "::notice::Force build by user (force-build = ${{ inputs.force-build }})"
             echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+          fi
+
+          # se il controllo in 'check-image' riporta un risultato, vince sugli altri
+          if [[ "$UPDATE_NEEDED" != "" ]]; then
+            echo "::notice::UPDATE_NEEDED $UPDATE_NEEDED"
+            echo "IMAGE_BUILD_NEEDED=$UPDATE_NEEDED" >> $GITHUB_ENV
           fi
 
       - name: Log in to GitHub Container Registry
