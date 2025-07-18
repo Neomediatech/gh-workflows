@@ -22,6 +22,10 @@ inputs:
     description: 'The name for the package to check to compare with (e.g. exim4-daemon-heavy)'
     required: false
     type: string
+  image-version:
+    description: 'tag for the image (e.g. 2.3, 8.4)'
+    required: false
+    type: string
 
 outputs:
   image-res:
@@ -55,8 +59,8 @@ runs:
             set -x;\
             apt-get update 1>/dev/null 2>/dev/null;\
             apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null 2>/dev/null;\
-            curl -s https://repo.dovecot.org/DOVECOT-REPO-GPG-2.4 | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg 1>/dev/null 2>/dev/null;\
-            echo "deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-2.4-latest/ubuntu/noble noble main" > /etc/apt/sources.list.d/dovecot.list;\
+            curl -s https://repo.dovecot.org/DOVECOT-REPO-GPG-${{ inputs.image-version }} | gpg --dearmor -o /usr/share/keyrings/dovecot.gpg 1>/dev/null 2>/dev/null;\
+            echo "deb [signed-by=/usr/share/keyrings/dovecot.gpg] https://repo.dovecot.org/ce-${{ inputs.image-version }}-latest/ubuntu/noble noble main" > /etc/apt/sources.list.d/dovecot.list;\
             apt-get update 1>/dev/null 2>/dev/null;\
             apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk "{print \$2}"
             '
