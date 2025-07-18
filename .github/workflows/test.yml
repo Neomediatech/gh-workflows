@@ -44,15 +44,26 @@ jobs:
   use_actions:
     runs-on: [self-hosted]
     steps:
-      - name: Run Remote Docker Image Check Action
-        id: remote_checker # ID per accedere agli output
-        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+      #- name: Run Remote Docker Image Check Action
+      #  id: remote_checker # ID per accedere agli output
+      #  uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+      #  with:
+      #    image-type: 'php'
+      #    base-image: 'php:8.4-apache'
+      #    derived-image: 'ghcr.io/neomediatech/php:8.4-apache'
+
+      - name: Find Dockerfiles in a repo
+        id: discover-dockerfiles
+        uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
         with:
-          image-type: 'php'
-          base-image: 'php:8.4-apache'
-          derived-image: 'ghcr.io/neomediatech/php:8.4-apache'
+          repository: Neomediatech/php
 
       - name: Process Remote Action Outputs
         run: |
-          echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
-          echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
+          #echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
+          #echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
+          echo "Matrix: ${{ steps.discover-dockerfiles.outputs.matrix }}"
+          echo "Repo lower: ${{ steps.discover-dockerfiles.outputs.repo-lower }}"
+          echo "package-name: ${{ steps.discover-dockerfiles.outputs.package-name }}"
+          echo "versions: ${{ steps.discover-dockerfiles.outputs.versions }}"
+          echo "types: ${{ steps.discover-dockerfiles.outputs.types }}"
