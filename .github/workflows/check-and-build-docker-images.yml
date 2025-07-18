@@ -102,35 +102,17 @@ jobs:
           path: calling
         if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
 
-      - name: Generate filtered matrix
+      - name: Find Dockerfiles in a repo and return a matrix of elements
         id: generate-matrix
+        uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
+        #with:
+        #  repository: Neomediatech/php
+
+      - name: Process Remote Action Outputs
         run: |
-          # Parsa gli input JSON in array bash
-          VERSIONS_JSON='${{ inputs.versions }}'
-          TYPES_JSON='${{ inputs.type }}'
-
-          VERSIONS=$(echo "$VERSIONS_JSON" | jq -r '.[]')
-          TYPES=$(echo "$TYPES_JSON" | jq -r '.[]')
-
-          VALID_COMBINATIONS="[]"
-
-          echo "Checking file existence for VERSIONS $VERSIONS and TYPES $TYPES combinations..."
-          for version in $VERSIONS; do
-            for type in $TYPES; do
-              FILE_PATH="calling/${type}/Dockerfile.${version}"
-
-              echo "Checking for file: $FILE_PATH"
-              if [ -f "$FILE_PATH" ]; then
-                echo "File found: $FILE_PATH. Adding to matrix."
-                VALID_COMBINATIONS=$(echo "$VALID_COMBINATIONS" | jq -c --arg v "$version" --arg t "$type" '. += [{"version": $v, "type": $t}]')
-              else
-                echo "::notice::File not found: $FILE_PATH. Excluding from matrix."
-              fi
-            done
-          done
-
-          echo "Generated Matrix: $VALID_COMBINATIONS"
-          echo "matrix=$VALID_COMBINATIONS" >> "$GITHUB_OUTPUT"
+          echo "Matrix: ${{ steps.generate-matrix.outputs.matrix }}"
+          echo "Repo lower: ${{ steps.generate-matrix.outputs.repo-lower }}"
+          echo "matrix=${{ steps.generate-matrix.outputs.matrix }}" >> "$GITHUB_OUTPUT"
 
   check-and-build:
     needs: [prepare-matrix]
