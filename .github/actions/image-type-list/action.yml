@@ -108,7 +108,7 @@ runs:
         echo "BASE_PACKAGE_VERSION: $BASE_PACKAGE_VERSION"
         echo "DERIVED_PACKAGE_VERSION: $DERIVED_PACKAGE_VERSION"
 
-        if [[ "$BASE_PACKAGE_VERSION" == "" || "$DERIVED_PACKAGE_VERSION" == "" ]]; then
+        if [[ "$BASE_PACKAGE_VERSION" == "" && "$DERIVED_PACKAGE_VERSION" == "" ]]; then
           echo "Impossibile determinare le versioni. UPDATE_NEEDED impostato a 'unknown'."
           UPDATE_NEEDED="unknown"
         elif [[ "$BASE_PACKAGE_VERSION" != "$DERIVED_PACKAGE_VERSION" ]]; then
