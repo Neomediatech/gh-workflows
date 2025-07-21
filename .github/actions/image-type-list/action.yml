@@ -78,7 +78,8 @@ runs:
               set -x;\
               apt-get update 1>/dev/null 2>/dev/null;\
               apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null 2>/dev/null;\
-              curl -s https://www.dcc-servers.net/dcc/source/old/ |perl -nle \'print $& if m{dcc-\K[0-9.]*(?=\.tar\.Z.*)}\'|tail -n1;\
+              #curl -s https://www.dcc-servers.net/dcc/source/old/ |perl -nle \'print $& if m{dcc-\K[0-9.]*(?=\.tar\.Z.*)}\'|tail -n1;\
+              curl -s https://www.dcc-servers.net/dcc/source/old/|grep -Eo "dcc-[0-9\.]+.tar.Z" | sort | tail -n1 |sed "s/dcc-//;s/.tar.Z//"
               '
               echo "Running $DOCKER_CMD ${{ inputs.base-image }} -c $SH_CMD"
               BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
