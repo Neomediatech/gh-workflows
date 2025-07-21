@@ -72,22 +72,16 @@ runs:
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             ;;
           "dcc")
-            if [[ "${{ inputs.package-to-check }}" != "" ]]; then
-              SH_CMD='\
-              #!/bin/sh\
-              set -x;\
-              apt-get update 1>/dev/null 2>/dev/null;\
-              apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null 2>/dev/null;\
-              curl -s https://www.dcc-servers.net/dcc/source/old/|grep -Eo "dcc-[0-9\.]+.tar.Z" | sort | tail -n1 |sed "s/dcc-//;s/.tar.Z//"
-              '
-              echo "Running $DOCKER_CMD ${{ inputs.base-image }} -c $SH_CMD"
-              BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
-              DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
-            else
-              echo "::warning:: package-to-check non fornito, non posso eseguire il check"
-              BASE_PACKAGE_VERSION=""
-              DERIVED_PACKAGE_VERSION=""
-            fi
+            SH_CMD='\
+            #!/bin/sh\
+            set -x;\
+            apt-get update 1>/dev/null 2>/dev/null;\
+            apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null 2>/dev/null;\
+            curl -s https://www.dcc-servers.net/dcc/source/old/|grep -Eo "dcc-[0-9\.]+.tar.Z" | sort | tail -n1 |sed "s/dcc-//;s/.tar.Z//"
+            '
+            echo "Running $DOCKER_CMD ${{ inputs.base-image }} -c $SH_CMD"
+            BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
+            DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             ;;            
           "alpine")
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
