@@ -71,6 +71,24 @@ runs:
             BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             ;;
+          "dcc")
+            if [[ "${{ inputs.package-to-check }}" != "" ]]; then
+              SH_CMD='\
+              #!/bin/sh\
+              set -x;\
+              apt-get update 1>/dev/null 2>/dev/null;\
+              apt-get install -y --no-install-recommends curl gpg gpg-agent apt-transport-https ca-certificates 1>/dev/null 2>/dev/null;\
+              curl -s https://www.dcc-servers.net/dcc/source/old/ |perl -nle 'print $& if m{dcc-\K[0-9.]*(?=\.tar\.Z.*)}'|tail -n1;\
+              '
+              echo "Running $DOCKER_CMD ${{ inputs.base-image }} -c $SH_CMD"
+              BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
+              DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
+            else
+              echo "::warning:: package-to-check non fornito, non posso eseguire il check"
+              BASE_PACKAGE_VERSION=""
+              DERIVED_PACKAGE_VERSION=""
+            fi
+            ;;            
           "alpine")
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
               BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apk update 1>/dev/null ; apk info ${{ inputs.package-to-check }}|head -n1|sed 's/busybox-\(.*\) \(.*\)/\1/'")"
