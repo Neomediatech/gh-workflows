@@ -194,15 +194,17 @@ jobs:
             FROM_IMAGE="$(echo "$FROM_IMAGE"|awk -F":" '{print $1}'):$VERSION"
           fi
           echo "Base image taken from Dockerfile.${{ matrix.version }} : $FROM_IMAGE"
-          
+          echo "......"
           if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
             BASE_IMAGE="${{ inputs.base-image }}$BASE_IMAGE_TYPE"
           else
             BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$BASE_IMAGE_TYPE"
           fi
           echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
+          echo "(old) BASE_IMAGE=$BASE_IMAGE"
           # provo a rimpiazzare BASE_IMAGE con quella ricavata direttamente dal Dockerfile
           echo "BASE_IMAGE=$FROM_IMAGE" >> $GITHUB_ENV
+          echo "BASE_IMAGE=$FROM_IMAGE"
           
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           echo "DERIVED_IMAGE=$DERIVED_IMAGE" >> $GITHUB_ENV
