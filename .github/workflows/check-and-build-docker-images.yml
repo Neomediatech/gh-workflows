@@ -184,14 +184,14 @@ jobs:
           ls -l calling
           echo "this repo:"
           ls -l
-          FROM_IMAGE="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
-          if [[ "$FROM_IMAGE" == *"\$"* ]]; then
+          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
+          if [[ "$FROM_IMAGE_TMP" == *"\$"* ]]; then
             VAR_FROM="$(echo $FROM|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?/\2/')"
             VERSION="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }}|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
             if [[ "${{ matrix.version }}" == "latest" ]]; then
               VERSION="latest"
             fi
-            FROM_IMAGE="$(echo "$FROM_IMAGE"|awk -F":" '{print $1}'):$VERSION"
+            FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|awk -F":" '{print $1}'):$VERSION"
           fi
           echo "Base image taken from Dockerfile.${{ matrix.version }} : $FROM_IMAGE"
           echo "......"
