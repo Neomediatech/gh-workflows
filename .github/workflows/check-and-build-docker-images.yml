@@ -281,15 +281,16 @@ jobs:
             fi
           fi
 
-          if [[ ${{ inputs.force-build }} == "true" ]]; then
-            echo "::notice::Force build by user (force-build = ${{ inputs.force-build }})"
-            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
-          fi
-
           # se il controllo in 'check-image' riporta un risultato, vince sugli altri
           if [[ "$UPDATE_NEEDED" != "" ]]; then
             echo "::notice::UPDATE_NEEDED $UPDATE_NEEDED"
             echo "IMAGE_BUILD_NEEDED=$UPDATE_NEEDED" >> $GITHUB_ENV
+          fi
+
+          # ma se si forza il build allora vince lui
+          if [[ ${{ inputs.force-build }} == "true" ]]; then
+            echo "::notice::Force build by user (force-build = ${{ inputs.force-build }})"
+            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
           fi
 
       - name: Log in to GitHub Container Registry
