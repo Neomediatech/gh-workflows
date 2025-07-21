@@ -80,6 +80,7 @@ runs:
               BASE_PACKAGE_VERSION=""
               DERIVED_PACKAGE_VERSION=""
             fi
+            ;;
           *)
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
               BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
