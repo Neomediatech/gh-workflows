@@ -189,10 +189,8 @@ jobs:
           if [[ $? -eq 0 ]]; then
             VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?/\2/')"
             VERSION="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }}|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
-            if [[ "${{ matrix.version }}" == "latest" ]]; then
-              VERSION="latest"
-            fi
             FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|awk -F":" '{print $1}'):$VERSION"
+            echo "VERSION: $VERSION"
           fi
           echo "Base image taken from Dockerfile.${{ matrix.version }} : $FROM_IMAGE"
           echo "......"
