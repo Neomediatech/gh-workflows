@@ -185,8 +185,9 @@ jobs:
           echo "this repo:"
           ls -l
           FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
-          if [[ "$FROM_IMAGE_TMP" == *"\$"* ]]; then
-            VAR_FROM="$(echo $FROM|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?/\2/')"
+          echo "$FROM_IMAGE_TMP" | grep -q '$'
+          if [[ $? -eq 0 ]]; then
+            VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?/\2/')"
             VERSION="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }}|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
             if [[ "${{ matrix.version }}" == "latest" ]]; then
               VERSION="latest"
