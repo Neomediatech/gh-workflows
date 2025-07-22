@@ -190,6 +190,8 @@ jobs:
             VERSION="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }}|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
             FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
             echo "VERSION: $VERSION"
+          else
+            FROM_IMAGE="$FROM_IMAGE_TMP"
           fi
           echo "Base image taken from Dockerfile.${{ matrix.version }} : $FROM_IMAGE"
           echo "......"
