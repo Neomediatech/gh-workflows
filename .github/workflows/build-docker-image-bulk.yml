@@ -36,7 +36,7 @@ on:
         type: string
         default: "false"
       image-type:
-        description: 'Image type choosen from Neomediatech/gh-workflows/.github/workflows/image-type-list.yml'
+        description: 'Image type choosen from Neomediatech/gh-workflows/.github/actions/image-type-list/action.yml'
         required: false
         type: string
         default: "none"
