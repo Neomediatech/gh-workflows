@@ -184,16 +184,21 @@ jobs:
           ls -l calling
           echo "this repo:"
           ls -l
-          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }} |grep FROM|tail -n 1|awk '{print $2}')"
+          if [[ "${{ matrix.version }}" == "latest" ]]; then
+            DOCKERFILE="Dockerfile"
+          else
+            DOCKERFILE="Dockerfile.${{ matrix.version }}"
+          fi
+          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
           if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
             VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
-            VERSION="$(cat calling/$DOCKERDIR/Dockerfile.${{ matrix.version }}|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
+            VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
             FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
             echo "VERSION: $VERSION"
           else
             FROM_IMAGE="$FROM_IMAGE_TMP"
           fi
-          echo "Base image taken from Dockerfile.${{ matrix.version }} : $FROM_IMAGE"
+          echo "Base image taken from $DOCKERFILE : $FROM_IMAGE"
           echo "......"
           if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
             BASE_IMAGE="${{ inputs.base-image }}$BASE_IMAGE_TYPE"
@@ -224,6 +229,8 @@ jobs:
           # recupero il primo elemento dell'array "type"
           FIRST_TYPE=$(echo '${{ inputs.type }}' | jq -r '.[0]')
           echo "FIRST_TYPE=$FIRST_TYPE" >> $GITHUB_ENV
+
+          echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
 
       - name: Check image update
         id: check-image
@@ -350,10 +357,10 @@ jobs:
           fi
           echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
             --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
-            -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/"
+            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
           docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
             --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
-            -t $DERIVED_IMAGE -f $DOCKERDIR/Dockerfile.${{ matrix.version }} $DOCKERDIR/
+            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
           docker push $DERIVED_IMAGE
 
           # PUSH ANCHE SU DOCKERHUB
