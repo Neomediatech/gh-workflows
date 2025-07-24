@@ -159,7 +159,7 @@ jobs:
       - name: Set some var
         id: set-vars
         run: |
-          echo "::notice::Running for ${{ matrix.type }}:${{ matrix.version }}"
+          echo "Running for ${{ matrix.type }}:${{ matrix.version }}"
           [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
           echo "TAG_TEST=$TAG_TEST" >> $GITHUB_ENV
           
@@ -343,7 +343,7 @@ jobs:
             DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
             DOCKER_HUB_IMAGE="$(echo "${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"|sed 's/ghcr.io\///')"
           fi
-          echo "Building and pushing $DERIVED_IMAGE"
+          echo "::notice::Building and pushing $DERIVED_IMAGE"
           cd calling
           if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
             BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
@@ -388,10 +388,10 @@ jobs:
           echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          echo "::notice::Local branch:"
-          git branch
-          echo "::notice::Remote branch:"
-          git ls-remote --heads origin
+          #echo "Local branch:"
+          #git branch
+          #echo "Remote branch:"
+          #git ls-remote --heads origin
           # per puntare al master repo
           #git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
           git add $REPORT_FILE
@@ -467,17 +467,17 @@ jobs:
           fi
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          echo "::notice::Local branch:"
-          git branch
-          echo "::notice::Remote branch:"
-          git ls-remote --heads origin
+          #echo "::notice::Local branch:"
+          #git branch
+          #echo "::notice::Remote branch:"
+          #git ls-remote --heads origin
           git add $LAST_REPORT_FILE $LAST_TRIVY_REPORT_FILE
           git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
           echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
           git push origin ${{ inputs.derived-image-repo-ref }}
           
           NEW_COMMIT_SHA=$(git rev-parse HEAD)
-          echo "::notice::Commit SHA appena pushato: $NEW_COMMIT_SHA"
+          echo "::notice::Commit SHA just pushed: $NEW_COMMIT_SHA"
           echo "new_commit_sha=$NEW_COMMIT_SHA" >> "$GITHUB_OUTPUT"
           
           echo "last-update-report.txt content:"
