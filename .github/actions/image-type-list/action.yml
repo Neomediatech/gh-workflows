@@ -85,7 +85,7 @@ runs:
             ;;            
           "alpine")
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
-              BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apk update 1>/dev/null ; apk info ${{ inputs.package-to-check }}|head -n1|sed 's/busybox-\(.*\) \(.*\)/\1/'")"
+              BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apk update 1>/dev/null ; apk info ${{ inputs.package-to-check }}|head -n1|sed 's/${{ inputs.package-to-check }}-//;s/ description://'")"
               DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             else
               echo "::warning:: package-to-check non fornito, non posso eseguire il check"
