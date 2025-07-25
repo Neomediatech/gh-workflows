@@ -299,7 +299,7 @@ jobs:
           fi
 
           # se il controllo in 'check-image' riporta un risultato, vince sugli altri
-          if [[ "$UPDATE_NEEDED" != "" ]]; then
+          if [[ "$UPDATE_NEEDED" == "true" ]]; then
             echo "::notice::UPDATE_NEEDED $UPDATE_NEEDED"
             echo "IMAGE_BUILD_NEEDED=$UPDATE_NEEDED" >> $GITHUB_ENV
           fi
