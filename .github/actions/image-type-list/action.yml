@@ -96,11 +96,10 @@ runs:
           "github")
             # recupera l'ultima release dal repository github
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
-              LATEST_RELEASE_DATA=$(curl -s -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                "https://api.github.com/repos/${{ inputs.package-to-check }}/releases/latest")
-              # Estrae il tag della release
-              BASE_PACKAGE_VERSION=$(echo "$LATEST_RELEASE_DATA" | jq -r '.tag_name')
+              BASE_PACKAGE_VERSION=$(curl -s -H "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ inputs.package-to-check }}/releases/latest"  \
+                | jq -r '.tag_name')
+              DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             else
               echo "::warning:: package-to-check non fornito, non posso eseguire il check"
               BASE_PACKAGE_VERSION=""
