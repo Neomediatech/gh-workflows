@@ -185,7 +185,11 @@ jobs:
           echo "this repo:"
           ls -l
           if [[ "${{ matrix.version }}" == "latest" ]]; then
-            DOCKERFILE="Dockerfile"
+            if [[ -f "calling/$DOCKERDIR/Dockerfile" ]]; then
+              DOCKERFILE="Dockerfile"
+            else
+              DOCKERFILE="Dockerfile.latest"
+            fi
           else
             DOCKERFILE="Dockerfile.${{ matrix.version }}"
           fi
