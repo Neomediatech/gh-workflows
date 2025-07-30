@@ -26,6 +26,10 @@ inputs:
     description: 'tag for the image (e.g. 2.3, 8.4)'
     required: false
     type: string
+  sticky-version:
+    description: 'check for specific version'
+    required: false
+    type: string
 
 outputs:
   image-res:
@@ -122,6 +126,9 @@ runs:
             ;;
         esac
 
+        if [[ -n "${{ inputs.sticky-version }}" ]]; then
+          BASE_PACKAGE_VERSION="${{ inputs.sticky-version }}"
+        fi
         echo "BASE_PACKAGE_VERSION: $BASE_PACKAGE_VERSION"
         echo "DERIVED_PACKAGE_VERSION: $DERIVED_PACKAGE_VERSION"
 
