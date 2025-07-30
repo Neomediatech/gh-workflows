@@ -5,7 +5,7 @@ on:
     inputs:
       base-image:
         description: 'Base image to check'
-        required: true
+        required: false
         type: string
       derived-image-prefix:
         description: 'Prefix for the derived image (e.g. ghcr.io/org/repo)'
@@ -200,16 +200,17 @@ jobs:
           fi
           echo "Base image taken from $DOCKERFILE : $FROM_IMAGE"
           echo "......"
-          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
-            BASE_IMAGE="${{ inputs.base-image }}$BASE_IMAGE_TYPE"
+          if [[ "${{ inputs.base-image }}" != "" ]]; then
+            if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
+              BASE_IMAGE="${{ inputs.base-image }}$BASE_IMAGE_TYPE"
+            else
+              BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$BASE_IMAGE_TYPE"
+            fi
           else
-            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$BASE_IMAGE_TYPE"
+            BASE_IMAGE=$FROM_IMAGE
           fi
           echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
-          echo "(old) BASE_IMAGE=$BASE_IMAGE"
-          # provo a rimpiazzare BASE_IMAGE con quella ricavata direttamente dal Dockerfile
-          echo "BASE_IMAGE=$FROM_IMAGE" >> $GITHUB_ENV
-          echo "BASE_IMAGE=$FROM_IMAGE"
+          echo "BASE_IMAGE=$BASE_IMAGE"
           
           DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
           echo "DERIVED_IMAGE=$DERIVED_IMAGE" >> $GITHUB_ENV
@@ -345,11 +346,6 @@ jobs:
           fi
           echo "::notice::Building and pushing $DERIVED_IMAGE"
           cd calling
-          if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
-            BASE_IMAGE="${{ inputs.base-image }}$IMAGE_TYPE"
-          else
-            BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$IMAGE_TYPE"
-          fi
           if [[ -n $BASE_PACKAGE_VERSION ]]; then
             PACKAGE_LABEL="--label org.opencontainers.package.version=$BASE_PACKAGE_VERSION"
           else
