@@ -69,6 +69,7 @@ jobs:
       package-name: ${{ steps.set-matrix.outputs.package-name }}
       versions: ${{ steps.set-matrix.outputs.versions }}
       types: ${{ steps.set-matrix.outputs.types }}
+      derived-image-prefix: ${{ steps.set-matrix.outputs.derived-image-prefix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -131,6 +132,11 @@ jobs:
           
           echo "versions=$versions" >> $GITHUB_OUTPUT
           echo "types=$types" >> $GITHUB_OUTPUT
+          if [[ "${{ inputs.derived-image-prefix }}" != "" ]]; then
+            echo "derived-image-prefix=${{ inputs.derived-image-prefix }}" >> $GITHUB_OUTPUT
+          else
+            echo "derived-image-prefix=ghcr.io/$REPO_LOWER" >> $GITHUB_OUTPUT
+          fi
 
   update-images:
     needs: discover-dockerfiles
@@ -142,8 +148,7 @@ jobs:
     secrets: inherit
     with:
       base-image: ${{ inputs.base-image }}
-      #derived-image-prefix: ghcr.io/${{ needs.discover-dockerfiles.outputs.repo-lower }}
-      derived-image-prefix: ${{ inputs.derived-image-prefix }}
+      derived-image-prefix: ${{ needs.discover-dockerfiles.outputs.derived-image-prefix }}
       #versions: '["8.4", "8.3", "8.2", "8.1", "7.4"]'
       #type: '["apache", "fpm"]'
       versions: '${{ needs.discover-dockerfiles.outputs.versions }}'
