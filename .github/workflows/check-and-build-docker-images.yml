@@ -189,6 +189,8 @@ jobs:
           else
             DOCKERFILE="Dockerfile.${{ matrix.version }}"
           fi
+          # search for STICKY_VERSION var in Dockerfile
+          STICKY_VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
           FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
           if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
             VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
@@ -199,7 +201,6 @@ jobs:
             FROM_IMAGE="$FROM_IMAGE_TMP"
           fi
           echo "Base image taken from $DOCKERFILE : $FROM_IMAGE"
-          echo "......"
           if [[ "${{ inputs.base-image }}" != "" ]]; then
             if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
               BASE_IMAGE="${{ inputs.base-image }}$BASE_IMAGE_TYPE"
@@ -232,8 +233,9 @@ jobs:
           echo "FIRST_TYPE=$FIRST_TYPE" >> $GITHUB_ENV
 
           echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
+          echo "STICKY_VERSION=$STICKY_VERSION" >> $GITHUB_ENV
 
-      - name: Check image update
+      - name: Check image update (check software versions)
         id: check-image
         uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
         with:
@@ -242,6 +244,7 @@ jobs:
           derived-image: '$DERIVED_IMAGE'
           package-to-check: "${{ inputs.package-to-check }}"
           image-version: ${{ matrix.version }}
+          sticky-version: "$STICKY_VERSION"
         if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
       - name: Set vars from Check image type action
@@ -253,7 +256,7 @@ jobs:
         if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
       # Step di verifica aggiornamento immagine
-      - name: Check if derived image needs update
+      - name: Check if derived image needs update (based on digests)
         id: check
         run: |
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
