@@ -9,7 +9,7 @@ on:
         type: string
       derived-image-prefix:
         description: 'Prefix for the derived image (e.g. ghcr.io/org/repo)'
-        required: true
+        required: false
         type: string
       versions:
         description: 'JSON array of versions/tags to check'
