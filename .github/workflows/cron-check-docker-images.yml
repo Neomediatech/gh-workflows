@@ -17,7 +17,9 @@ jobs:
         id: set-matrix
         run: |
           IMAGES=$(cat images-to-check.txt | tr '\n' ',' | sed 's/,$//')
+          echo "IMAGES: $IMAGES"
           MATRIX_JSON="{\"images\":[${IMAGES}]}"
+          echo "matrix=${MATRIX_JSON}"
           echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
 
   run-jobs-with-matrix:
