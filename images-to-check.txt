@@ -1,0 +1,15 @@
+ghcr.io/neomediatech/cron
+ghcr.io/neomediatech/php:7.2-epe
+ghcr.io/neomediatech/php:7.4-fpm
+ghcr.io/neomediatech/php:8.1-apache
+ghcr.io/neomediatech/php:8.2-apache
+ghcr.io/neomediatech/php:8.3-apache
+ghcr.io/neomediatech/php:8.4-apache
+ghcr.io/neomediatech/php:8-apache
+ghcr.io/neomediatech/php-apache
+ghcr.io/neomediatech/sshd
+ghcr.io/neomediatech/ubuntu-base:18.04
+ghcr.io/neomediatech/ubuntu-base:20.04
+ghcr.io/neomediatech/ubuntu-base:22.04
+ghcr.io/neomediatech/ubuntu-base:24.04
+ghcr.io/neomediatech/ubuntu-base:rolling
