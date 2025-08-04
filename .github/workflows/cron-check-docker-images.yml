@@ -16,7 +16,7 @@ jobs:
       - name: Read file and generate JSON for matrix
         id: set-matrix
         run: |
-          IMAGES=$(cat images-to-check.txt | tr '\n' ',' | sed 's/,$//')
+          IMAGES=$(cat images-to-check.txt | tr '\n' ',' | sed 's/,$//'| awk '{print "\""$1"\""}')
           echo "IMAGES: $IMAGES"
           MATRIX_JSON="{\"images\":[${IMAGES}]}"
           echo "matrix=${MATRIX_JSON}"
