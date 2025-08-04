@@ -1,0 +1,30 @@
+name: Check via cron if an image needs to be updated
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  generate-matrix:
+    runs-on: [self-hosted]
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Read file and generate JSON for matrix
+        id: set-matrix
+        run: |
+          IMAGES=$(cat images-to-check.txt | tr '\n' ',' | sed 's/,$//')
+          MATRIX_JSON="{\"images\":[${IMAGES}]}"
+          echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
+
+  run-jobs-with-matrix:
+    runs-on: [self-hosted]
+    needs: generate-matrix
+    strategy:
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - name: Show matrix value
+        run: echo "The current value from the matrix is ${{ matrix.images }}"
