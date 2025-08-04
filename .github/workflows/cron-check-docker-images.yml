@@ -28,5 +28,31 @@ jobs:
     strategy:
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
-      - name: Show matrix value
-        run: echo "The current value from the matrix is ${{ matrix.images }}"
+      - name: Show & Set matrix value & vars
+        run: |
+          echo "The current value from the matrix is ${{ matrix.images }}"
+          IMG_TYPE="$(basename ${{ matrix.images }} | awk -F: '{print $1}')"
+          echo "IMG_TYPE=$IMG_TYPE" >> $GITHUB_ENV
+
+          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
+          if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
+            VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
+            VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
+            FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
+            echo "VERSION: $VERSION"
+          else
+            FROM_IMAGE="$FROM_IMAGE_TMP"
+          fi
+          echo "Base image taken from $DOCKERFILE : $FROM_IMAGE"
+          
+      - name: Check image update (check software versions)
+        id: check-image
+        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+        with:
+          image-type: "$IMG_TYPE"
+          base-image: '$BASE_IMAGE'
+          derived-image: '$DERIVED_IMAGE'
+          package-to-check: "${{ inputs.package-to-check }}"
+          image-version: ${{ matrix.version }}
+          sticky-version: "$STICKY_VERSION"
+        if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
