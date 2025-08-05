@@ -1,6 +1,9 @@
 name: Check via cron if an image needs to be updated
 
 on:
+  schedule:
+    # Esegui ogni giorno alle 04:00 UTC
+    - cron: '0 4 * * *'
   workflow_dispatch:
   workflow_call:
 
