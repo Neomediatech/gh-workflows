@@ -30,6 +30,7 @@ jobs:
     steps:
       - name: Show & Set matrix value & vars
         id: check-update
+        shell: bash
         run: |
           echo "The current value from the matrix is ${{ matrix.images }}"
           #IMAGE_META="$(skopeo inspect docker://${{ matrix.images }} || echo "")"
@@ -68,6 +69,7 @@ jobs:
     needs: update-check
     steps:
       - name: Set some var
+        shell: bash
         run: |
           echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
 
@@ -77,6 +79,7 @@ jobs:
           path: results
 
       - name: Show result
+        shell: bash
         run: |
           echo "--- Riassunto risultati ---"
           cat results/*/result.txt > all-results.txt
