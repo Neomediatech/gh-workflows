@@ -502,7 +502,8 @@ jobs:
         run: |
           echo "--- Riassunto risultati ---"
           ls -lah results
-          cat results/*.txt |sort > update-report.txt
+          cat results/*.txt |sort > update-report-last.txt
+          cat results/*.txt |sort >> update-report-history.txt
           #if grep -q "❌" all-results.txt; then
           #  ICON_TITLE="❌"
           #elif grep -q "🔁" all-results.txt; then
@@ -515,7 +516,7 @@ jobs:
           #echo "ICON_TITLE=$ICON_TITLE" >> $GITHUB_ENV
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          git add update-report.txt
+          git add update-report-last.txt update-report-history.txt
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           git push origin ${{ github.ref_name }}
 
@@ -523,7 +524,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.REPORT_NAME }}
-          path: update-report.txt
+          path: update-report*.txt
           retention-days: 1
           overwrite: true
 
