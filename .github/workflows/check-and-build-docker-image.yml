@@ -478,6 +478,14 @@ jobs:
     needs: [check-and-build]
     runs-on: [self-hosted]
     steps:
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.derived-image-repo }}
+          ref: ${{ inputs.derived-image-repo-ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
+
       - name: Set some var
         run: |
           echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
