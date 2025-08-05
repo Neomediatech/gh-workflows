@@ -72,7 +72,7 @@ runs:
         i=1
         for file in artifacts/*; do
           if [ -f "$file" ]; then
-            ATTACHMENTS+=" -F 'attach$i=@$file'"
+            ATTACHMENTS+=" -F attach$i=@$file"
             cat "$file" >> $BODY_CONTENT_FILE
             ((i++))
           fi
