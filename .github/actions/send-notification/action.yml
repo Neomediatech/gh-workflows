@@ -63,6 +63,8 @@ runs:
       run: |
         ls -laR artifacts
         BODY_CONTENT_FILE=$(mktemp)
+        pwd
+        ls -la "$BODY_CONTENT_FILE"
         echo "${{ inputs.message }}\n" > $BODY_CONTENT_FILE
         
         # attach all files
