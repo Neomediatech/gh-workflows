@@ -79,8 +79,7 @@ jobs:
       - name: Show result
         run: |
           echo "--- Riassunto risultati ---"
-          cat results/*/result.txt > all-results.txt
-          cat all-results.txt | sort
+          cat results/*/result.txt |sort > all-results.txt
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
