@@ -493,6 +493,7 @@ jobs:
       - name: Show result
         run: |
           echo "--- Riassunto risultati ---"
+          ls -lah results
           cat results/*/result.txt |sort > all-results.txt
           #if grep -q "❌" all-results.txt; then
           #  ICON_TITLE="❌"
