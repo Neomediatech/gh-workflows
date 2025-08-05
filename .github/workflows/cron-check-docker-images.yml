@@ -85,7 +85,7 @@ jobs:
       - name: Upload global report
         uses: actions/upload-artifact@v4
         with:
-          name: $REPORT_NAME
+          name: ${{ env.REPORT_NAME }}
           path: all-results.txt
           retention-days: 1
           overwrite: true
@@ -94,7 +94,7 @@ jobs:
         id: notify
         uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
         with:
-          report-name: $REPORT_NAME
+          report-name: ${{ env.REPORT_NAME }}
           notify-cmd: ${{ secrets.NOTIFY_CMD }}
           notify-up: ${{ secrets.NOTIFY_UP }}
           notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
