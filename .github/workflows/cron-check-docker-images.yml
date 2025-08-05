@@ -52,7 +52,7 @@ jobs:
           #  RES="✅ update NOT needed"
           #fi
           RES=$RANDOM
-          echo "::notice:: res=${{ matrix.images }} $RES"
+          echo "::notice:: ${{ matrix.images }} $RES"
           echo "${{ matrix.images }} $RES" > result.txt
 
       - name: Upload result
