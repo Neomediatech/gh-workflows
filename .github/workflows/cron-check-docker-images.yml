@@ -95,6 +95,7 @@ jobs:
         uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
         with:
           report-name: ${{ env.REPORT_NAME }}
+          #message: "un messaggio"
           notify-cmd: ${{ secrets.NOTIFY_CMD }}
           notify-up: ${{ secrets.NOTIFY_UP }}
           notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
