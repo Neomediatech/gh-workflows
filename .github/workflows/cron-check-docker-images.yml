@@ -56,6 +56,15 @@ jobs:
           RES=$RANDOM
           echo "::notice:: res=${{ matrix.images }} $RES"
           echo "res=${{ matrix.images }} $RES" >> $GITHUB_OUTPUT
+          echo "${{ matrix.images }} $RES" >> result.txt
+          UNIQUE="${{ github.run_id }}_${{ strategy.job-index }}"
+          echo "UNIQUE: $UNIQUE"
+
+      #- name: Upload result
+      #  uses: actions/upload-artifact@v3
+      #  with:
+      #    name: result-${{ matrix.images }}
+      #    path: result.txt
 
   result:
     runs-on: [self-hosted]
@@ -68,3 +77,12 @@ jobs:
           echo "--- Riassunto risultati ---"
           # Usa jq per iterare su ogni output della matrice e stampare solo il valore di "res"
           echo '${{ toJSON(needs.update-check.outputs) }}' | jq -r '.'
+      #- name: Download all artifacts
+      #  uses: actions/download-artifact@v3
+      #  with:
+      #    path: results
+
+      #- name: Show result
+      #  run: |
+      #    echo "--- Riassunto risultati ---"
+      #    cat results/*/result.txt
