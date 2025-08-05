@@ -75,7 +75,8 @@ runs:
             ((i++))
           fi
         done
-        
+
+        echo "${{ inputs.notify-cmd }} --no-progress-meter --user ${{ inputs.notify-up }} -X POST ${{ inputs.notify-endpoint }} ${{ inputs.notify-options }} $ATTACHMENTS -F title=${{ inputs.title }} -F body=$BODY_CONTENT"
         ${{ inputs.notify-cmd }} --no-progress-meter --user "${{ inputs.notify-up }}" \
              -X POST ${{ inputs.notify-endpoint }} \
              ${{ inputs.notify-options }} \
