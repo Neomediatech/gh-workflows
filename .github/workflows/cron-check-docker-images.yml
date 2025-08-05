@@ -22,12 +22,6 @@ jobs:
           echo "matrix=${MATRIX_JSON}"
           echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
 
-          # Build JSON array with jq
-          matrix_json=$(printf '%s\n' "${filtered_array[@]}" | jq -R -s -c '{images: .}')
-          
-          echo "Generated Matrix JSON: $matrix_json"
-          echo "matrix=${matrix_json}" >> $GITHUB_OUTPUT
-
   update-check:
     runs-on: [self-hosted]
     needs: generate-matrix
