@@ -82,6 +82,7 @@ runs:
       if: ${{ inputs.report-name }} != ""
 
     - name: Invia notifica email (con eventuale report allegato)
+      shell: bash
       run: |
         ls -la
         #if [[ ! -f calling/last-update-report.txt ]]; then
