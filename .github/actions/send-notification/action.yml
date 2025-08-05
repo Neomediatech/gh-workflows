@@ -30,8 +30,8 @@ inputs:
     description: "Override per l'URL email Apprise"
   build-result:
     required: false
-     type: string
-     description: "Build image result"
+    type: string
+    description: "Build image result"
   report-name:
     required: false
     type: string
