@@ -1,0 +1,564 @@
+name: Check and Build Docker Images
+
+on:
+  workflow_call:
+    inputs:
+      base-image:
+        description: 'Base image to check'
+        required: false
+        type: string
+      derived-image-prefix:
+        description: 'Prefix for the derived image (e.g. ghcr.io/org/repo)'
+        required: false
+        type: string
+      versions:
+        description: 'JSON array of versions/tags to check'
+        required: true
+        type: string
+      type:
+        description: 'JSON array of image type to check'
+        required: false
+        type: string
+        default: '[""]'
+      derived-image-repo:
+        description: 'Github repo name (e.g. Neomediatech/rspamd)'
+        required: false
+        type: string
+      derived-image-repo-ref:
+        description: 'Github repo ref (e.g. "main" or "master")'
+        required: false
+        type: string
+        default: "main"
+      update-image:
+        description: 'Whether to update the image or not (e.g. true or false)'
+        required: false
+        type: string
+        default: "false"
+      build-test-image:
+        description: 'Whether to build a test image or not (e.g. true or false)'
+        required: false
+        type: string
+        default: "false"
+      force-build:
+        description: 'Whether to force the image build (true or false)'
+        required: false
+        type: string
+        default: "false"
+      package-name:
+        description: 'The name for the package to build (e.g. neomediatech/rspamd)'
+        required: false
+        type: string
+        default: "default"
+      package-to-check:
+        description: 'The name for the package to check to compare with (e.g. exim4-daemon-heavy)'
+        required: false
+        type: string
+      skip-type-from-base-image:
+        description: 'Avoid using image type on base image'
+        required: false
+        type: string
+        default: "false"
+      image-type:
+        description: 'Image type taken from gh-workflows/.github/workflows/image-type-list.yml'
+        required: false
+        type: string
+        default: "none"
+
+    secrets:
+      NOTIFY_CMD:
+        required: true
+      NOTIFY_UP:
+        required: true
+      NOTIFY_ENDPOINT:
+        required: true
+      NOTIFY_OPTIONS:
+        required: true
+      GHCR_TOKEN:
+        required: true
+      API_TOKEN_GITHUB:
+        required: true
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  prepare-matrix:
+    runs-on: [self-hosted]
+    outputs:
+      filtered_matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+      # Checkout del repository chiamante
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.derived-image-repo }}
+          ref: ${{ inputs.derived-image-repo-ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: calling
+        if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
+
+      - name: Find Dockerfiles in a repo and return a matrix of elements
+        id: generate-matrix
+        uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
+
+      - name: Process Remote Action Outputs
+        run: |
+          echo "Matrix: ${{ steps.generate-matrix.outputs.matrix }}"
+          echo "Repo lower: ${{ steps.generate-matrix.outputs.repo-lower }}"
+          echo "matrix=${{ steps.generate-matrix.outputs.matrix }}" >> "$GITHUB_OUTPUT"
+
+  check-and-build:
+    needs: [prepare-matrix]
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
+    strategy:
+      matrix:
+        # Usa l'output del job prepare-matrix come input per la matrix
+        include: ${{ fromJson(needs.prepare-matrix.outputs.filtered_matrix) }}
+      max-parallel: 1
+    env:
+      MASTER_REPO: "Neomediatech/gh-workflows.git"
+    outputs:
+      build-result: ${{ steps.vars.outputs.build_result }}
+      report-name: ${{ steps.final-vars.outputs.report_name }}
+      image-update-result: ${{ steps.final-vars.outputs.image_update_result }}
+      image-name: ${{ steps.final-vars.outputs.image_name }}
+      new_commit_sha: ${{ steps.final-report.outputs.new_commit_sha }}
+    steps:
+      # Checkout il repo di questo workflow (utile se hai file di supporto qui)
+      - name: Checkout this workflow repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.MASTER_REPO }}
+          ref: main
+          path: workflow
+          token: ${{ secrets.API_TOKEN_GITHUB }}
+
+      # Checkout il repository chiamante (serve per la build se il Dockerfile/context sono lì)
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.derived-image-repo }}
+          ref: ${{ inputs.derived-image-repo-ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: calling
+        if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
+
+      # Set some var
+      - name: Set some var
+        id: set-vars
+        run: |
+          echo "Running for ${{ matrix.type }}:${{ matrix.version }}"
+          [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
+          echo "TAG_TEST=$TAG_TEST" >> $GITHUB_ENV
+          
+          if [[ "${{ matrix.type }}" == "" || "${{ matrix.type }}" == "." ]]; then
+            IMAGE_TYPE=""
+            DOCKERDIR="."
+          else
+            IMAGE_TYPE="-${{ matrix.type }}"
+            DOCKERDIR="${{ matrix.type }}"
+          fi
+          echo "IMAGE_TYPE=$IMAGE_TYPE" >> $GITHUB_ENV
+          echo "DOCKERDIR=$DOCKERDIR" >> $GITHUB_ENV
+
+          if [[ "${{ inputs.skip-type-from-base-image }}" == "true" ]]; then
+            BASE_IMAGE_TYPE=""
+          else
+            BASE_IMAGE_TYPE="$IMAGE_TYPE"
+          fi
+
+          # estraggo l'immagine di base
+          echo "calling repo:"
+          ls -l calling
+          echo "this repo:"
+          ls -l
+          if [[ "${{ matrix.version }}" == "latest" ]]; then
+            if [[ -f "calling/$DOCKERDIR/Dockerfile" ]]; then
+              DOCKERFILE="Dockerfile"
+            else
+              DOCKERFILE="Dockerfile.latest"
+            fi
+          else
+            DOCKERFILE="Dockerfile.${{ matrix.version }}"
+          fi
+          # search for STICKY_VERSION var in Dockerfile
+          STICKY_VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
+          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
+          if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
+            VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
+            VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
+            FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
+            echo "VERSION: $VERSION"
+          else
+            FROM_IMAGE="$FROM_IMAGE_TMP"
+          fi
+          echo "Base image taken from $DOCKERFILE : $FROM_IMAGE"
+          if [[ "${{ inputs.base-image }}" != "" ]]; then
+            if [[ "${{ inputs.base-image }}" =~ ":" ]]; then
+              BASE_IMAGE="${{ inputs.base-image }}$BASE_IMAGE_TYPE"
+            else
+              BASE_IMAGE="${{ inputs.base-image }}:${{ matrix.version }}$BASE_IMAGE_TYPE"
+            fi
+          else
+            BASE_IMAGE=$FROM_IMAGE
+          fi
+          echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
+          echo "BASE_IMAGE=$BASE_IMAGE"
+          
+          DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+          echo "DERIVED_IMAGE=$DERIVED_IMAGE" >> $GITHUB_ENV
+
+          REPO_NAME="$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')"      
+          echo "BUILD_RESULT=unknown" >> $GITHUB_ENV
+          echo "IMAGE_UPDATE_RESULT=unknown" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=none" >> $GITHUB_ENV
+          echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "REPORT_NAME=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_ENV
+
+          # recupero il primo elemento dell'array "versions"
+          FIRST_VERSION=$(echo '${{ inputs.versions }}' | jq -r '.[0]')
+          echo "FIRST_VERSION=$FIRST_VERSION" >> $GITHUB_ENV
+
+          # recupero il primo elemento dell'array "type"
+          FIRST_TYPE=$(echo '${{ inputs.type }}' | jq -r '.[0]')
+          echo "FIRST_TYPE=$FIRST_TYPE" >> $GITHUB_ENV
+
+          echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
+          echo "STICKY_VERSION=$STICKY_VERSION" >> $GITHUB_ENV
+
+      - name: Check image update (check software versions)
+        id: check-image
+        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+        with:
+          image-type: '${{ inputs.image-type }}'
+          base-image: '$BASE_IMAGE'
+          derived-image: '$DERIVED_IMAGE'
+          package-to-check: "${{ inputs.package-to-check }}"
+          image-version: ${{ matrix.version }}
+          sticky-version: "$STICKY_VERSION"
+        if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
+
+      - name: Set vars from Check image type action
+        run: |
+          echo "Update Needed: ${{ steps.check-image.outputs.update-needed }}"
+          echo "UPDATE_NEEDED=${{ steps.check-image.outputs.update-needed }}" >> $GITHUB_ENV
+          echo "Base image package version: ${{ steps.check-image.outputs.base-img-pkg-ver }}"
+          echo "BASE_PACKAGE_VERSION=${{ steps.check-image.outputs.base-img-pkg-ver }}" >> $GITHUB_ENV
+        if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
+
+      # Step di verifica aggiornamento immagine
+      - name: Check if derived image needs update (based on digests)
+        id: check
+        run: |
+          echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
+
+          if [[ -n "${{ inputs.package-to-check }}" ]]; then
+            if [[ -z "$BASE_PACKAGE_VERSION" ]]; then
+              BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root $BASE_IMAGE -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
+            fi
+            DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://$DERIVED_IMAGE | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
+            echo "Package version from base image $BASE_IMAGE : $BASE_PACKAGE_VERSION"
+            echo "Package version from derived image $DERIVED_IMAGE : $DERIVED_PACKAGE_VERSION"
+            echo "BASE_PACKAGE_VERSION=$BASE_PACKAGE_VERSION" >> $GITHUB_ENV
+            echo "DERIVED_PACKAGE_VERSION=$DERIVED_PACKAGE_VERSION" >> $GITHUB_ENV
+          fi
+
+          BASE_DIGEST=$(skopeo inspect docker://$BASE_IMAGE | jq -r '.Digest')
+          DERIVED_DIGEST=$(skopeo inspect docker://$DERIVED_IMAGE | jq -r '.Labels."org.opencontainers.image.base.digest"' || echo "")
+
+          echo "Base digest: $BASE_DIGEST"
+          echo "Derived digest: $DERIVED_DIGEST"
+          echo "base_image_digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
+        
+          if [[ -n "${{ inputs.package-to-check }}" ]]; then
+            if [[ -z "$BASE_PACKAGE_VERSION" || "$BASE_PACKAGE_VERSION" == "null" ]]; then
+              echo "::error::Package version not found! Why??"
+              echo "IMAGE_BUILD_NEEDED=ERROR" >> $GITHUB_ENV
+            elif [[ $BASE_PACKAGE_VERSION != $DERIVED_PACKAGE_VERSION ]]; then
+              echo "Package version $BASE_PACKAGE_VERSION from base image $BASE_IMAGE differs from package version $DERIVED_PACKAGE_VERSION on derived image $DERIVED_IMAGE"
+              echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+            else
+              echo "IMAGE_BUILD_NEEDED=false" >> $GITHUB_ENV
+            fi
+          else
+            if [[ -z "$DERIVED_DIGEST" || "$DERIVED_DIGEST" == "null" ]]; then
+              echo "Derived image not found or not accessible, needs build."
+              echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+            elif [[ "$BASE_DIGEST" != "$DERIVED_DIGEST" ]]; then
+              echo "::notice::Base and derived digests do not match, needs build."
+              echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+            else
+              echo "::notice::Image up to date."
+              echo "IMAGE_BUILD_NEEDED=false" >> $GITHUB_ENV
+            fi
+          fi
+
+          # se il controllo in 'check-image' riporta un risultato, vince sugli altri
+          if [[ "$UPDATE_NEEDED" == "true" ]]; then
+            echo "::notice::UPDATE_NEEDED $UPDATE_NEEDED"
+            echo "IMAGE_BUILD_NEEDED=$UPDATE_NEEDED" >> $GITHUB_ENV
+          fi
+
+          # ma se si forza il build allora vince lui
+          if [[ ${{ inputs.force-build }} == "true" ]]; then
+            echo "::notice::Force build by user (force-build = ${{ inputs.force-build }})"
+            echo "IMAGE_BUILD_NEEDED=true" >> $GITHUB_ENV
+          fi
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+          #password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Notifica l'esistenza di un aggiornamento nel caso si decida di non aggiornare l'immagine
+      - name: Notify update needed
+        id: only-notify
+        run: |
+          echo "::notice::Base ($BASE_IMAGE) and derived ($DERIVED_IMAGE) digests do not match, needs build."
+          #echo "image_update_result=needed" >> $GITHUB_OUTPUT
+          echo "IMAGE_UPDATE_RESULT=needed" >> $GITHUB_ENV
+          echo "BUILD_RESULT=needed" >> $GITHUB_ENV
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image != 'true'
+
+      # Build e push SOLO se serve aggiornare
+      - name: Build and push Docker image
+        id: vars
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
+        run: |
+          [[ "${{ inputs.build-test-image }}" == "true" ]] && TAG_TEST="-test" || TAG_TEST=""
+
+          PACKAGE_NAME="${{ inputs.package-name }}"
+          if [[ "$PACKAGE_NAME" != "default" && -n "$PACKAGE_NAME" ]]; then
+            DERIVED_IMAGE="ghcr.io/$PACKAGE_NAME:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+            DOCKER_HUB_IMAGE="$PACKAGE_NAME:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+          else
+            DERIVED_IMAGE="${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"
+            DOCKER_HUB_IMAGE="$(echo "${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"|sed 's/ghcr.io\///')"
+          fi
+          echo "::notice::Building and pushing $DERIVED_IMAGE"
+          cd calling
+          if [[ -n $BASE_PACKAGE_VERSION ]]; then
+            PACKAGE_LABEL="--label org.opencontainers.package.version=$BASE_PACKAGE_VERSION"
+          else
+            PACKAGE_LABEL=""
+          fi
+          echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
+            --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
+            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
+          #docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
+          #  --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
+          #  -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
+          #docker push $DERIVED_IMAGE
+
+          # PUSH ANCHE SU DOCKERHUB
+          if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
+            echo "::notice::Tagging $DERIVED_IMAGE $DOCKER_HUB_IMAGE"
+            docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            #docker push $DOCKER_HUB_IMAGE
+          else
+            echo "::warning::Credenziali DOCKER HUB non fornite, NON carico l'immagine su DockerHUB"
+          fi
+
+          #REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
+          # update report file
+          cd ../calling
+          # per utilizzare il workflow comune:
+          #cd ../workflow
+          REPORT_FILE="update-report.txt"
+          echo "::notice::Updating report file $REPORT_FILE"
+          echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
+          
+          echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
+          echo "BUILD_RESULT=UPDATED" >> $GITHUB_ENV
+          echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
+          git config user.name "neo-github-actions[bot]"
+          git config user.email "neo-github-actions[bot]@users.noreply.github.com"
+          git add $REPORT_FILE
+          git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
+          git push origin ${{ github.ref_name }}
+
+          # nuovo report con upload artifact
+          #cd
+          ls -l
+          echo "$(date) --- $DERIVED_IMAGE UPDATED" > report.txt
+          ls -l
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ strategy.job-index }}
+          path: calling/report.txt
+          retention-days: 1
+          overwrite: true
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
+
+      # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
+      - name: Skip image update because user chosen to not update it
+        id: update-not-wanted
+        if: inputs.update-image != 'true'
+        run: |
+          echo "NOT updating image because update-image = ${{ inputs.update-image }}"
+          #echo "image_update_result=user-said-no" >> $GITHUB_OUTPUT
+          echo "IMAGE_UPDATE_RESULT=user-said-no" >> $GITHUB_ENV
+          echo "BUILD_RESULT=user-said-no" >> $GITHUB_ENV
+
+      # Notifica che l'immagine non viene aggiornata perché l'immagine di base è già aggiornata'
+      - name: Skip image update because base image is updated
+        id: update-not-needed
+        if: env.IMAGE_BUILD_NEEDED != 'true'
+        run: |
+          echo "NOT updating image because base image is updated (IMAGE_BUILD_NEEDED = $IMAGE_BUILD_NEEDED)"
+          #echo "image_update_result=not-needed" >> $GITHUB_OUTPUT
+          echo "IMAGE_UPDATE_RESULT=not-needed" >> $GITHUB_ENV
+          echo "BUILD_RESULT=not-needed" >> $GITHUB_ENV
+
+      - name: Set some result vars
+        id: final-vars
+        run: |
+          echo "image_update_result=$IMAGE_UPDATE_RESULT" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_UPDATE_RESULT=$IMAGE_UPDATE_RESULT"
+          echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
+          #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
+          echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
+        with:
+          image-ref: ${{ env.DERIVED_IMAGE }} # Usa la variabile d'ambiente
+          format: 'table'
+          output: 'calling/trivy-report.txt'
+          severity: 'HIGH,CRITICAL'
+          #exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+
+      - name: Push report
+        id: final-report
+        run: |
+          # update report file
+          cd calling
+          # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
+          LAST_REPORT_FILE="last-update-report.txt"
+          LAST_TRIVY_REPORT_FILE="last-trivy-report.txt"
+          CUR_TRIVY_REPORT_FILE="trivy-report.txt"
+          if [[ ! -f $CUR_TRIVY_REPORT_FILE ]]; then
+            echo "-----------------------------------" > $CUR_TRIVY_REPORT_FILE
+            echo "$(date) --- $DERIVED_IMAGE NOT SCANNED" >> $CUR_TRIVY_REPORT_FILE
+          else
+            echo "-----------------------------------" > tmp_trivy_rpt.txt
+            echo "$(date) --- $DERIVED_IMAGE" >> tmp_trivy_rpt.txt
+            cat $CUR_TRIVY_REPORT_FILE >> tmp_trivy_rpt.txt
+            cat tmp_trivy_rpt.txt > $CUR_TRIVY_REPORT_FILE
+          fi
+          if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
+            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
+            cat $CUR_TRIVY_REPORT_FILE > $LAST_TRIVY_REPORT_FILE
+          else
+            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
+            cat $CUR_TRIVY_REPORT_FILE >> $LAST_TRIVY_REPORT_FILE
+          fi
+          git config user.name "neo-github-actions[bot]"
+          git config user.email "neo-github-actions[bot]@users.noreply.github.com"
+          #echo "::notice::Local branch:"
+          #git branch
+          #echo "::notice::Remote branch:"
+          #git ls-remote --heads origin
+          git add $LAST_REPORT_FILE $LAST_TRIVY_REPORT_FILE
+          git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
+          echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
+          git push origin ${{ inputs.derived-image-repo-ref }}
+          
+          NEW_COMMIT_SHA=$(git rev-parse HEAD)
+          echo "::notice::Commit SHA just pushed: $NEW_COMMIT_SHA"
+          echo "new_commit_sha=$NEW_COMMIT_SHA" >> "$GITHUB_OUTPUT"
+          
+          echo "last-update-report.txt content:"
+          cat last-update-report.txt
+
+      # Docker logout (opzionale, buono per pulizia)
+      - name: Docker logout
+        run: docker logout ghcr.io
+
+  build-report:
+    needs: [check-and-build]
+    runs-on: [self-hosted]
+    steps:
+      - name: Set some var
+        run: |
+          echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
+          REPORT_DATE="$(TZ="Europe/Rome" date)"
+          echo "REPORT_DATE=$REPORT_DATE" >> $GITHUB_ENV
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+
+      - name: Show result
+        run: |
+          echo "--- Riassunto risultati ---"
+          cat results/*/result.txt |sort > all-results.txt
+          #if grep -q "❌" all-results.txt; then
+          #  ICON_TITLE="❌"
+          #elif grep -q "🔁" all-results.txt; then
+          #  ICON_TITLE="🔁"
+          #elif grep -q "✅" all-results.txt; then
+          #  ICON_TITLE="✅"
+          #else
+          #  ICON_TITLE=""
+          #fi
+          #echo "ICON_TITLE=$ICON_TITLE" >> $GITHUB_ENV
+
+      - name: Upload global report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.REPORT_NAME }}
+          path: all-results.txt
+          retention-days: 1
+          overwrite: true
+
+      - name: Notify image build
+        id: notify
+        uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
+        with:
+          report-name: ${{ env.REPORT_NAME }}
+          #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
+          title: "Aggiornamenti immagini docker"
+          message: "${{ env.REPORT_DATE }}"
+          notify-cmd: ${{ secrets.NOTIFY_CMD }}
+          notify-up: ${{ secrets.NOTIFY_UP }}
+          notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
+          notify-options: ${{ secrets.NOTIFY_OPTIONS }}
+
+  notify:
+    needs: [check-and-build]
+    uses: Neomediatech/gh-workflows/.github/workflows/notify.yml@main
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+    with:
+      build-result: "${{needs.check-and-build.outputs.build-result}}"
+      report-name: "${{needs.check-and-build.outputs.report-name}}"
+      image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
+      docker_image: "${{needs.check-and-build.outputs.image-name}}"
+      commit: "${{needs.check-and-build.outputs.new_commit_sha}}"
+    secrets:
+      NOTIFY_CMD: ${{ secrets.NOTIFY_CMD }}
+      NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
+      NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
+      NOTIFY_OPTIONS: ${{ secrets.NOTIFY_OPTIONS }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
