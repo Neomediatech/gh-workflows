@@ -62,18 +62,27 @@ runs:
       shell: bash
       run: |
         BODY_CONTENT_FILE=$(mktemp)
-        echo "${{ inputs.message }}\n" > $BODY_CONTENT_FILE
+        if [[ "${{ inputs.message }}" != "" ]]; then 
+          echo "${{ inputs.message }}" > $BODY_CONTENT_FILE
+        else
+          echo "" > $BODY_CONTENT_FILE
+        fi
         
         # attach all files
         ATTACHMENTS=""
-        i=1
-        for file in artifacts/*; do
-          if [ -f "$file" ]; then
-            ATTACHMENTS+=" -F attach$i=@$file"
-            cat "$file" >> $BODY_CONTENT_FILE
-            ((i++))
-          fi
-        done
+        ARTIFACT_DIR="artifacts"
+        DELETE=" $BODY_CONTENT_FILE"
+        if [[ -d "$ARTIFACT_DIR" ]]; then
+          DELETE+="$ARTIFACT_DIR"
+          i=1
+          for file in $ARTIFACT_DIR/*; do
+            if [ -f "$file" ]; then
+              ATTACHMENTS+=" -F attach$i=@$file"
+              cat "$file" >> $BODY_CONTENT_FILE
+              ((i++))
+            fi
+          done
+        fi
 
         BODY_CONTENT="$(< $BODY_CONTENT_FILE)"
         ${{ inputs.notify-cmd }} --no-progress-meter --user "${{ inputs.notify-up }}" \
@@ -82,3 +91,6 @@ runs:
              $ATTACHMENTS \
              -F "title=${{ inputs.title }}" \
              -F "body=$BODY_CONTENT"
+
+        echo "rm -rf $DELETE"
+        rm -rf $DELETE
