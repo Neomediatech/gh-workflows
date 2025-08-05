@@ -82,7 +82,8 @@ jobs:
       - name: Set some var
         run: |
           echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
-          echo "REPORT_DATE=$(TZ="Europe/Rome" date)" >> $GITHUB_ENV
+          REPORT_DATE="$(TZ="Europe/Rome" date)"
+          echo "REPORT_DATE=$REPORT_DATE" >> $GITHUB_ENV
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
