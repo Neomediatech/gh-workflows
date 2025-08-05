@@ -71,9 +71,9 @@ runs:
         # attach all files
         ATTACHMENTS=""
         ARTIFACT_DIR="artifacts"
-        DELETE=" $BODY_CONTENT_FILE"
+        DELETE="$BODY_CONTENT_FILE"
         if [[ -d "$ARTIFACT_DIR" ]]; then
-          DELETE+="$ARTIFACT_DIR"
+          DELETE+=" $ARTIFACT_DIR"
           i=1
           for file in $ARTIFACT_DIR/*; do
             if [ -f "$file" ]; then
