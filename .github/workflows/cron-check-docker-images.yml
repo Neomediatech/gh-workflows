@@ -67,6 +67,10 @@ jobs:
     runs-on: [self-hosted]
     needs: update-check
     steps:
+      - name: Set some var
+        run: |
+          echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -78,23 +82,16 @@ jobs:
           cat results/*/result.txt > all-results.txt
           cat all-results.txt | sort
 
-  notify:
-    needs: [result]
-    uses: Neomediatech/gh-workflows/.github/workflows/notify.yml@main
-    permissions:
-      contents: write
-      packages: write
-      actions: write
-    with:
-      build-result: "${{needs.check-and-build.outputs.build-result}}"
-      report-name: "${{needs.check-and-build.outputs.report-name}}"
-      image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
-      docker_image: "${{needs.check-and-build.outputs.image-name}}"
-      commit: "${{needs.check-and-build.outputs.new_commit_sha}}"
-    secrets:
-      NOTIFY_CMD: ${{ secrets.NOTIFY_CMD }}
-      NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
-      NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
-      NOTIFY_OPTIONS: ${{ secrets.NOTIFY_OPTIONS }}
-      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-      API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      - name: Upload global report
+        uses: actions/upload-artifact@v4
+        with:
+          name: $REPORT_NAME
+          path: all-results.txt
+          retention-days: 1
+          overwrite: true
+
+      - name: Notify image check update
+        id: notify
+        uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
+        with:
+          report-name: $REPORT_NAME
