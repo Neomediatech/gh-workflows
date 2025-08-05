@@ -84,7 +84,7 @@ runs:
     - name: Invia notifica email (con eventuale report allegato)
       shell: bash
       run: |
-        ls -la
+        ls -laR
         #if [[ ! -f calling/last-update-report.txt ]]; then
         #  echo "ERROR" > calling/last-update-report.txt
         #fi
