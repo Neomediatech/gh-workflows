@@ -371,10 +371,8 @@ jobs:
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           git push origin ${{ github.ref_name }}
 
-          # nuovo report con upload artifact
-          #cd
-          ls -l
-          echo "$(date) --- $DERIVED_IMAGE UPDATED" > report.txt
+          # nuovo report per upload artifact
+          echo "$(date) --- $DERIVED_IMAGE UPDATED" > ${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt
           ls -l
 
       - name: Upload result
@@ -494,7 +492,7 @@ jobs:
         run: |
           echo "--- Riassunto risultati ---"
           ls -lah results
-          cat results/*/result.txt |sort > all-results.txt
+          cat results/*.txt |sort > all-results.txt
           #if grep -q "❌" all-results.txt; then
           #  ICON_TITLE="❌"
           #elif grep -q "🔁" all-results.txt; then
