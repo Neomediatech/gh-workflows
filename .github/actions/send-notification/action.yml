@@ -10,7 +10,7 @@ inputs:
     required: false
     type: string
     description: "Titolo del report"
-    default: "image build"
+    default: "gh notification"
   message:
     required: false
     type: string
@@ -59,6 +59,7 @@ inputs:
     required: false
     type: string
     description: "Options for notify command"
+    default: " "
 
 outputs:
   image-res:
@@ -84,21 +85,22 @@ runs:
     - name: Invia notifica email (con eventuale report allegato)
       shell: bash
       run: |
-        ls -laR artifacts
-        #if [[ ! -f calling/last-update-report.txt ]]; then
-        #  echo "ERROR" > calling/last-update-report.txt
-        #fi
-        #TITLE="${{ inputs.title }}"
-        #if [[ -n "${{ inputs.docker_image }}" ]]; then
-        #  DOCKER_IMAGE="${{ inputs.docker_image }} "
-        #else
-        #  DOCKER_IMAGE=""
-        #fi
-        #BODY_CONTENT="$(< calling/last-update-report.txt)"
-        #${{ inputs.notify-cmd }} --no-progress-meter --user "${{ inputs.notify-up }}" \
-        #     -X POST ${{ inputs.notify-endpoint }} \
-        #     -F "title=$DOCKER_IMAGE$TITLE" \
-        #     -F "body=$BODY_CONTENT" \
-        #     -F "attach1=@calling/last-trivy-report.txt" \
-        #     -F "attach2=@calling/last-update-report.txt" \
-        #     ${{ inputs.notify-options }}
+        #ls -laR artifacts
+        BODY_CONTENT="$(< artifacts/*)"
+        
+        # attach all files
+        ATTACHMENTS=""
+        i=1
+        for file in artifacts/*; do
+          if [ -f "$file" ]; then
+            ATTACHMENTS+=" -F 'attach$i=@$file'"
+            ((i++))
+          fi
+        done
+        
+        ${{ inputs.notify-cmd }} --no-progress-meter --user "${{ inputs.notify-up }}" \
+             -X POST ${{ inputs.notify-endpoint }} \
+             ${{ inputs.notify-options }} \
+             $ATTACHMENTS \
+             -F "title=${{ inputs.title }}" \
+             -F "body=$BODY_CONTENT"
