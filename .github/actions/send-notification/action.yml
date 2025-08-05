@@ -83,10 +83,6 @@ runs:
 
     - name: Invia notifica email (con eventuale report allegato)
       run: |
-        if [ -z "${{ secrets.NOTIFY_UP }}" ]; then
-          echo "Secrets not present"
-          exit 1
-        fi
         ls -la
         #if [[ ! -f calling/last-update-report.txt ]]; then
         #  echo "ERROR" > calling/last-update-report.txt
