@@ -372,14 +372,16 @@ jobs:
           git push origin ${{ github.ref_name }}
 
           # nuovo report per upload artifact
-          echo "$(date) --- $DERIVED_IMAGE UPDATED" > ${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt
+          ARTIFACT_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
+          echo "$(date) --- $DERIVED_IMAGE UPDATED" > $ARTIFACT_FILE
           ls -l
 
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ strategy.job-index }}
-          path: report.txt
+          path: ${{ env.ARTIFACT_FILE }}
           retention-days: 1
           overwrite: true
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
