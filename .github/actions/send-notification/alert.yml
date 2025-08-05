@@ -29,7 +29,7 @@ inputs:
     type: string
     description: "Override per l'URL email Apprise"
   build-result:
-    required: true
+    required: false
      type: string
      description: "Build image result"
   report-name:
@@ -72,21 +72,21 @@ runs:
           echo "Secrets not present"
           exit 1
         fi
-        ls -l calling
-        if [[ ! -f calling/last-update-report.txt ]]; then
-          echo "ERROR" > calling/last-update-report.txt
-        fi
-        TITLE="${{ inputs.title }}"
-        if [[ -n "${{ inputs.docker_image }}" ]]; then
-          DOCKER_IMAGE="${{ inputs.docker_image }} "
-        else
-          DOCKER_IMAGE=""
-        fi
-        BODY_CONTENT="$(< calling/last-update-report.txt)"
-        ${{ secrets.NOTIFY_CMD }} --no-progress-meter --user "${{ secrets.NOTIFY_UP }}" \
-             -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
-             -F "title=$DOCKER_IMAGE$TITLE" \
-             -F "body=$BODY_CONTENT" \
-             -F "attach1=@calling/last-trivy-report.txt" \
-             -F "attach2=@calling/last-update-report.txt" \
-             ${{ secrets.NOTIFY_OPTIONS }}
+        ls -la
+        #if [[ ! -f calling/last-update-report.txt ]]; then
+        #  echo "ERROR" > calling/last-update-report.txt
+        #fi
+        #TITLE="${{ inputs.title }}"
+        #if [[ -n "${{ inputs.docker_image }}" ]]; then
+        #  DOCKER_IMAGE="${{ inputs.docker_image }} "
+        #else
+        #  DOCKER_IMAGE=""
+        #fi
+        #BODY_CONTENT="$(< calling/last-update-report.txt)"
+        #${{ secrets.NOTIFY_CMD }} --no-progress-meter --user "${{ secrets.NOTIFY_UP }}" \
+        #     -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
+        #     -F "title=$DOCKER_IMAGE$TITLE" \
+        #     -F "body=$BODY_CONTENT" \
+        #     -F "attach1=@calling/last-trivy-report.txt" \
+        #     -F "attach2=@calling/last-update-report.txt" \
+        #     ${{ secrets.NOTIFY_OPTIONS }}
