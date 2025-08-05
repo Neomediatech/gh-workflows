@@ -16,11 +16,37 @@ jobs:
       - name: Read file and generate JSON for matrix
         id: set-matrix
         run: |
-          IMAGES=$(cat images-to-check.txt | awk '{print "\""$1"\""}' | tr '\n' ',' | sed 's/,$//')
-          echo "IMAGES: $IMAGES"
-          MATRIX_JSON="{\"images\":[${IMAGES}]}"
-          echo "matrix=${MATRIX_JSON}"
-          echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
+          #IMAGES=$(cat images-to-check.txt | awk '{print "\""$1"\""}' | tr '\n' ',' | sed 's/,$//')
+          #echo "IMAGES: $IMAGES"
+          #MATRIX_JSON="{\"images\":[${IMAGES}]}"
+          #echo "matrix=${MATRIX_JSON}"
+          #echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
+
+          # Insert the file in array
+          readarray -t images_array < images-to-check.txt
+          
+          # Filtra eventuali righe vuote
+          filtered_array=()
+          for image in "${images_array[@]}"; do
+            echo "::notice:: image: $image"
+            if [[ -n "$image" ]]; then
+              filtered_array+=("$image")
+            fi
+          done
+          # Print array
+          echo "::notice:: Images found: ${filtered_array[@]} (${#filtered_array[@]})"
+          
+          # Se non ci sono immagini, esci con un errore
+          if [[ ${#filtered_array[@]} -eq 0 ]]; then
+            echo "::error:: images-to-check.txt empty or not valid"
+            exit 1
+          fi
+
+          # Build JSON array with jq
+          matrix_json=$(printf '%s\n' "${filtered_array[@]}" | jq -R -s -c '{images: .}')
+          
+          echo "Generated Matrix JSON: $matrix_json"
+          echo "matrix=${matrix_json}" >> $GITHUB_OUTPUT
 
   update-check:
     runs-on: [self-hosted]
