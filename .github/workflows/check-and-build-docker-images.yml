@@ -355,17 +355,17 @@ jobs:
           echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
             --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
-          #docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
-          #  --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
-          #  -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
-          #docker push $DERIVED_IMAGE
+          docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
+            --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
+            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
+          docker push $DERIVED_IMAGE
 
           # PUSH ANCHE SU DOCKERHUB
           if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
             echo "::notice::Tagging $DERIVED_IMAGE $DOCKER_HUB_IMAGE"
             docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-            #docker push $DOCKER_HUB_IMAGE
+            docker push $DOCKER_HUB_IMAGE
           else
             echo "::warning::Credenziali DOCKER HUB non fornite, NON carico l'immagine su DockerHUB"
           fi
@@ -387,21 +387,6 @@ jobs:
           git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
           git push origin ${{ github.ref_name }}
-
-          # nuovo report con upload artifact
-          #cd
-          ls -l
-          echo "$(date) --- $DERIVED_IMAGE UPDATED" > report.txt
-          ls -l
-
-      - name: Upload result
-        uses: actions/upload-artifact@v4
-        with:
-          name: result-${{ strategy.job-index }}
-          path: calling/report.txt
-          retention-days: 1
-          overwrite: true
-        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
 
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
@@ -490,57 +475,6 @@ jobs:
       # Docker logout (opzionale, buono per pulizia)
       - name: Docker logout
         run: docker logout ghcr.io
-
-  build-report:
-    needs: [check-and-build]
-    runs-on: [self-hosted]
-    steps:
-      - name: Set some var
-        run: |
-          echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
-          REPORT_DATE="$(TZ="Europe/Rome" date)"
-          echo "REPORT_DATE=$REPORT_DATE" >> $GITHUB_ENV
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: results
-
-      - name: Show result
-        run: |
-          echo "--- Riassunto risultati ---"
-          cat results/*/result.txt |sort > all-results.txt
-          #if grep -q "❌" all-results.txt; then
-          #  ICON_TITLE="❌"
-          #elif grep -q "🔁" all-results.txt; then
-          #  ICON_TITLE="🔁"
-          #elif grep -q "✅" all-results.txt; then
-          #  ICON_TITLE="✅"
-          #else
-          #  ICON_TITLE=""
-          #fi
-          #echo "ICON_TITLE=$ICON_TITLE" >> $GITHUB_ENV
-
-      - name: Upload global report
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.REPORT_NAME }}
-          path: all-results.txt
-          retention-days: 1
-          overwrite: true
-
-      - name: Notify image build
-        id: notify
-        uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
-        with:
-          report-name: ${{ env.REPORT_NAME }}
-          #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
-          title: "Aggiornamenti immagini docker"
-          message: "${{ env.REPORT_DATE }}"
-          notify-cmd: ${{ secrets.NOTIFY_CMD }}
-          notify-up: ${{ secrets.NOTIFY_UP }}
-          notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
-          notify-options: ${{ secrets.NOTIFY_OPTIONS }}
 
   notify:
     needs: [check-and-build]
