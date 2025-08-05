@@ -1,0 +1,92 @@
+# .github/actions/send-notification/action.yml
+name: Notifica (via Apprise o altro) con report e cronologia
+
+inputs:
+  status:
+    required: false
+    type: string
+    description: "Risultato dell'operazione: success o failure"
+  title:
+    required: false
+    type: string
+    description: "Titolo del report"
+    default: "image build"
+  message:
+    required: false
+    type: string
+    description: "Messaggio personalizzato da includere"
+  report_file:
+    required: false
+    type: string
+    default: "last-update-report.txt"
+    description: "Nome del file da allegare alla notifica email"
+  notify_url:
+    required: false
+    type: string
+    description: "Override per l'URL di notifica Apprise (push)"
+  email_url:
+    required: false
+    type: string
+    description: "Override per l'URL email Apprise"
+  build-result:
+    required: true
+     type: string
+     description: "Build image result"
+  report-name:
+    required: false
+    type: string
+    description: "Report filename"
+  image-update-result:
+    required: false
+    type: string
+    description: "Image update result"
+  commit:
+    required: false
+    type: string
+    description: "Commit just pushed"
+
+outputs:
+  image-res:
+    description: "Result of the executed command"
+    value: ${{ steps.main_logic.outputs.cmd-res }}
+  update-needed:
+    description: "Whether the derived-image needs updating (true/false/unknown)"
+    value: ${{ steps.main_logic.outputs.update-needed }}
+  base-img-pkg-ver:
+    description: "Package versione taken from base image"
+    value: ${{ steps.main_logic.outputs.base-img-pkg-ver }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Scarica report
+      uses: actions/download-artifact@v4
+      with:
+        name: report-${{ inputs.report-name }}
+        path: .
+      if: ${{ inputs.report-name }} != ""
+
+    - name: Invia notifica email (con eventuale report allegato)
+      run: |
+        if [ -z "${{ secrets.NOTIFY_UP }}" ]; then
+          echo "Secrets not present"
+          exit 1
+        fi
+        ls -l calling
+        if [[ ! -f calling/last-update-report.txt ]]; then
+          echo "ERROR" > calling/last-update-report.txt
+        fi
+        TITLE="${{ inputs.title }}"
+        if [[ -n "${{ inputs.docker_image }}" ]]; then
+          DOCKER_IMAGE="${{ inputs.docker_image }} "
+        else
+          DOCKER_IMAGE=""
+        fi
+        BODY_CONTENT="$(< calling/last-update-report.txt)"
+        ${{ secrets.NOTIFY_CMD }} --no-progress-meter --user "${{ secrets.NOTIFY_UP }}" \
+             -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
+             -F "title=$DOCKER_IMAGE$TITLE" \
+             -F "body=$BODY_CONTENT" \
+             -F "attach1=@calling/last-trivy-report.txt" \
+             -F "attach2=@calling/last-update-report.txt" \
+             ${{ secrets.NOTIFY_OPTIONS }}
