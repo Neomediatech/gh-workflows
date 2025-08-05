@@ -99,7 +99,6 @@ jobs:
           repository: ${{ inputs.derived-image-repo }}
           ref: ${{ inputs.derived-image-repo-ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: calling
         if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
 
       - name: Find Dockerfiles in a repo and return a matrix of elements
@@ -130,15 +129,6 @@ jobs:
       image-name: ${{ steps.final-vars.outputs.image_name }}
       new_commit_sha: ${{ steps.final-report.outputs.new_commit_sha }}
     steps:
-      # Checkout il repo di questo workflow (utile se hai file di supporto qui)
-      - name: Checkout this workflow repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.MASTER_REPO }}
-          ref: main
-          path: workflow
-          token: ${{ secrets.API_TOKEN_GITHUB }}
-
       # Checkout il repository chiamante (serve per la build se il Dockerfile/context sono lì)
       - name: Checkout calling repository
         uses: actions/checkout@v4
@@ -146,7 +136,6 @@ jobs:
           repository: ${{ inputs.derived-image-repo }}
           ref: ${{ inputs.derived-image-repo-ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: calling
         if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
 
       # Set some var
@@ -174,12 +163,10 @@ jobs:
           fi
 
           # estraggo l'immagine di base
-          echo "calling repo:"
-          ls -l calling
           echo "this repo:"
           ls -l
           if [[ "${{ matrix.version }}" == "latest" ]]; then
-            if [[ -f "calling/$DOCKERDIR/Dockerfile" ]]; then
+            if [[ -f "$DOCKERDIR/Dockerfile" ]]; then
               DOCKERFILE="Dockerfile"
             else
               DOCKERFILE="Dockerfile.latest"
@@ -188,11 +175,11 @@ jobs:
             DOCKERFILE="Dockerfile.${{ matrix.version }}"
           fi
           # search for STICKY_VERSION var in Dockerfile
-          STICKY_VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
-          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
+          STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
+          FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
           if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
             VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
-            VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
+            VERSION="$(cat $DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
             FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
             echo "VERSION: $VERSION"
           else
@@ -346,7 +333,6 @@ jobs:
             DOCKER_HUB_IMAGE="$(echo "${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"|sed 's/ghcr.io\///')"
           fi
           echo "::notice::Building and pushing $DERIVED_IMAGE"
-          cd calling
           if [[ -n $BASE_PACKAGE_VERSION ]]; then
             PACKAGE_LABEL="--label org.opencontainers.package.version=$BASE_PACKAGE_VERSION"
           else
@@ -372,9 +358,6 @@ jobs:
 
           #REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
           # update report file
-          cd ../calling
-          # per utilizzare il workflow comune:
-          #cd ../workflow
           REPORT_FILE="update-report.txt"
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
@@ -398,7 +381,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ strategy.job-index }}
-          path: calling/report.txt
+          path: report.txt
           retention-days: 1
           overwrite: true
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
@@ -432,23 +415,21 @@ jobs:
           #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
-      - name: Run Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@master
-        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
-        with:
-          image-ref: ${{ env.DERIVED_IMAGE }} # Usa la variabile d'ambiente
-          format: 'table'
-          output: 'calling/trivy-report.txt'
-          severity: 'HIGH,CRITICAL'
-          #exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
+      #- name: Run Trivy vulnerability scan
+      #  uses: aquasecurity/trivy-action@master
+      #  if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
+      #  with:
+      #    image-ref: ${{ env.DERIVED_IMAGE }}
+      #    format: 'table'
+      #    output: 'trivy-report.txt'
+      #    severity: 'HIGH,CRITICAL'
+      #    ignore-unfixed: true
+      #    vuln-type: 'os,library'
 
       - name: Push report
         id: final-report
         run: |
           # update report file
-          cd calling
           # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
           LAST_REPORT_FILE="last-update-report.txt"
           LAST_TRIVY_REPORT_FILE="last-trivy-report.txt"
@@ -487,9 +468,11 @@ jobs:
           echo "last-update-report.txt content:"
           cat last-update-report.txt
 
-      # Docker logout (opzionale, buono per pulizia)
+      # Docker logout
       - name: Docker logout
-        run: docker logout ghcr.io
+        run: |
+          docker logout ghcr.io
+          docker logout
 
   build-report:
     needs: [check-and-build]
