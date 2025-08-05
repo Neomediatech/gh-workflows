@@ -43,13 +43,13 @@ jobs:
 
           #if [[ "$IMAGE_BASE_DIGEST" == "" || "$CURRENT_IMAGE_BASE_DIGEST" == "" ]]; then
           #  echo "::warning:: Digest not found"
-          #  RES="digest non found"
+          #  RES="❌ digest non found"
           #elif [[ "$IMAGE_BASE_DIGEST" != "$CURRENT_IMAGE_BASE_DIGEST" ]]; then
           #  echo "::notice:: Image needs update"
-          #  RES="update needed"
+          #  RES="⚠️🔁 update needed"
           #else
           #  echo "::notice:: Update not needed"
-          #  RES="update NOT needed"
+          #  RES="✅ update NOT needed"
           #fi
           RES=$RANDOM
           echo "::notice:: res=${{ matrix.images }} $RES"
@@ -76,4 +76,25 @@ jobs:
         run: |
           echo "--- Riassunto risultati ---"
           cat results/*/result.txt > all-results.txt
-          cat all-results.txt
+          cat all-results.txt | sort
+
+  notify:
+    needs: [result]
+    uses: Neomediatech/gh-workflows/.github/workflows/notify.yml@main
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+    with:
+      build-result: "${{needs.check-and-build.outputs.build-result}}"
+      report-name: "${{needs.check-and-build.outputs.report-name}}"
+      image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
+      docker_image: "${{needs.check-and-build.outputs.image-name}}"
+      commit: "${{needs.check-and-build.outputs.new_commit_sha}}"
+    secrets:
+      NOTIFY_CMD: ${{ secrets.NOTIFY_CMD }}
+      NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
+      NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
+      NOTIFY_OPTIONS: ${{ secrets.NOTIFY_OPTIONS }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
