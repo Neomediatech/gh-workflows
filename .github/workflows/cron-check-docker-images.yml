@@ -63,4 +63,7 @@ jobs:
         run: |
           echo "toJSON: ${{ toJSON(needs.update-check.outputs) }}"
           echo "raw matrix: ${{ needs.update-check.outputs }}"
-          
+          echo "--- Riassunto risultati ---"
+          # Usa jq per iterare su ogni output della matrice e stampare solo il valore di "res"
+          echo '${{ toJSON(needs.update-check.outputs) }}' | jq -r '
+            .[] | .res
