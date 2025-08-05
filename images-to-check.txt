@@ -6,7 +6,6 @@ ghcr.io/neomediatech/php:8.2-apache
 ghcr.io/neomediatech/php:8.3-apache
 ghcr.io/neomediatech/php:8.4-apache
 ghcr.io/neomediatech/php:8-apache
-ghcr.io/neomediatech/php-apache
 ghcr.io/neomediatech/sshd
 ghcr.io/neomediatech/ubuntu-base:18.04
 ghcr.io/neomediatech/ubuntu-base:20.04
