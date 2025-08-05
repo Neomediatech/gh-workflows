@@ -22,13 +22,16 @@ jobs:
           echo "matrix=${MATRIX_JSON}"
           echo "matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
 
-  run-jobs-with-matrix:
+  update-check:
     runs-on: [self-hosted]
     needs: generate-matrix
     strategy:
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    outputs:
+      res: ${{ steps.check-update.outputs.res }}
     steps:
       - name: Show & Set matrix value & vars
+        id: check-update
         run: |
           echo "The current value from the matrix is ${{ matrix.images }}"
           IMAGE_META="$(skopeo inspect docker://${{ matrix.images }} || echo "")"
@@ -50,3 +53,14 @@ jobs:
             echo "::notice:: Update not needed"
             RES="update NOT needed"
           fi
+          echo "res=${{ matrix.images }} $RES" >> $GITHUB_OUTPUT
+
+  result:
+    runs-on: [self-hosted]
+    needs: update-check
+    steps:
+      - name: Show result
+        run: |
+          echo "toJSON: ${{ toJSON(needs.update-check.outputs) }}"
+          echo "raw matrix: ${{ needs.update-check.outputs }}"
+          
