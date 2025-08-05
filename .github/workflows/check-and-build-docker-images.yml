@@ -396,15 +396,6 @@ jobs:
           #git push origin main
           git push origin ${{ github.ref_name }}
 
-      - name: Upload result
-        uses: actions/upload-artifact@v4
-        with:
-          name: result-${{ strategy.job-index }}
-          path: result.txt
-          retention-days: 1
-          overwrite: true
-        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
-
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
         id: update-not-wanted
@@ -433,6 +424,15 @@ jobs:
           echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
           #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ strategy.job-index }}
+          path: ${{ env.DERIVED_IMAGE }}
+          retention-days: 1
+          overwrite: true
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
 
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
