@@ -78,13 +78,13 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.report-name }}
-        path: .
+        path: artifacts
       if: ${{ inputs.report-name }} != ""
 
     - name: Invia notifica email (con eventuale report allegato)
       shell: bash
       run: |
-        ls -laR
+        ls -laR artifacts
         #if [[ ! -f calling/last-update-report.txt ]]; then
         #  echo "ERROR" > calling/last-update-report.txt
         #fi
