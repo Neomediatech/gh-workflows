@@ -396,6 +396,10 @@ jobs:
           #git push origin main
           git push origin ${{ github.ref_name }}
 
+          # nuovo report con upload artifact
+          cd
+          echo "$(date) --- $DERIVED_IMAGE UPDATED" > report.txt
+
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
         id: update-not-wanted
@@ -429,7 +433,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ strategy.job-index }}
-          path: ${{ env.DERIVED_IMAGE }}
+          path: report.txt
           retention-days: 1
           overwrite: true
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
