@@ -30,7 +30,7 @@ jobs:
           for image in "${images_array[@]}"; do
             echo "::notice:: image: $image"
             if [[ -n "$image" ]]; then
-              filtered_array+=("$image")
+              filtered_array+=("\"$image\"")
             fi
           done
           # Print array
