@@ -31,28 +31,22 @@ jobs:
       - name: Show & Set matrix value & vars
         run: |
           echo "The current value from the matrix is ${{ matrix.images }}"
-          IMG_TYPE="$(basename ${{ matrix.images }} | awk -F: '{print $1}')"
-          echo "IMG_TYPE=$IMG_TYPE" >> $GITHUB_ENV
+          IMAGE_META="$(skopeo inspect docker://${{ matrix.images }} || echo "")"
+          IMAGE_BASE="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
+          IMAGE_BASE_DIGEST="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base.digest"' || echo "")"
+          CURRENT_IMAGE_BASE_DIGEST="$(skopeo inspect docker://$IMAGE_BASE | jq -r '.Digest' || echo "")"
 
-          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
-          if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
-            VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
-            VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
-            FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
-            echo "VERSION: $VERSION"
+          echo "IMAGE_BASE=$IMAGE_BASE"
+          echo "IMAGE_BASE_DIGEST=$IMAGE_BASE_DIGEST"
+          echo "CURRENT_IMAGE_BASE_DIGEST=$CURRENT_IMAGE_BASE_DIGEST"
+
+          if [[ "$IMAGE_BASE_DIGEST" == "" || "$CURRENT_IMAGE_BASE_DIGEST" == "" ]]; then
+            echo "::warning:: Digest not found"
+            RES="digest non found"
+          elif [[ "$IMAGE_BASE_DIGEST" != "$CURRENT_IMAGE_BASE_DIGEST" ]]; then
+            echo "::notice:: Image needs update"
+            RES="update needed"
           else
-            FROM_IMAGE="$FROM_IMAGE_TMP"
+            echo "::notice:: Update not needed"
+            RES="update NOT needed"
           fi
-          echo "Base image taken from $DOCKERFILE : $FROM_IMAGE"
-          
-      - name: Check image update (check software versions)
-        id: check-image
-        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
-        with:
-          image-type: "$IMG_TYPE"
-          base-image: '$BASE_IMAGE'
-          derived-image: '$DERIVED_IMAGE'
-          package-to-check: "${{ inputs.package-to-check }}"
-          image-version: ${{ matrix.version }}
-          sticky-version: "$STICKY_VERSION"
-        if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
