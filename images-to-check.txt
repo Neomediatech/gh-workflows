@@ -10,4 +10,5 @@ ghcr.io/neomediatech/ubuntu-base:18.04
 ghcr.io/neomediatech/ubuntu-base:20.04
 ghcr.io/neomediatech/ubuntu-base:22.04
 ghcr.io/neomediatech/ubuntu-base:24.04
+ghcr.io/neomediatech/ubuntu-base:latest
 ghcr.io/neomediatech/ubuntu-base:rolling
