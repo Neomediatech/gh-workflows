@@ -356,8 +356,8 @@ jobs:
             --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
           #docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
-            --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
-            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
+          #  --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
+          #  -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
           #docker push $DERIVED_IMAGE
 
           # PUSH ANCHE SU DOCKERHUB
