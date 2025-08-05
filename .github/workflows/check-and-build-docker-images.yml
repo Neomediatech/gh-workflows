@@ -381,23 +381,15 @@ jobs:
           
           echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
           echo "BUILD_RESULT=UPDATED" >> $GITHUB_ENV
-          #echo "image_update_result=done" >> $GITHUB_OUTPUT
           echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          #echo "Local branch:"
-          #git branch
-          #echo "Remote branch:"
-          #git ls-remote --heads origin
-          # per puntare al master repo
-          #git remote set-url origin https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/${{ env.MASTER_REPO }}
           git add $REPORT_FILE
           git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
-          #git push origin main
           git push origin ${{ github.ref_name }}
 
           # nuovo report con upload artifact
-          cd
+          #cd
           ls -l
           echo "$(date) --- $DERIVED_IMAGE UPDATED" > report.txt
           ls -l
@@ -406,7 +398,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ strategy.job-index }}
-          path: report.txt
+          path: ../calling/report.txt
           retention-days: 1
           overwrite: true
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
