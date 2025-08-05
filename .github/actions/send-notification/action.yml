@@ -44,6 +44,21 @@ inputs:
     required: false
     type: string
     description: "Commit just pushed"
+  notify-cmd:
+    required: true
+    type: string
+    description: "Command for notification"
+  notify-up:
+    required: true
+    type: string
+  notify-endpoint:
+    required: true
+    type: string
+    description: "Endpoint for notification"
+  notify-options:
+    required: false
+    type: string
+    description: "Options for notify command"
 
 outputs:
   image-res:
@@ -83,10 +98,10 @@ runs:
         #  DOCKER_IMAGE=""
         #fi
         #BODY_CONTENT="$(< calling/last-update-report.txt)"
-        #${{ secrets.NOTIFY_CMD }} --no-progress-meter --user "${{ secrets.NOTIFY_UP }}" \
-        #     -X POST ${{ secrets.NOTIFY_ENDPOINT }} \
+        #${{ inputs.notify-cmd }} --no-progress-meter --user "${{ inputs.notify-up }}" \
+        #     -X POST ${{ inputs.notify-endpoint }} \
         #     -F "title=$DOCKER_IMAGE$TITLE" \
         #     -F "body=$BODY_CONTENT" \
         #     -F "attach1=@calling/last-trivy-report.txt" \
         #     -F "attach2=@calling/last-update-report.txt" \
-        #     ${{ secrets.NOTIFY_OPTIONS }}
+        #     ${{ inputs.notify-options }}
