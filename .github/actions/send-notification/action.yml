@@ -62,7 +62,7 @@ runs:
       shell: bash
       run: |
         ls -laR artifacts
-        BODY_CONTENT_FILE="body.txt"
+        BODY_CONTENT_FILE=$(mktemp)
         echo "${{ inputs.message }}\n" > $BODY_CONTENT_FILE
         
         # attach all files
