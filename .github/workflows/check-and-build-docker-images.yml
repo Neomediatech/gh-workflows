@@ -105,8 +105,6 @@ jobs:
       - name: Find Dockerfiles in a repo and return a matrix of elements
         id: generate-matrix
         uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
-        #with:
-        #  repository: Neomediatech/php
 
       - name: Process Remote Action Outputs
         run: |
@@ -123,10 +121,6 @@ jobs:
         # Usa l'output del job prepare-matrix come input per la matrix
         include: ${{ fromJson(needs.prepare-matrix.outputs.filtered_matrix) }}
       max-parallel: 1
-      #matrix:
-      #  version: ${{ fromJson(inputs.versions) }}
-      #  type: ${{ fromJson(inputs.type) }}
-      #max-parallel: 1
     env:
       MASTER_REPO: "Neomediatech/gh-workflows.git"
     outputs:
