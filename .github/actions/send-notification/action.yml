@@ -2,10 +2,6 @@
 name: Notifica (via Apprise o altro) con report e cronologia
 
 inputs:
-  status:
-    required: false
-    type: string
-    description: "Risultato dell'operazione: success o failure"
   title:
     required: false
     type: string
@@ -20,30 +16,10 @@ inputs:
     type: string
     default: "last-update-report.txt"
     description: "Nome del file da allegare alla notifica email"
-  notify_url:
-    required: false
-    type: string
-    description: "Override per l'URL di notifica Apprise (push)"
-  email_url:
-    required: false
-    type: string
-    description: "Override per l'URL email Apprise"
-  build-result:
-    required: false
-    type: string
-    description: "Build image result"
   report-name:
     required: false
     type: string
     description: "Report filename"
-  image-update-result:
-    required: false
-    type: string
-    description: "Image update result"
-  commit:
-    required: false
-    type: string
-    description: "Commit just pushed"
   notify-cmd:
     required: true
     type: string
@@ -86,7 +62,7 @@ runs:
       shell: bash
       run: |
         #ls -laR artifacts
-        BODY_CONTENT="$(< artifacts/*)"
+        BODY_CONTENT="${{ inputs.message }}\n$(< artifacts/*)"
         
         # attach all files
         ATTACHMENTS=""
