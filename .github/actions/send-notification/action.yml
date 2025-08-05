@@ -77,7 +77,7 @@ runs:
     - name: Scarica report
       uses: actions/download-artifact@v4
       with:
-        name: report-${{ inputs.report-name }}
+        name: ${{ inputs.report-name }}
         path: .
       if: ${{ inputs.report-name }} != ""
 
