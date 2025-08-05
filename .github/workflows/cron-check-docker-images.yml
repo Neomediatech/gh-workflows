@@ -34,25 +34,26 @@ jobs:
         id: check-update
         run: |
           echo "The current value from the matrix is ${{ matrix.images }}"
-          IMAGE_META="$(skopeo inspect docker://${{ matrix.images }} || echo "")"
-          IMAGE_BASE="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
-          IMAGE_BASE_DIGEST="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base.digest"' || echo "")"
-          CURRENT_IMAGE_BASE_DIGEST="$(skopeo inspect docker://$IMAGE_BASE | jq -r '.Digest' || echo "")"
+          #IMAGE_META="$(skopeo inspect docker://${{ matrix.images }} || echo "")"
+          #IMAGE_BASE="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
+          #IMAGE_BASE_DIGEST="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base.digest"' || echo "")"
+          #CURRENT_IMAGE_BASE_DIGEST="$(skopeo inspect docker://$IMAGE_BASE | jq -r '.Digest' || echo "")"
 
-          echo "IMAGE_BASE=$IMAGE_BASE"
-          echo "IMAGE_BASE_DIGEST=$IMAGE_BASE_DIGEST"
-          echo "CURRENT_IMAGE_BASE_DIGEST=$CURRENT_IMAGE_BASE_DIGEST"
+          #echo "IMAGE_BASE=$IMAGE_BASE"
+          #echo "IMAGE_BASE_DIGEST=$IMAGE_BASE_DIGEST"
+          #echo "CURRENT_IMAGE_BASE_DIGEST=$CURRENT_IMAGE_BASE_DIGEST"
 
-          if [[ "$IMAGE_BASE_DIGEST" == "" || "$CURRENT_IMAGE_BASE_DIGEST" == "" ]]; then
-            echo "::warning:: Digest not found"
-            RES="digest non found"
-          elif [[ "$IMAGE_BASE_DIGEST" != "$CURRENT_IMAGE_BASE_DIGEST" ]]; then
-            echo "::notice:: Image needs update"
-            RES="update needed"
-          else
-            echo "::notice:: Update not needed"
-            RES="update NOT needed"
-          fi
+          #if [[ "$IMAGE_BASE_DIGEST" == "" || "$CURRENT_IMAGE_BASE_DIGEST" == "" ]]; then
+          #  echo "::warning:: Digest not found"
+          #  RES="digest non found"
+          #elif [[ "$IMAGE_BASE_DIGEST" != "$CURRENT_IMAGE_BASE_DIGEST" ]]; then
+          #  echo "::notice:: Image needs update"
+          #  RES="update needed"
+          #else
+          #  echo "::notice:: Update not needed"
+          #  RES="update NOT needed"
+          #fi
+          RES=$RANDOM
           echo "::notice:: res=${{ matrix.images }} $RES"
           echo "res=${{ matrix.images }} $RES" >> $GITHUB_OUTPUT
 
