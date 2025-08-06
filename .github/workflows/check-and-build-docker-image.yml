@@ -444,7 +444,7 @@ jobs:
           #else
           #  echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
           #  cat $CUR_TRIVY_REPORT_FILE >> $LAST_TRIVY_REPORT_FILE
-          fi
+          #fi
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           git add $LAST_TRIVY_REPORT_FILE
