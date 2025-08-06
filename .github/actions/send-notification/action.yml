@@ -74,11 +74,18 @@ runs:
         DELETE="$BODY_CONTENT_FILE"
         if [[ -d "$ARTIFACT_DIR" ]]; then
           DELETE+=" $ARTIFACT_DIR"
+          BODY_EXISTS="false"
+          if [[ -f $ARTIFACT_DIR/body.txt ]]; then
+            cat $ARTIFACT_DIR/body.txt >> $BODY_CONTENT_FILE
+            BODY_EXISTS="true"
+          fi
           i=1
           for file in $ARTIFACT_DIR/*; do
             if [ -f "$file" ]; then
               ATTACHMENTS+=" -F attach$i=@$file"
-              cat "$file" >> $BODY_CONTENT_FILE
+              if [[ "$BODY_EXISTS" == "false" ]]; then
+                cat "$file" >> $BODY_CONTENT_FILE
+              fi
               ((i++))
             fi
           done
