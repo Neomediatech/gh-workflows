@@ -494,8 +494,6 @@ jobs:
 
       - name: Join reports and commit it
         run: |
-          #echo "--- Riassunto risultati ---"
-          #ls -lah results
           cat results/*.txt |sort > update-report-last.txt
           cat update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
           REPO_NAME="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $2}'| uniq)"
@@ -515,6 +513,9 @@ jobs:
           echo "ICON=$ICON" >> $GITHUB_ENV
 
           sed -i '/STATUS=/d' update-report-last.txt
+          ls -l
+          ls -l results
+          ls -l trivy-scans
 
           # trivy report
           cat trivy-scans/*.txt |sort > trivy-scan-last.txt
