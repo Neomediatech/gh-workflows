@@ -366,21 +366,6 @@ jobs:
           echo "BUILD_RESULT=UPDATED" >> $GITHUB_ENV
           echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
 
-          # nuovo report per upload artifact
-          ARTIFACT_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt"
-          echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
-          echo "$(date) --- $DERIVED_IMAGE UPDATED (image build needed: $IMAGE_BUILD_NEEDED)" > $ARTIFACT_FILE
-          ls -l
-
-      - name: Upload result
-        uses: actions/upload-artifact@v4
-        with:
-          name: result-${{ strategy.job-index }}
-          path: ${{ env.ARTIFACT_FILE }}
-          retention-days: 1
-          overwrite: true
-        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
-
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
         id: update-not-wanted
@@ -411,6 +396,42 @@ jobs:
           echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
           TRIVY_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_trivy_scan.txt"
           echo "TRIVY_FILE=$TRIVY_FILE" >> $GITHUB_ENV
+
+          # set update result
+          case "$IMAGE_UPDATE_RESULT" in
+            "user-said-no")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="❓"
+              ;;
+            "done" | "not-needed")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="✅"
+              ;;
+            "needed")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="🔁"
+              ;;
+            "*")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="⚠️"
+              ;;
+          esac
+          TITLE="$ICON (${REPO_NAME})"
+          # nuovo report per upload artifact
+          ARTIFACT_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
+          echo "$(date) --- $DERIVED_IMAGE $IMAGE_UPDATE_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $ARTIFACT_FILE
+          echo "STATUS=$ICON ${REPO_NAME}" >> $ARTIFACT_FILE
+          ls -l
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ strategy.job-index }}
+          path: ${{ env.ARTIFACT_FILE }}
+          retention-days: 1
+          overwrite: true
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
 
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
@@ -468,16 +489,21 @@ jobs:
           ls -lah results
           cat results/*.txt |sort > update-report-last.txt
           cat results/*.txt |sort >> update-report-history.txt
-          #if grep -q "❌" all-results.txt; then
-          #  ICON_TITLE="❌"
-          #elif grep -q "🔁" all-results.txt; then
-          #  ICON_TITLE="🔁"
-          #elif grep -q "✅" all-results.txt; then
-          #  ICON_TITLE="✅"
-          #else
-          #  ICON_TITLE=""
-          #fi
-          #echo "ICON_TITLE=$ICON_TITLE" >> $GITHUB_ENV
+          REPO_NAME="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $2}'| uniq)"
+          ICONS="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
+          if [[ "$ICONS" == *"❌"* ]]; then
+            ICON="❌"
+          elif [[ "$ICONS" == *"⚠️"* ]]; then
+            ICON="⚠️"
+          elif [[ "$ICONS" == *"🔁"* ]]; then
+            ICON="🔁"
+          elif [[ "$ICONS" == *"✅"* ]]; then
+            ICON="✅"
+          else
+            ICON="⚠️"
+          fi
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "ICON=$ICON" >> $GITHUB_ENV
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           git add update-report-last.txt update-report-history.txt
@@ -498,7 +524,7 @@ jobs:
         with:
           report-name: ${{ env.REPORT_NAME }}
           #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
-          title: "Aggiornamenti immagini docker"
+          title: "${{ env.ICON }} (${{ env.REPO_NAME }}) Aggiornamenti immagini docker"
           message: "${{ env.REPORT_DATE }}"
           notify-cmd: ${{ secrets.NOTIFY_CMD }}
           notify-up: ${{ secrets.NOTIFY_UP }}
