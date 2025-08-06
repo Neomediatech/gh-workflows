@@ -112,7 +112,7 @@ jobs:
           echo "Matrix: ${{ steps.generate-matrix.outputs.matrix }}"
           echo "Repo lower: ${{ steps.generate-matrix.outputs.repo-lower }}"
           echo "matrix=${{ steps.generate-matrix.outputs.matrix }}" >> "$GITHUB_OUTPUT"
-          START_DATE="$(TZ="Europe/Rome" date)"
+          START_DATE="$(date)"
           echo "start-date=$START_DATE" >> "$GITHUB_OUTPUT"
 
   check-and-build:
@@ -452,7 +452,7 @@ jobs:
       - name: Update trivy report
         run: |
           TRIVY_RPT="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report_tmp.txt"
-          TZ="Europe/Rome" date > $TRIVY_RPT
+          echo "$(date) --- $DERIVED_IMAGE" > $TRIVY_RPT
           cat ${{ env.TRIVY_FILE }} >> $TRIVY_RPT
           echo '-------------------------------------------------------' >> $TRIVY_RPT
           mv $TRIVY_RPT ${{ env.TRIVY_FILE }}
@@ -531,7 +531,7 @@ jobs:
           TMP_REPORT_FILE="report.txt"
           echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
           cat update-report-last.txt >> $TMP_REPORT_FILE
-          TZ="Europe/Rome" date >> $TMP_REPORT_FILE
+          date >> $TMP_REPORT_FILE
           truncate -s -1 $TMP_REPORT_FILE
           echo " --- Job terminated" >> $TMP_REPORT_FILE
           TRIVY_REPORT_URL="https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt"
