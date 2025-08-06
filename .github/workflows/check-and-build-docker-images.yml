@@ -573,6 +573,7 @@ jobs:
       - name: Notify image build
         id: notify
         uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
+        if: ${{ env.UPLOAD_REPORT == 'true' }}
         with:
           report-name: ${{ env.REPORT_NAME }}
           #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
