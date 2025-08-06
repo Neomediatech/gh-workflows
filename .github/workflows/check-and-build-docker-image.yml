@@ -341,17 +341,17 @@ jobs:
           echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
             --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
-          #docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
-          #  --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
-          #  -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
-          #docker push $DERIVED_IMAGE
+          docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
+            --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
+            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
+          docker push $DERIVED_IMAGE
 
           # PUSH ANCHE SU DOCKERHUB
           if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
             echo "::notice::Tagging $DERIVED_IMAGE $DOCKER_HUB_IMAGE"
-            #docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
-            #echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-            #docker push $DOCKER_HUB_IMAGE
+            docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            docker push $DOCKER_HUB_IMAGE
           else
             echo "::warning::Credenziali DOCKER HUB non fornite, NON carico l'immagine su DockerHUB"
           fi
