@@ -476,6 +476,7 @@ jobs:
           echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
           REPORT_DATE="$(TZ="Europe/Rome" date)"
           echo "REPORT_DATE=$REPORT_DATE" >> $GITHUB_ENV
+          echo "MESSAGE_BODY=$REPORT_DATE" >> $GITHUB_ENV
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -526,7 +527,10 @@ jobs:
           git push origin ${{ github.ref_name }}
 
           mkdir -p reports
-          cp update-report-last.txt trivy-scan-last.txt reports/
+          cp update-report-last.txt reports/
+
+          MESSAGE_BODY="${MESSAGE_BODY}\nTrivy report: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt"
+          echo "MESSAGE_BODY=$MESSAGE_BODY" >> $GITHUB_ENV
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
@@ -543,7 +547,7 @@ jobs:
           report-name: ${{ env.REPORT_NAME }}
           #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
           title: "${{ env.ICON }} (${{ env.REPO_NAME }}) Aggiornamenti immagini docker"
-          message: "${{ env.REPORT_DATE }}"
+          message: "${{ env.MESSAGE_BODY }}"
           notify-cmd: ${{ secrets.NOTIFY_CMD }}
           notify-up: ${{ secrets.NOTIFY_UP }}
           notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
