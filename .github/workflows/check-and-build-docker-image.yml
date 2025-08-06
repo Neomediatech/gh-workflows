@@ -496,7 +496,7 @@ jobs:
           #echo "--- Riassunto risultati ---"
           #ls -lah results
           cat results/*.txt |sort > update-report-last.txt
-          cat results/*.txt |sort >> update-report-history.txt
+          cat update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
           REPO_NAME="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $2}'| uniq)"
           ICONS="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
           if [[ "$ICONS" == *"❌"* ]]; then
@@ -513,9 +513,11 @@ jobs:
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
           echo "ICON=$ICON" >> $GITHUB_ENV
 
+          sed -i '/STATUS=/d' update-report-last.txt
+
           # trivy report
           cat trivy-scans/*.txt |sort > trivy-scan-last.txt
-          cat trivy-scans/*.txt |sort >> trivy-scan-history.txt
+          cat trivy-scan-last.txt >> trivy-scan-history.txt
 
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
