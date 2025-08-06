@@ -450,6 +450,7 @@ jobs:
           version: 'latest'
       
       - name: Update trivy report
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
         run: |
           TRIVY_RPT="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report_tmp.txt"
           echo "$(date) --- $DERIVED_IMAGE" > $TRIVY_RPT
