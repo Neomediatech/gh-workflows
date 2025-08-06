@@ -527,13 +527,15 @@ jobs:
           git push origin ${{ github.ref_name }}
 
           TMP_REPORT_FILE="report.txt"
-          echo "Job started at ${{ needs.prepare-matrix.outputs.start-date }}" > $TMP_REPORT_FILE
+          echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
           cat update-report-last.txt >> $TMP_REPORT_FILE
-          echo -n "Job terminated at " >> $TMP_REPORT_FILE
           TZ="Europe/Rome" date >> $TMP_REPORT_FILE
+          truncate -s -1 $TMP_REPORT_FILE
+          echo " --- Job terminated" >> $TMP_REPORT_FILE
           echo "Trivy report: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt" >> $TMP_REPORT_FILE
           
           mkdir -p reports
+          cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
           mv report.txt reports/update-report-last.txt
 
       - name: Upload global report
