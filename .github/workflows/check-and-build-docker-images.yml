@@ -1,4 +1,4 @@
-name: Check and Build Docker Images (by Copilot)
+name: Check and Build Docker Images
 
 on:
   workflow_call:
@@ -91,6 +91,7 @@ jobs:
     runs-on: [self-hosted]
     outputs:
       filtered_matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      start-date: ${{ steps.vars.outputs.start-date }}
     steps:
       # Checkout del repository chiamante
       - name: Checkout calling repository
@@ -99,7 +100,6 @@ jobs:
           repository: ${{ inputs.derived-image-repo }}
           ref: ${{ inputs.derived-image-repo-ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: calling
         if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
 
       - name: Find Dockerfiles in a repo and return a matrix of elements
@@ -107,20 +107,22 @@ jobs:
         uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
 
       - name: Process Remote Action Outputs
+        id: vars
         run: |
           echo "Matrix: ${{ steps.generate-matrix.outputs.matrix }}"
           echo "Repo lower: ${{ steps.generate-matrix.outputs.repo-lower }}"
           echo "matrix=${{ steps.generate-matrix.outputs.matrix }}" >> "$GITHUB_OUTPUT"
+          START_DATE="$(TZ="Europe/Rome" date)"
+          echo "start-date=$START_DATE" >> "$GITHUB_OUTPUT"
 
   check-and-build:
     needs: [prepare-matrix]
-    #runs-on: ubuntu-latest
     runs-on: [self-hosted]
     strategy:
       matrix:
         # Usa l'output del job prepare-matrix come input per la matrix
         include: ${{ fromJson(needs.prepare-matrix.outputs.filtered_matrix) }}
-      max-parallel: 1
+      #max-parallel: 1
     env:
       MASTER_REPO: "Neomediatech/gh-workflows.git"
     outputs:
@@ -130,23 +132,13 @@ jobs:
       image-name: ${{ steps.final-vars.outputs.image_name }}
       new_commit_sha: ${{ steps.final-report.outputs.new_commit_sha }}
     steps:
-      # Checkout il repo di questo workflow (utile se hai file di supporto qui)
-      - name: Checkout this workflow repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.MASTER_REPO }}
-          ref: main
-          path: workflow
-          token: ${{ secrets.API_TOKEN_GITHUB }}
-
-      # Checkout il repository chiamante (serve per la build se il Dockerfile/context sono lì)
+      # Clono il repository chiamante
       - name: Checkout calling repository
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.derived-image-repo }}
           ref: ${{ inputs.derived-image-repo-ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: calling
         if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
 
       # Set some var
@@ -174,12 +166,10 @@ jobs:
           fi
 
           # estraggo l'immagine di base
-          echo "calling repo:"
-          ls -l calling
           echo "this repo:"
           ls -l
           if [[ "${{ matrix.version }}" == "latest" ]]; then
-            if [[ -f "calling/$DOCKERDIR/Dockerfile" ]]; then
+            if [[ -f "$DOCKERDIR/Dockerfile" ]]; then
               DOCKERFILE="Dockerfile"
             else
               DOCKERFILE="Dockerfile.latest"
@@ -188,11 +178,11 @@ jobs:
             DOCKERFILE="Dockerfile.${{ matrix.version }}"
           fi
           # search for STICKY_VERSION var in Dockerfile
-          STICKY_VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
-          FROM_IMAGE_TMP="$(cat calling/$DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
+          STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
+          FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
           if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
             VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
-            VERSION="$(cat calling/$DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
+            VERSION="$(cat $DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
             FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
             echo "VERSION: $VERSION"
           else
@@ -346,7 +336,6 @@ jobs:
             DOCKER_HUB_IMAGE="$(echo "${{ inputs.derived-image-prefix }}:${{ matrix.version }}$IMAGE_TYPE$TAG_TEST"|sed 's/ghcr.io\///')"
           fi
           echo "::notice::Building and pushing $DERIVED_IMAGE"
-          cd calling
           if [[ -n $BASE_PACKAGE_VERSION ]]; then
             PACKAGE_LABEL="--label org.opencontainers.package.version=$BASE_PACKAGE_VERSION"
           else
@@ -372,9 +361,6 @@ jobs:
 
           #REPO_NAME=$(echo "${{ inputs.derived-image-prefix }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')
           # update report file
-          cd ../calling
-          # per utilizzare il workflow comune:
-          #cd ../workflow
           REPORT_FILE="update-report.txt"
           echo "::notice::Updating report file $REPORT_FILE"
           echo "$(date) --- $DERIVED_IMAGE UPDATED" >> $REPORT_FILE
@@ -382,11 +368,6 @@ jobs:
           echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
           echo "BUILD_RESULT=UPDATED" >> $GITHUB_ENV
           echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
-          git config user.name "neo-github-actions[bot]"
-          git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          git add $REPORT_FILE
-          git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
-          git push origin ${{ github.ref_name }}
 
       # Notifica che l'immagine non viene aggiornata perché sì è impostata la variabile update-image a 'false'
       - name: Skip image update because user chosen to not update it
@@ -416,83 +397,175 @@ jobs:
           echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
           #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+          TRIVY_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_trivy_scan.txt"
+          echo "TRIVY_FILE=$TRIVY_FILE" >> $GITHUB_ENV
+
+          # set update result
+          case "$IMAGE_UPDATE_RESULT" in
+            "user-said-no")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="❓"
+              ;;
+            "done" | "not-needed")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="✅"
+              ;;
+            "needed")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="🔁"
+              ;;
+            "*")
+              echo "$IMAGE_UPDATE_RESULT"
+              ICON="⚠️"
+              ;;
+          esac
+          TITLE="$ICON (${REPO_NAME})"
+          # nuovo report per upload artifact
+          ARTIFACT_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
+          echo "$(date) --- $DERIVED_IMAGE $IMAGE_UPDATE_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $ARTIFACT_FILE
+          echo "STATUS=$ICON ${REPO_NAME}" >> $ARTIFACT_FILE
+          ls -l
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ strategy.job-index }}
+          path: ${{ env.ARTIFACT_FILE }}
+          retention-days: 1
+          overwrite: true
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
 
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
         with:
-          image-ref: ${{ env.DERIVED_IMAGE }} # Usa la variabile d'ambiente
+          image-ref: ${{ env.DERIVED_IMAGE }}
           format: 'table'
-          output: 'calling/trivy-report.txt'
+          output: ${{ env.TRIVY_FILE }}
           severity: 'HIGH,CRITICAL'
-          #exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
-
-      - name: Push report
-        id: final-report
+          scanners: 'vuln,secret,misconfig'
+          version: 'latest'
+      
+      - name: Update trivy report
         run: |
-          # update report file
-          cd calling
-          # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
-          LAST_REPORT_FILE="last-update-report.txt"
-          LAST_TRIVY_REPORT_FILE="last-trivy-report.txt"
-          CUR_TRIVY_REPORT_FILE="trivy-report.txt"
-          if [[ ! -f $CUR_TRIVY_REPORT_FILE ]]; then
-            echo "-----------------------------------" > $CUR_TRIVY_REPORT_FILE
-            echo "$(date) --- $DERIVED_IMAGE NOT SCANNED" >> $CUR_TRIVY_REPORT_FILE
+          TRIVY_RPT="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report_tmp.txt"
+          TZ="Europe/Rome" date > $TRIVY_RPT
+          cat ${{ env.TRIVY_FILE }} >> $TRIVY_RPT
+          echo '-------------------------------------------------------' >> $TRIVY_RPT
+          mv $TRIVY_RPT ${{ env.TRIVY_FILE }}
+
+      - name: Upload trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-${{ strategy.job-index }}
+          path: ${{ env.TRIVY_FILE }}
+          retention-days: 1
+          overwrite: true
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
+
+      # Docker logout
+      - name: Docker logout
+        run: |
+          docker logout ghcr.io
+          docker logout
+
+  build-report:
+    needs: [prepare-matrix,check-and-build]
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.derived-image-repo }}
+          ref: ${{ inputs.derived-image-repo-ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ inputs.derived-image-repo != '' && inputs.derived-image-repo != null }}
+
+      - name: Set some var
+        run: |
+          echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: result-*
+          path: results
+          merge-multiple: true
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: trivy-scan-*
+          path: trivy-scans
+          merge-multiple: true
+
+      - name: Join reports and commit it
+        run: |
+          cat results/*.txt |sort > update-report-last.txt
+          cat update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
+          REPO_NAME="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $2}'| uniq)"
+          ICONS="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
+          if [[ "$ICONS" == *"❌"* ]]; then
+            ICON="❌"
+          elif [[ "$ICONS" == *"⚠️"* ]]; then
+            ICON="⚠️"
+          elif [[ "$ICONS" == *"🔁"* ]]; then
+            ICON="🔁"
+          elif [[ "$ICONS" == *"✅"* ]]; then
+            ICON="✅"
           else
-            echo "-----------------------------------" > tmp_trivy_rpt.txt
-            echo "$(date) --- $DERIVED_IMAGE" >> tmp_trivy_rpt.txt
-            cat $CUR_TRIVY_REPORT_FILE >> tmp_trivy_rpt.txt
-            cat tmp_trivy_rpt.txt > $CUR_TRIVY_REPORT_FILE
+            ICON="⚠️"
           fi
-          if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
-            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
-            cat $CUR_TRIVY_REPORT_FILE > $LAST_TRIVY_REPORT_FILE
-          else
-            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
-            cat $CUR_TRIVY_REPORT_FILE >> $LAST_TRIVY_REPORT_FILE
-          fi
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "ICON=$ICON" >> $GITHUB_ENV
+
+          sed -i '/STATUS=/d' update-report-last.txt
+
+          # trivy report
+          cat trivy-scans/*.txt > trivy-scan-last.txt
+          cat trivy-scan-last.txt >> trivy-scan-history.txt
+
+          TMP_REPORT_FILE="report.txt"
+          echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
+          cat update-report-last.txt >> $TMP_REPORT_FILE
+          TZ="Europe/Rome" date >> $TMP_REPORT_FILE
+          truncate -s -1 $TMP_REPORT_FILE
+          echo " --- Job terminated" >> $TMP_REPORT_FILE
+          TRIVY_REPORT_URL="https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt"
+          
+          mkdir -p reports
+          cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
+          echo "Trivy report: <a href=\"$TRIVY_REPORT_URL\">$TRIVY_REPORT_URL</a>" >> reports/body.txt
+          echo "Trivy report: $TRIVY_REPORT_URL" >> $TMP_REPORT_FILE
+          
+          mv $TMP_REPORT_FILE reports/update-report-last.txt
+          
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          #echo "::notice::Local branch:"
-          #git branch
-          #echo "::notice::Remote branch:"
-          #git ls-remote --heads origin
-          git add $LAST_REPORT_FILE $LAST_TRIVY_REPORT_FILE
+          git add update-report-last.txt update-report-history.txt trivy-scan-last.txt trivy-scan-history.txt
           git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
-          echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
-          git push origin ${{ inputs.derived-image-repo-ref }}
-          
-          NEW_COMMIT_SHA=$(git rev-parse HEAD)
-          echo "::notice::Commit SHA just pushed: $NEW_COMMIT_SHA"
-          echo "new_commit_sha=$NEW_COMMIT_SHA" >> "$GITHUB_OUTPUT"
-          
-          echo "last-update-report.txt content:"
-          cat last-update-report.txt
+          git push origin ${{ github.ref_name }}
 
-      # Docker logout (opzionale, buono per pulizia)
-      - name: Docker logout
-        run: docker logout ghcr.io
+      - name: Upload global report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.REPORT_NAME }}
+          path: reports/*.txt
+          retention-days: 1
+          overwrite: true
 
-  notify:
-    needs: [check-and-build]
-    uses: Neomediatech/gh-workflows/.github/workflows/notify.yml@main
-    permissions:
-      contents: write
-      packages: write
-      actions: write
-    with:
-      build-result: "${{needs.check-and-build.outputs.build-result}}"
-      report-name: "${{needs.check-and-build.outputs.report-name}}"
-      image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
-      docker_image: "${{needs.check-and-build.outputs.image-name}}"
-      commit: "${{needs.check-and-build.outputs.new_commit_sha}}"
-    secrets:
-      NOTIFY_CMD: ${{ secrets.NOTIFY_CMD }}
-      NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
-      NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
-      NOTIFY_OPTIONS: ${{ secrets.NOTIFY_OPTIONS }}
-      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-      API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      - name: Notify image build
+        id: notify
+        uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
+        with:
+          report-name: ${{ env.REPORT_NAME }}
+          #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
+          title: "${{ env.ICON }} (${{ env.REPO_NAME }}) Aggiornamenti immagini docker"
+          #message: "${{ env.MESSAGE_BODY }}"
+          notify-cmd: ${{ secrets.NOTIFY_CMD }}
+          notify-up: ${{ secrets.NOTIFY_UP }}
+          notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
+          notify-options: ${{ secrets.NOTIFY_OPTIONS }}
