@@ -451,9 +451,11 @@ jobs:
       
       - name: Update trivy report
         run: |
-          TZ="Europe/Rome" date > ${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report_date.txt
-          cat ${{ env.TRIVY_FILE }} >> ${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report_date.txt
-          mv ${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report_date.txt ${{ env.TRIVY_FILE }}
+          TRIVY_RPT="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report_tmp.txt"
+          TZ="Europe/Rome" date > $TRIVY_RPT
+          cat ${{ env.TRIVY_FILE }} >> $TRIVY_RPT
+          echo '-------------------------------------------------------' >> $TRIVY_RPT
+          mv $TRIVY_RPT ${{ env.TRIVY_FILE }}
 
       - name: Upload trivy report
         uses: actions/upload-artifact@v4
@@ -521,12 +523,9 @@ jobs:
           echo "ICON=$ICON" >> $GITHUB_ENV
 
           sed -i '/STATUS=/d' update-report-last.txt
-          ls -l
-          ls -l results
-          ls -l trivy-scans
 
           # trivy report
-          cat trivy-scans/*.txt | sort > trivy-scan-last.txt
+          cat trivy-scans/*.txt > trivy-scan-last.txt
           cat trivy-scan-last.txt >> trivy-scan-history.txt
 
           TMP_REPORT_FILE="report.txt"
@@ -543,9 +542,6 @@ jobs:
           echo "Trivy report: $TRIVY_REPORT_URL" >> $TMP_REPORT_FILE
           
           mv $TMP_REPORT_FILE reports/update-report-last.txt
-          ls -l
-          ls -l results
-          ls -l trivy-scans
           
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
