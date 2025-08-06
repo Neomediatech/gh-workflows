@@ -532,11 +532,14 @@ jobs:
           TZ="Europe/Rome" date >> $TMP_REPORT_FILE
           truncate -s -1 $TMP_REPORT_FILE
           echo " --- Job terminated" >> $TMP_REPORT_FILE
-          echo "Trivy report: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt" >> $TMP_REPORT_FILE
+          TRIVY_REPORT_URL="https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt"
           
           mkdir -p reports
           cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
-          mv report.txt reports/update-report-last.txt
+          echo "Trivy report: <a href=\"$TRIVY_REPORT_URL\">$TRIVY_REPORT_URL</a>" >> reports/body.txt
+          echo "Trivy report: $TRIVY_REPORT_URL" >> $TMP_REPORT_FILE
+          
+          mv $TMP_REPORT_FILE reports/update-report-last.txt
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
