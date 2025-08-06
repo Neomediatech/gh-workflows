@@ -77,6 +77,7 @@ runs:
           BODY_EXISTS="false"
           if [[ -f $ARTIFACT_DIR/body.txt ]]; then
             cat $ARTIFACT_DIR/body.txt >> $BODY_CONTENT_FILE
+            rm -f $ARTIFACT_DIR/body.txt
             BODY_EXISTS="true"
           fi
           i=1
