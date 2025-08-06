@@ -365,16 +365,11 @@ jobs:
           echo "build_result=$(date) --- $DERIVED_IMAGE UPDATED" >> $GITHUB_OUTPUT
           echo "BUILD_RESULT=UPDATED" >> $GITHUB_ENV
           echo "IMAGE_UPDATE_RESULT=done" >> $GITHUB_ENV
-          #git config user.name "neo-github-actions[bot]"
-          #git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          #git add $REPORT_FILE
-          #git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
-          #git push origin ${{ github.ref_name }}
 
           # nuovo report per upload artifact
           ARTIFACT_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
-          echo "$(date) --- $DERIVED_IMAGE UPDATED" > $ARTIFACT_FILE
+          echo "$(date) --- $DERIVED_IMAGE UPDATED (image build needed: $IMAGE_BUILD_NEEDED)" > $ARTIFACT_FILE
           ls -l
 
       - name: Upload result
@@ -443,20 +438,17 @@ jobs:
             cat $CUR_TRIVY_REPORT_FILE >> tmp_trivy_rpt.txt
             cat tmp_trivy_rpt.txt > $CUR_TRIVY_REPORT_FILE
           fi
-          if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
-            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
-            cat $CUR_TRIVY_REPORT_FILE > $LAST_TRIVY_REPORT_FILE
-          else
-            echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
-            cat $CUR_TRIVY_REPORT_FILE >> $LAST_TRIVY_REPORT_FILE
+          #if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
+          #  echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
+          #  cat $CUR_TRIVY_REPORT_FILE > $LAST_TRIVY_REPORT_FILE
+          #else
+          #  echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
+          #  cat $CUR_TRIVY_REPORT_FILE >> $LAST_TRIVY_REPORT_FILE
           fi
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          #echo "::notice::Local branch:"
-          #git branch
-          #echo "::notice::Remote branch:"
-          #git ls-remote --heads origin
-          git add $LAST_REPORT_FILE $LAST_TRIVY_REPORT_FILE
+          git add $LAST_TRIVY_REPORT_FILE
+          #git add $LAST_REPORT_FILE $LAST_TRIVY_REPORT_FILE
           git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
           echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
           git push origin ${{ inputs.derived-image-repo-ref }}
