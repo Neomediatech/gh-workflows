@@ -480,13 +480,21 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
+          pattern: result-*
           path: results
+          merge-multiple: true
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: trivy-scan-*
+          path: trivy-scans
           merge-multiple: true
 
       - name: Join reports and commit it
         run: |
-          echo "--- Riassunto risultati ---"
-          ls -lah results
+          #echo "--- Riassunto risultati ---"
+          #ls -lah results
           cat results/*.txt |sort > update-report-last.txt
           cat results/*.txt |sort >> update-report-history.txt
           REPO_NAME="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $2}'| uniq)"
@@ -504,17 +512,25 @@ jobs:
           fi
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
           echo "ICON=$ICON" >> $GITHUB_ENV
+
+          # trivy report
+          cat trivy-scans/*.txt |sort > trivy-scan-last.txt
+          cat trivy-scans/*.txt |sort >> trivy-scan-history.txt
+
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          git add update-report-last.txt update-report-history.txt
+          git add update-report-last.txt update-report-history.txt trivy-scan-last.txt trivy-scan-history.txt
           git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
           git push origin ${{ github.ref_name }}
+
+          mkdir -p reports
+          cp update-report-last.txt trivy-scan-last.txt reports/
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.REPORT_NAME }}
-          path: update-report-last.txt
+          path: reports/*.txt
           retention-days: 1
           overwrite: true
 
