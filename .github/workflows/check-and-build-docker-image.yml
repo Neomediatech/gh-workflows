@@ -409,56 +409,28 @@ jobs:
           echo "report_name=${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt" >> $GITHUB_OUTPUT
           #echo "image_name=${REPO_NAME}_${{ matrix.version }}$IMAGE_TYPE" >> $GITHUB_OUTPUT
           echo "image_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+          TRIVY_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_trivy_scan.txt"
+          echo "TRIVY_FILE=$TRIVY_FILE" >> $GITHUB_ENV
 
-      #- name: Run Trivy vulnerability scan
-      #  uses: aquasecurity/trivy-action@master
-      #  if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
-      #  with:
-      #    image-ref: ${{ env.DERIVED_IMAGE }}
-      #    format: 'table'
-      #    output: 'trivy-report.txt'
-      #    severity: 'HIGH,CRITICAL'
-      #    ignore-unfixed: true
-      #    vuln-type: 'os,library'
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
+        with:
+          image-ref: ${{ env.DERIVED_IMAGE }}
+          format: 'table'
+          output: ${{ env.TRIVY_FILE }}
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
 
-      - name: Push report
-        id: final-report
-        run: |
-          # update report file
-          # compilo il report per tutte le immagini. se siamo al primo ciclo, sovrascrivo il contenuto del file
-          LAST_REPORT_FILE="last-update-report.txt"
-          LAST_TRIVY_REPORT_FILE="last-trivy-report.txt"
-          CUR_TRIVY_REPORT_FILE="trivy-report.txt"
-          if [[ ! -f $CUR_TRIVY_REPORT_FILE ]]; then
-            echo "-----------------------------------" > $CUR_TRIVY_REPORT_FILE
-            echo "$(date) --- $DERIVED_IMAGE NOT SCANNED" >> $CUR_TRIVY_REPORT_FILE
-          else
-            echo "-----------------------------------" > tmp_trivy_rpt.txt
-            echo "$(date) --- $DERIVED_IMAGE" >> tmp_trivy_rpt.txt
-            cat $CUR_TRIVY_REPORT_FILE >> tmp_trivy_rpt.txt
-            cat tmp_trivy_rpt.txt > $CUR_TRIVY_REPORT_FILE
-          fi
-          if [[ "${FIRST_VERSION}-${FIRST_TYPE}" = "${{ matrix.version }}-${{ matrix.type }}" ]]; then
-          #  echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $LAST_REPORT_FILE
-            cat $CUR_TRIVY_REPORT_FILE > $LAST_TRIVY_REPORT_FILE
-          else
-          #  echo "$(date) --- $DERIVED_IMAGE $BUILD_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" >> $LAST_REPORT_FILE
-            cat $CUR_TRIVY_REPORT_FILE >> $LAST_TRIVY_REPORT_FILE
-          fi
-          git config user.name "neo-github-actions[bot]"
-          git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          git add $LAST_TRIVY_REPORT_FILE
-          #git add $LAST_REPORT_FILE $LAST_TRIVY_REPORT_FILE
-          git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
-          echo "Pushing to: ${{ inputs.derived-image-repo }} on branch ${{ inputs.derived-image-repo-ref }}"
-          git push origin ${{ inputs.derived-image-repo-ref }}
-          
-          NEW_COMMIT_SHA=$(git rev-parse HEAD)
-          echo "::notice::Commit SHA just pushed: $NEW_COMMIT_SHA"
-          echo "new_commit_sha=$NEW_COMMIT_SHA" >> "$GITHUB_OUTPUT"
-          
-          echo "last-update-report.txt content:"
-          cat last-update-report.txt
+      - name: Upload trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-${{ strategy.job-index }}
+          path: ${{ env.TRIVY_FILE }}
+          retention-days: 1
+          overwrite: true
+        if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
 
       # Docker logout
       - name: Docker logout
@@ -509,7 +481,7 @@ jobs:
           git config user.name "neo-github-actions[bot]"
           git config user.email "neo-github-actions[bot]@users.noreply.github.com"
           git add update-report-last.txt update-report-history.txt
-          git commit -m "Update $DERIVED_IMAGE from ${{ github.repository }} - $(date)"
+          git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
           git push origin ${{ github.ref_name }}
 
       - name: Upload global report
@@ -532,24 +504,3 @@ jobs:
           notify-up: ${{ secrets.NOTIFY_UP }}
           notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
           notify-options: ${{ secrets.NOTIFY_OPTIONS }}
-
-  notify:
-    needs: [check-and-build]
-    uses: Neomediatech/gh-workflows/.github/workflows/notify.yml@main
-    permissions:
-      contents: write
-      packages: write
-      actions: write
-    with:
-      build-result: "${{needs.check-and-build.outputs.build-result}}"
-      report-name: "${{needs.check-and-build.outputs.report-name}}"
-      image-update-result: "${{needs.check-and-build.outputs.image-update-result}}"
-      docker_image: "${{needs.check-and-build.outputs.image-name}}"
-      commit: "${{needs.check-and-build.outputs.new_commit_sha}}"
-    secrets:
-      NOTIFY_CMD: ${{ secrets.NOTIFY_CMD }}
-      NOTIFY_UP: ${{ secrets.NOTIFY_UP }}
-      NOTIFY_ENDPOINT: ${{ secrets.NOTIFY_ENDPOINT }}
-      NOTIFY_OPTIONS: ${{ secrets.NOTIFY_OPTIONS }}
-      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-      API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
