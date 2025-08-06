@@ -91,6 +91,7 @@ jobs:
     runs-on: [self-hosted]
     outputs:
       filtered_matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      start-date: ${{ steps.vars.outputs.start-date }}
     steps:
       # Checkout del repository chiamante
       - name: Checkout calling repository
@@ -106,14 +107,16 @@ jobs:
         uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
 
       - name: Process Remote Action Outputs
+        id: vars
         run: |
           echo "Matrix: ${{ steps.generate-matrix.outputs.matrix }}"
           echo "Repo lower: ${{ steps.generate-matrix.outputs.repo-lower }}"
           echo "matrix=${{ steps.generate-matrix.outputs.matrix }}" >> "$GITHUB_OUTPUT"
+          START_DATE="$(TZ="Europe/Rome" date)"
+          echo "start-date=$START_DATE" >> "$GITHUB_OUTPUT"
 
   check-and-build:
     needs: [prepare-matrix]
-    #runs-on: ubuntu-latest
     runs-on: [self-hosted]
     strategy:
       matrix:
@@ -129,7 +132,7 @@ jobs:
       image-name: ${{ steps.final-vars.outputs.image_name }}
       new_commit_sha: ${{ steps.final-report.outputs.new_commit_sha }}
     steps:
-      # Checkout il repository chiamante (serve per la build se il Dockerfile/context sono lì)
+      # Clono il repository chiamante
       - name: Checkout calling repository
         uses: actions/checkout@v4
         with:
@@ -460,7 +463,7 @@ jobs:
           docker logout
 
   build-report:
-    needs: [check-and-build]
+    needs: [prepare-matrix,check-and-build]
     runs-on: [self-hosted]
     steps:
       - name: Checkout calling repository
@@ -474,9 +477,6 @@ jobs:
       - name: Set some var
         run: |
           echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
-          REPORT_DATE="$(TZ="Europe/Rome" date)"
-          echo "REPORT_DATE=$REPORT_DATE" >> $GITHUB_ENV
-          echo "MESSAGE_BODY=$REPORT_DATE" >> $GITHUB_ENV
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -526,11 +526,15 @@ jobs:
           git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
           git push origin ${{ github.ref_name }}
 
+          TMP_REPORT_FILE="report.txt"
+          echo "Job started at ${{ needs.prepare-matrix.outputs.start-date }}" > $TMP_REPORT_FILE
+          cat update-report-last.txt >> $TMP_REPORT_FILE
+          echo -n "Job terminated at " >> $TMP_REPORT_FILE
+          TZ="Europe/Rome" date >> $TMP_REPORT_FILE
+          echo "Trivy report: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt" >> $TMP_REPORT_FILE
+          
           mkdir -p reports
-          cp update-report-last.txt reports/
-
-          MESSAGE_BODY="${MESSAGE_BODY}\nTrivy report: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/trivy-scan-last.txt"
-          echo "MESSAGE_BODY=$MESSAGE_BODY" >> $GITHUB_ENV
+          mv report.txt reports/update-report-last.txt
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
@@ -547,7 +551,7 @@ jobs:
           report-name: ${{ env.REPORT_NAME }}
           #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
           title: "${{ env.ICON }} (${{ env.REPO_NAME }}) Aggiornamenti immagini docker"
-          message: "${{ env.MESSAGE_BODY }}"
+          #message: "${{ env.MESSAGE_BODY }}"
           notify-cmd: ${{ secrets.NOTIFY_CMD }}
           notify-up: ${{ secrets.NOTIFY_UP }}
           notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
