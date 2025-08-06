@@ -521,12 +521,6 @@ jobs:
           cat trivy-scans/*.txt |sort > trivy-scan-last.txt
           cat trivy-scan-last.txt >> trivy-scan-history.txt
 
-          git config user.name "neo-github-actions[bot]"
-          git config user.email "neo-github-actions[bot]@users.noreply.github.com"
-          git add update-report-last.txt update-report-history.txt trivy-scan-last.txt trivy-scan-history.txt
-          git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
-          git push origin ${{ github.ref_name }}
-
           TMP_REPORT_FILE="report.txt"
           echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
           cat update-report-last.txt >> $TMP_REPORT_FILE
@@ -541,6 +535,12 @@ jobs:
           echo "Trivy report: $TRIVY_REPORT_URL" >> $TMP_REPORT_FILE
           
           mv $TMP_REPORT_FILE reports/update-report-last.txt
+          
+          git config user.name "neo-github-actions[bot]"
+          git config user.email "neo-github-actions[bot]@users.noreply.github.com"
+          git add update-report-last.txt update-report-history.txt trivy-scan-last.txt trivy-scan-history.txt
+          git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
+          git push origin ${{ github.ref_name }}
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
