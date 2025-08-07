@@ -95,25 +95,27 @@ jobs:
 
       - name: Show result
         run: |
-          echo "--- Riassunto risultati ---"
-          cat results/*/result.txt |sort > all-results.txt
-          if grep -q "❌" all-results.txt; then
+          mkdir -p reports
+          REPORT_FILE="reports/all-results.txt"
+          echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
+          cat results/*/result.txt |sort > $REPORT_FILE
+          if grep -q "❌" $REPORT_FILE; then
             ICON_TITLE="❌"
-          elif grep -q "🔁" all-results.txt; then
+          elif grep -q "🔁" $REPORT_FILE; then
             ICON_TITLE="🔁"
-          elif grep -q "✅" all-results.txt; then
+          elif grep -q "✅" $REPORT_FILE; then
             ICON_TITLE="✅"
           else
-            ICON_TITLE=""
+            ICON_TITLE="⚠️"
           fi
-
+          cat $REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt 
           echo "ICON_TITLE=$ICON_TITLE" >> $GITHUB_ENV
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.REPORT_NAME }}
-          path: all-results.txt
+          path: reports/*.txt
           retention-days: 1
           overwrite: true
 
