@@ -342,7 +342,10 @@ jobs:
             PACKAGE_LABEL=""
           fi
           echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
-            --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
+            --label org.opencontainers.image.created=$IMAGE_DATE \
+            $IMAGE_REPO \
+            --label org.opencontainers.image.base=$BASE_IMAGE \
+            $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
           IMAGE_DATE="$(date --rfc-3339='seconds')"
           if [[ "${{ inputs.derived-image-repo}}" != "" ]]; then
