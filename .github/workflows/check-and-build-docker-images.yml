@@ -249,6 +249,10 @@ jobs:
         run: |
           echo "Controllo digest per $BASE_IMAGE e $DERIVED_IMAGE"
 
+          if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          fi
+          
           if [[ -n "${{ inputs.package-to-check }}" ]]; then
             if [[ -z "$BASE_PACKAGE_VERSION" ]]; then
               BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root $BASE_IMAGE -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
