@@ -149,7 +149,7 @@ jobs:
     with:
       base-image: ${{ inputs.base-image }}
       derived-image-prefix: ${{ needs.discover-dockerfiles.outputs.derived-image-prefix }}
-      #versions: '["8.4", "8.3", "8.2", "8.1", "7.4"]'
+      #versions: '["8.4", "8.3", "8.2", "8.1", "7.4", "latest"]'
       #type: '["apache", "fpm"]'
       versions: '${{ needs.discover-dockerfiles.outputs.versions }}'
       type: '${{ needs.discover-dockerfiles.outputs.types }}'
