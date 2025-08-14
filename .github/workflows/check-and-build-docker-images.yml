@@ -353,6 +353,9 @@ jobs:
           else
             IMAGE_REPO=''
           fi
+          if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          fi
           docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
             --label "org.opencontainers.image.created=$IMAGE_DATE" \
             $IMAGE_REPO \
@@ -365,7 +368,6 @@ jobs:
           if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
             echo "::notice::Tagging $DERIVED_IMAGE $DOCKER_HUB_IMAGE"
             docker tag $DERIVED_IMAGE $DOCKER_HUB_IMAGE
-            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
             docker push $DOCKER_HUB_IMAGE
           else
             echo "::warning::Credenziali DOCKER HUB non fornite, NON carico l'immagine su DockerHUB"
