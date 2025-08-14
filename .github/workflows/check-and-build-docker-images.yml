@@ -345,18 +345,18 @@ jobs:
           else
             PACKAGE_LABEL=""
           fi
+          if [[ "${{ inputs.derived-image-repo}}" != "" ]]; then
+            IMAGE_REPO='--label org.opencontainers.image.source="https://github.com/${{ inputs.derived-image-repo}}"'
+          else
+            IMAGE_REPO=''
+          fi
+          IMAGE_DATE="$(date --rfc-3339='seconds')"
           echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
             --label org.opencontainers.image.created=$IMAGE_DATE \
             $IMAGE_REPO \
             --label org.opencontainers.image.base=$BASE_IMAGE \
             $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
-          IMAGE_DATE="$(date --rfc-3339='seconds')"
-          if [[ "${{ inputs.derived-image-repo}}" != "" ]]; then
-            IMAGE_REPO='--label "org.opencontainers.image.source="${{ inputs.derived-image-repo}}"'
-          else
-            IMAGE_REPO=''
-          fi
           if [[ "${{ secrets.DOCKER_PASSWORD }}" != "" ]]; then
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           fi
