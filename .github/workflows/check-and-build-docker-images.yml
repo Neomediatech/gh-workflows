@@ -344,8 +344,17 @@ jobs:
           echo "Executing: docker build --pull --label org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }} \
             --label org.opencontainers.image.base=$BASE_IMAGE $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
+          IMAGE_DATE="$(date --rfc-3339='seconds')"
+          if [[ "${{ inputs.derived-image-repo}}" != "" ]]; then
+            IMAGE_REPO='--label "org.opencontainers.image.source="${{ inputs.derived-image-repo}}"'
+          else
+            IMAGE_REPO=''
+          fi
           docker build --pull --label "org.opencontainers.image.base.digest=${{ steps.check.outputs.base_image_digest }}" \
-            --label "org.opencontainers.image.base=$BASE_IMAGE" $PACKAGE_LABEL \
+            --label "org.opencontainers.image.created=$IMAGE_DATE" \
+            $IMAGE_REPO \
+            --label "org.opencontainers.image.base=$BASE_IMAGE" \
+            $PACKAGE_LABEL \
             -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
           docker push $DERIVED_IMAGE
 
