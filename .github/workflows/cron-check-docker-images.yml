@@ -50,6 +50,8 @@ jobs:
             BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
             PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
 
+            echo "::notice:: BASE_IMAGE=$BASE_IMAGE"
+
             # Costruisce un array temporaneo di oggetti per questa immagine
             TEMP_DATA=$(echo "$IMAGE_META" | jq -c --arg ir "$IMAGE_REPO" --arg it "$IMAGE_TYPE" --arg bi "$BASE_IMAGE" --arg pn "$PACKAGE_NAME" '
               .RepoTags |
