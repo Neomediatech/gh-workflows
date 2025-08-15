@@ -1,4 +1,4 @@
-name: Check via cron if an image needs to be updated
+name: Check via cron if a derived image needs to be updated from BASE image
 
 on:
   schedule:
