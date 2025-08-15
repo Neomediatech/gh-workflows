@@ -33,6 +33,7 @@ jobs:
             {include: .}
           ' images-to-check.txt)"
           echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+          echo "::notice::matrix=${MATRIX_JSON}"
 
   generate-tags-info:
     runs-on: [self-hosted]
@@ -63,6 +64,7 @@ jobs:
           ')"
           
           echo "all_tags=$(echo "$JSON_TAGS" | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "all_tags=$(echo "$JSON_TAGS" | jq -c .)"
 
   check-update:
     runs-on: [self-hosted]
