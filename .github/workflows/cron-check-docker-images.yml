@@ -1,0 +1,132 @@
+name: Check via cron if a image needs to be updated
+
+on:
+  #schedule:
+    # Esegui ogni giorno alle 04:00 UTC
+  #  - cron: '0 4 * * *'
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  generate-matrix:
+    runs-on: [self-hosted]
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Read file and generate JSON for matrix
+        id: set-matrix
+        run: |
+          IMAGES=$(cat images-to-check.txt |grep -v "^$"| awk '{print "\""$1"\""}' | tr '\n' ',' | sed 's/,$//')
+          echo "IMAGES: $IMAGES"
+          MATRIX_JSON="{\"images\":[${IMAGES}]}"
+          echo "matrix=${MATRIX_JSON}"
+          echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+
+  update-check:
+    runs-on: [self-hosted]
+    needs: generate-matrix
+    strategy:
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - name: Show & Set matrix value & vars
+        id: check-update
+        run: |
+          echo "The current value from the matrix is ${{ matrix.images }}"
+          IMAGE_META="$(skopeo inspect docker://${{ matrix.images }} || echo "")"
+          IMAGE_BASE="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
+          IMAGE_BASE_DIGEST="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base.digest"' || echo "")"
+          CURRENT_IMAGE_BASE_DIGEST="$(skopeo inspect docker://$IMAGE_BASE | jq -r '.Digest' || echo "")"
+
+          echo "IMAGE_BASE=$IMAGE_BASE"
+          echo "IMAGE_BASE_DIGEST=$IMAGE_BASE_DIGEST"
+          echo "CURRENT_IMAGE_BASE_DIGEST=$CURRENT_IMAGE_BASE_DIGEST"
+
+          GLOBAL_STATUS=""
+          ICON_TITLE=""
+          if [[ "$IMAGE_BASE_DIGEST" == "" || "$CURRENT_IMAGE_BASE_DIGEST" == "" ]]; then
+            echo "::warning:: Digest not found"
+            RES="❌ digest non found"
+            GLOBAL_STATUS="ERROR"
+            ICON_TITLE="❌"
+          elif [[ "$IMAGE_BASE_DIGEST" != "$CURRENT_IMAGE_BASE_DIGEST" ]]; then
+            echo "::notice:: Image update required"
+            RES="⚠️🔁 update required"
+            if [[ "$GLOBAL_STATUS" != "ERROR" ]]; then
+              GLOBAL_STATUS="UPDATE_REQUIRED"
+              ICON_TITLE="🔁"
+            fi
+          else
+            echo "::notice:: Update not required"
+            RES="✅ update NOT required"
+            if [[ "$GLOBAL_STATUS" == "" ]]; then
+              GLOBAL_STATUS="UPDATE_OK"
+              ICON_TITLE="✅"
+            fi
+          fi
+          #RES=$RANDOM
+          echo "::notice:: ${{ matrix.images }} $RES"
+          echo "${{ matrix.images }} $RES" > result.txt
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ strategy.job-index }}
+          path: result.txt
+          retention-days: 1
+          overwrite: true
+
+  result:
+    runs-on: [self-hosted]
+    needs: update-check
+    steps:
+      - name: Set some var
+        run: |
+          echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
+          REPORT_DATE="$(TZ="Europe/Rome" date)"
+          echo "REPORT_DATE=$REPORT_DATE" >> $GITHUB_ENV
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+
+      - name: Show result
+        run: |
+          mkdir -p reports
+          REPORT_FILE="reports/all-results.txt"
+          echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
+          cat results/*/result.txt |sort > $REPORT_FILE
+          if grep -q "❌" $REPORT_FILE; then
+            ICON_TITLE="❌"
+          elif grep -q "🔁" $REPORT_FILE; then
+            ICON_TITLE="🔁"
+          elif grep -q "✅" $REPORT_FILE; then
+            ICON_TITLE="✅"
+          else
+            ICON_TITLE="⚠️"
+          fi
+          cat $REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt 
+          echo "ICON_TITLE=$ICON_TITLE" >> $GITHUB_ENV
+
+      - name: Upload global report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.REPORT_NAME }}
+          path: reports/*.txt
+          retention-days: 1
+          overwrite: true
+
+      - name: Notify image check update
+        id: notify
+        uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
+        with:
+          report-name: ${{ env.REPORT_NAME }}
+          title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
+          message: "${{ env.REPORT_DATE }}"
+          notify-cmd: ${{ secrets.NOTIFY_CMD }}
+          notify-up: ${{ secrets.NOTIFY_UP }}
+          notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
+          notify-options: ${{ secrets.NOTIFY_OPTIONS }}
