@@ -1,9 +1,9 @@
-# image repo ; tags ; image type (see https://github.com/Neomediatech/gh-workflows/blob/main/.github/actions/image-type-list/action.yml) ; [package to check]
+# image repo ; tags ; image type (see https://github.com/Neomediatech/gh-workflows/blob/main/.github/actions/image-type-list/action.yml) ; package to check ("none" if no package)
 ghcr.io/neomediatech/rspamd;[ latest, 3.8, 3.7, 3.6, 3.5, 3.12, 3.11, 3.10, 3.9 ];generic;rspamd
 ghcr.io/neomediatech/exim;[ rolling, 4.93, 4.95, 4.97, latest, 4.96, 4.97-from-source, 4.96-from-source, 4.93-from-source ];generic;exim4-daemon-heavy
 ghcr.io/neomediatech/dovecot;[ 2.4, 2.3, latest ];dovecot;dovecot-core
-ghcr.io/neomediatech/caddy;[ extra, latest, 2.8-alpine, 2.8-extra, 2.9-alpine, 2.9-extra, 2.10-alpine, 2.10-extra, 2.9, 2.8, 2.10 ];generic
+ghcr.io/neomediatech/caddy;[ extra, latest, 2.8-alpine, 2.8-extra, 2.9-alpine, 2.9-extra, 2.10-alpine, 2.10-extra, 2.9, 2.8, 2.10 ];generic;none
 ghcr.io/neomediatech/bind9;[ latest ];generic;bind9
 ghcr.io/neomediatech/cron;[ latest ];alpine;busybox
 ghcr.io/neomediatech/fail2ban;[ 0.11.2, 1.0.2, latest ];github;fail2ban/fail2ban
-ghcr.io/neomediatech/roundcube;[ latest-fpm, 1.6.x-apache, 1.5.x-fpm, 1.5.x-apache, latest ];roundcube
+ghcr.io/neomediatech/roundcube;[ latest-fpm, 1.6.x-apache, 1.5.x-fpm, 1.5.x-apache, latest ];roundcube;none
