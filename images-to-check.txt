@@ -7,3 +7,4 @@ ghcr.io/neomediatech/bind9;generic
 ghcr.io/neomediatech/cron;alpine
 ghcr.io/neomediatech/fail2ban;github
 ghcr.io/neomediatech/roundcube;roundcube
+ghcr.io/neomediatech/self-hosted-runner;github
