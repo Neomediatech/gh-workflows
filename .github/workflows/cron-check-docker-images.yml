@@ -27,9 +27,7 @@ jobs:
               split(";") |
               {
                 image_repo: (.[0] // "" | sub("^ *#? *|;.*$";"")),
-                tags: (.[1] // "" | sub("^ *| *$";"") | sub("\\[|\\]";"") | split(",") | map(sub("^ *| *$";"")) | select(length > 0)),
-                image_type: (.[2] // "" | sub("^ *| *$";"")),
-                package: (.[3] // "" | sub("^ *| *$";""))
+                image_type: (.[1] // "" | sub("^ *| *$";""))
               }
             ) |
             {include: .}
