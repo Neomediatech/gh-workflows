@@ -71,12 +71,19 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.generate-tags-info.outputs.all_tags) }}
     steps:
-      - name: Check image update (check software versions)
-        id: check-image
-        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
-        with:
-          image-type: '${{ matrix.image_type }}'
-          base-image: '${{ matrix.base_image }}'
-          derived-image: '${{ matrix.image_repo }}'
-          package-to-check: '${{ matrix.package_name }}'
-          image-version: '${{ matrix.tag }}'
+      #- name: Check image update (check software versions)
+      #  id: check-image
+      #  uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+      #  with:
+      #    image-type: '${{ matrix.image_type }}'
+      #    base-image: '${{ matrix.base_image }}'
+      #    derived-image: '${{ matrix.image_repo }}'
+      #    package-to-check: '${{ matrix.package_name }}'
+      #    image-version: '${{ matrix.tag }}'
+      - name: Test output
+        run: |
+          echo "image-type: '${{ matrix.image_type }}'"
+          echo "base-image: '${{ matrix.base_image }}'"
+          echo "derived-image: '${{ matrix.image_repo }}'"
+          echo "package-to-check: '${{ matrix.package_name }}'"
+          echo "image-version: '${{ matrix.tag }}'"
