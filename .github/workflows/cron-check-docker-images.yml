@@ -21,14 +21,16 @@ jobs:
           # Legge il file images-to-check.txt e crea un array JSON
           IMAGES_TO_CHECK=$(jq -R -s -c '
             split("\n") |
-            map(select(test("^#") | not)) |
             map(
+              select(length > 0) | # Aggiungi questo filtro per ignorare le righe vuote
+              select(. | test("^#") | not) |
               split(";") |
               {
-                image_repo: (.[0] | sub("^ *#? *|;.*$";"")),
-                image_type: (.[1] | sub("^ *| *$";""))
+                image_repo: (.[0] // "" | sub("^ *#? *|;.*$";"")),
+                image_type: (.[1] // "" | sub("^ *| *$";""))
               }
-            )
+            ) |
+            {include: .}
           ' images-to-check.txt)
 
           # Inizializza un array vuoto per i dati finali
