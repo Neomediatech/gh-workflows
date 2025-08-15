@@ -8,16 +8,16 @@ on:
   workflow_call:
 
 jobs:
-  generate-matrix:
+  generate-repo-matrix:
     runs-on: [self-hosted]
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.set-repo-matrix.outputs.matrix }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
       - name: Read file and generate JSON for matrix
-        id: set-matrix
+        id: set-repo-matrix
         run: |
           MATRIX_JSON="$(
           jq -R -s -c '
@@ -31,20 +31,52 @@ jobs:
               }
             ) |
             {include: .}
-          '  images-to-check.txt)"
-          echo "matrix=${MATRIX_JSON}"
+          ' images-to-check.txt)"
           echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
 
-  update-check:
+  generate-tags-info:
     runs-on: [self-hosted]
-    needs: generate-matrix
-    #strategy:
-    #  matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    needs: generate-repo-matrix
+    outputs:
+      all_tags: ${{ steps.set-tags-info.outputs.all_tags }}
     strategy:
       matrix:
-        include: ${{ fromJson(needs.generate-matrix.outputs.matrix).include }}
+        include: ${{ fromJson(needs.generate-repo-matrix.outputs.matrix).include }}
     steps:
-      - name: Show & Set matrix value & vars
-        id: check-update
+      - name: Get image tags and info
+        id: set-tags-info
         run: |
-          echo "::notice:: The current value from the matrix is ${{ matrix.image_repo }} and ${{ matrix.image_type }}"
+          IMAGE_META="$(skopeo inspect docker://${{ matrix.image_repo }} || echo "")"
+          BASE_IMAGE="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
+          PACKAGE_NAME="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
+          
+          # Aggiungo i dati del repository e del tipo di immagine a ogni tag
+          JSON_TAGS="$(echo $IMAGE_META | jq -r '
+            .RepoTags | 
+            map({ 
+              tag: ., 
+              image_repo: "${{ matrix.image_repo }}",
+              image_type: "${{ matrix.image_type }}",
+              base_image: "'"$BASE_IMAGE"'",
+              package_name: "'"$PACKAGE_NAME"'"
+            })
+          ')"
+          
+          echo "all_tags=$(echo "$JSON_TAGS" | jq -c .)" >> "$GITHUB_OUTPUT"
+
+  check-update:
+    runs-on: [self-hosted]
+    needs: [generate-tags-info]
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.generate-tags-info.outputs.all_tags) }}
+    steps:
+      - name: Check image update (check software versions)
+        id: check-image
+        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+        with:
+          image-type: '${{ matrix.image_type }}'
+          base-image: '${{ matrix.base_image }}'
+          derived-image: '${{ matrix.image_repo }}'
+          package-to-check: '${{ matrix.package_name }}'
+          image-version: '${{ matrix.tag }}'
