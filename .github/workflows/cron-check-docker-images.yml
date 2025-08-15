@@ -42,9 +42,9 @@ jobs:
     #  matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     strategy:
       matrix:
-        include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+        include: ${{ fromJson(needs.generate-matrix.outputs.matrix).include }}
     steps:
       - name: Show & Set matrix value & vars
         id: check-update
         run: |
-          echo "::notice:: The current value from the matrix is ${{ matrix.images }}"
+          echo "::notice:: The current value from the matrix is ${{ matrix.image_repo }} and ${{ matrix.image_type }}"
