@@ -69,9 +69,11 @@ jobs:
               }
               IMAGE_REPO=$(_jq_data '.image_repo')
               IMAGE_TYPE=$(_jq_data '.image_type')
+              TAG=$(_jq_data '.tags')
+              echo "::notice:: IMAGE_REPO=$IMAGE_REPO IMAGE_TYPE=$IMAGE_TYPE TAG=$TAG"
               
               # Recupera i metadati solo una volta per ogni repository
-              IMAGE_META="$(skopeo inspect docker://${IMAGE_REPO} || echo "")"
+              IMAGE_META="$(skopeo inspect docker://${IMAGE_REPO}:${TAG} || echo "")"
               BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
               PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
 
