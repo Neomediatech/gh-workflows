@@ -23,14 +23,13 @@ jobs:
             split("\n") |
             map(
               select(length > 0) |
-              select(. | test("^#") | not) |
+              select(test("^#") | not) |
               split(";") |
               {
                 image_repo: (.[0] // "" | sub("^ *#? *|;.*$";"")),
                 image_type: (.[1] // "" | sub("^ *| *$";""))
               }
-            ) |
-            {include: .}
+            )
           ' images-to-check.txt)
 
           # Inizializza un array vuoto per i dati finali
