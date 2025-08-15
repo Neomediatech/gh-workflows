@@ -22,7 +22,7 @@ jobs:
           IMAGES_TO_CHECK=$(jq -R -s -c '
             split("\n") |
             map(
-              select(length > 0) | # Aggiungi questo filtro per ignorare le righe vuote
+              select(length > 0) |
               select(. | test("^#") | not) |
               split(";") |
               {
