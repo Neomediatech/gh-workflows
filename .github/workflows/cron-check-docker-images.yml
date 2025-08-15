@@ -55,8 +55,8 @@ jobs:
           JSON_TAGS="$(echo $IMAGE_META | jq -r '
             .RepoTags | 
             map({ 
-              tag: ., 
               image_repo: "${{ matrix.image_repo }}",
+              tag: ., 
               image_type: "${{ matrix.image_type }}",
               base_image: "'"$BASE_IMAGE"'",
               package_name: "'"$PACKAGE_NAME"'"
@@ -68,7 +68,7 @@ jobs:
 
   check-update:
     runs-on: [self-hosted]
-    needs: [generate-tags-info]
+    needs: [generate-repo-matrix, generate-tags-info]
     strategy:
       matrix:
         include: ${{ fromJson(needs.generate-tags-info.outputs.all_tags) }}
