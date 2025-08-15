@@ -18,8 +18,9 @@ jobs:
       - name: Prepare all data for matrix
         id: prepare-data
         run: |
-          # Legge il file images-to-check.txt e crea un array JSON
-          IMAGES_TO_CHECK=$(jq -R -s -c '
+          # 1. Legge il file images-to-check.txt per ottenere repo e tipo.
+          #    Salva l'output come un array di oggetti JSON.
+          REPOS_TO_CHECK=$(jq -R -s -c '
             split("\n") |
             map(
               select(length > 0) |
@@ -32,44 +33,64 @@ jobs:
             )
           ' images-to-check.txt)
 
-          # Inizializza un array vuoto per i dati finali
-          FINAL_DATA="[]"
+          # 2. Itera su ogni repository per ottenere tutti i tag.
+          #    Crea un array intermedio di tutti i repo e i loro tag.
+          ALL_TAGS_PER_REPO="[]"
+          for row in $(echo "${REPOS_TO_CHECK}" | jq -r '.[] | @base64'); do
+              _jq_data() {
+                 echo "${row}" | base64 --decode | jq -r "${1}"
+              }
+              IMAGE_REPO=$(_jq_data '.image_repo')
+              IMAGE_TYPE=$(_jq_data '.image_type')
 
-          # Itera su ogni immagine per recuperare i tag e le altre informazioni
-          for row in $(echo "${IMAGES_TO_CHECK}" | jq -r '.[] | @base64'); do
-            _jq_data() {
-             echo "${row}" | base64 --decode | jq -r "${1}"
-            }
-            IMAGE_REPO=$(_jq_data '.image_repo')
-            IMAGE_TYPE=$(_jq_data '.image_type')
-            
-            echo "::notice:: Processing image: $IMAGE_REPO"
-            
-            # Recupera i metadati dell'immagine con skopeo
-            IMAGE_META="$(skopeo inspect docker://${IMAGE_REPO} || echo "")"
-            BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
-            PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
+              echo "::notice:: Retrieving tags for repository: $IMAGE_REPO"
+              
+              TAGS=$(skopeo inspect docker://${IMAGE_REPO} | jq -c '.RepoTags' || echo "[]")
+              
+              # Aggiunge i dati del repository e del tipo a un array temporaneo
+              TEMP_DATA=$(echo "${TAGS}" | jq -c --arg ir "$IMAGE_REPO" --arg it "$IMAGE_TYPE" '
+                map({
+                  image_repo: $ir,
+                  image_type: $it,
+                  tags: .
+                })
+              ')
 
-            echo "::notice:: BASE_IMAGE=$BASE_IMAGE"
-
-            # Costruisce un array temporaneo di oggetti per questa immagine
-            TEMP_DATA=$(echo "$IMAGE_META" | jq -c --arg ir "$IMAGE_REPO" --arg it "$IMAGE_TYPE" --arg bi "$BASE_IMAGE" --arg pn "$PACKAGE_NAME" '
-              .RepoTags |
-              map({
-                image_repo: $ir,
-                image_type: $it,
-                base_image: $bi,
-                package_name: $pn,
-                tag: .
-              })
-            ')
-
-            # Unisce i dati temporanei all'array finale
-            FINAL_DATA=$(echo "${FINAL_DATA} ${TEMP_DATA}" | jq -s 'add | unique_by(.tag)')
+              ALL_TAGS_PER_REPO=$(echo "${ALL_TAGS_PER_REPO} ${TEMP_DATA}" | jq -s 'add')
           done
-          
-          # Genera la matrice finale per il job successivo
-          MATRIX_JSON=$(echo "${FINAL_DATA}" | jq -c '{include: .}')
+
+          echo "::notice:: ALL_TAGS_PER_REPO=$ALL_TAGS_PER_REPO"
+
+          # 3. Itera sull'array intermedio per creare la matrice finale con tutte le informazioni.
+          FINAL_MATRIX_DATA="[]"
+          for row in $(echo "${ALL_TAGS_PER_REPO}" | jq -r '.[] | @base64'); do
+              _jq_data() {
+                  echo "${row}" | base64 --decode | jq -r "${1}"
+              }
+              IMAGE_REPO=$(_jq_data '.image_repo')
+              IMAGE_TYPE=$(_jq_data '.image_type')
+              
+              # Recupera i metadati solo una volta per ogni repository
+              IMAGE_META="$(skopeo inspect docker://${IMAGE_REPO} || echo "")"
+              BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
+              PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
+
+              TAGS_ARRAY=$(_jq_data '.tags' | jq -c '.[]')
+              
+              # Crea gli oggetti finali per la matrice
+              for tag in $(echo "${TAGS_ARRAY}"); do
+                  FINAL_MATRIX_DATA=$(echo "${FINAL_MATRIX_DATA}" | jq -c --arg ir "$IMAGE_REPO" --arg it "$IMAGE_TYPE" --arg bi "$BASE_IMAGE" --arg pn "$PACKAGE_NAME" --arg t "$tag" '. + [{
+                      image_repo: $ir,
+                      image_type: $it,
+                      base_image: $bi,
+                      package_name: $pn,
+                      tag: $t
+                  }]')
+              done
+          done
+
+          # 4. Genera la matrice finale per il job successivo.
+          MATRIX_JSON=$(echo "${FINAL_MATRIX_DATA}" | jq -c '{include: .}')
           echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
 
   check-update:
