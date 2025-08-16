@@ -130,6 +130,10 @@ runs:
               DERIVED_PACKAGE_VERSION=""
             fi
           ;;
+          "meta")
+            BASE_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("${{ inputs.package-to-check }}=")) | split("=")[1]')"
+            DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("${{ inputs.package-to-check }}=")) | split("=")[1]' || echo "")"
+            ;;
           *)
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
               BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
