@@ -45,7 +45,7 @@ jobs:
           for REPO in "${!REPOS[@]}"; do
               echo "::notice:: Retrieving tags for repository: $REPO"
               TAGS=$(skopeo inspect docker://${REPO} | jq -r '.RepoTags[]' || echo "")
-              
+
               # inserisce i tag nell'array indicizzato
               #REPO_TAGS["$REPO"]="$TAGS"
               #echo "::notice:: TAGS for repo $REPO : $TAGS"
@@ -57,21 +57,21 @@ jobs:
                 #BASE_IMAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
                 #PACKAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
                 #IMAGES_TYPE["$IMAGE"]="${REPOS[$REPO]}"
-                BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
+                BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
                 PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
                 IMAGE_TYPE="${REPOS[$REPO]}"
                 #echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGES[$IMAGE]}, PACKAGE ${PACKAGES[$IMAGE]}, IMAGE_TYPE ${IMAGES_TYPE[$IMAGE]}"
                 echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}"
 
                 # Costruisci l'oggetto JSON per l'immagine corrente
-                JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\"}"
-                # Aggiungi l'oggetto all'array
-                if [ "$MATRIX_ARRAY" == "[]" ]; then
-                  MATRIX_ARRAY="[$JSON_ITEM]"
-                else
-                  MATRIX_ARRAY=$(echo "$MATRIX_ARRAY" | jq -c ". += [$JSON_ITEM]")
-                fi
-                echo "::notice:: Added to matrix: $JSON_ITEM"
+                JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\"}"
+                # Aggiungi l'oggetto all'array
+                if [ "$MATRIX_ARRAY" == "[]" ]; then
+                  MATRIX_ARRAY="[$JSON_ITEM]"
+                else
+                  MATRIX_ARRAY=$(echo "$MATRIX_ARRAY" | jq -c ". += [$JSON_ITEM]")
+                fi
+                echo "::notice:: Added to matrix: $JSON_ITEM"
               done
           done
 
