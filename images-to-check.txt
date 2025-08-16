@@ -1,10 +1,10 @@
 # image repo ; image type (see https://github.com/Neomediatech/gh-workflows/blob/main/.github/actions/image-type-list/action.yml)
 ghcr.io/neomediatech/rspamd;generic
-#ghcr.io/neomediatech/exim;generic
-#ghcr.io/neomediatech/dovecot;dovecot
-#ghcr.io/neomediatech/caddy;generic
-#ghcr.io/neomediatech/bind9;generic
-#ghcr.io/neomediatech/cron;alpine
-#ghcr.io/neomediatech/fail2ban;github
-#ghcr.io/neomediatech/roundcube;roundcube
-#ghcr.io/neomediatech/self-hosted-runner;github
+ghcr.io/neomediatech/exim;generic
+ghcr.io/neomediatech/dovecot;dovecot
+ghcr.io/neomediatech/caddy;generic
+ghcr.io/neomediatech/bind9;generic
+ghcr.io/neomediatech/cron;alpine
+ghcr.io/neomediatech/fail2ban;github
+ghcr.io/neomediatech/roundcube;roundcube
+ghcr.io/neomediatech/self-hosted-runner;github
