@@ -59,17 +59,19 @@ jobs:
               done
           done
 
-          # 4. Genera la matrice finale per il job successivo.
-          #MATRIX_JSON=$(echo "${FINAL_MATRIX_DATA}" | jq -c '{include: .}')
-          #echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          MATRIX=$(printf '"%s",' "${BASE_IMAGES[@]}")
+          MATRIX="[${MATRIX%,}]"
+          
+          # Imposta l'output per il prossimo passo
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
 
-  #check-update:
-  #  runs-on: [self-hosted]
-  #  needs: prepare-matrix
-  #  strategy:
-  #    matrix:
-  #      include: ${{ fromJson(needs.prepare-matrix.outputs.matrix).include }}
-  #  steps:
+  check-update:
+    runs-on: [self-hosted]
+    needs: prepare-matrix
+    strategy:
+      matrix:
+        repo: ${{ fromJson(steps.set-up-matrix.outputs.matrix) }}
+    steps:
       #- name: Check image update (check software versions)
       #  id: check-image
       #  uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
@@ -79,10 +81,10 @@ jobs:
       #    derived-image: '${{ matrix.image_repo }}'
       #    package-to-check: '${{ matrix.package_name }}'
       #    image-version: '${{ matrix.tag }}'
-  #    - name: Test output
-  #      run: |
-  #        echo "image-type: '${{ matrix.image_type }}'"
-  #        echo "base-image: '${{ matrix.base_image }}'"
-  #        echo "derived-image: '${{ matrix.image_repo }}'"
-  #        echo "package-to-check: '${{ matrix.package_name }}'"
-  #        echo "image-version: '${{ matrix.tag }}'"
+      - name: Test output
+        run: |
+          echo "image-type: '${{ matrix.image_type }}'"
+          echo "base-image: '${{ matrix.base_image }}'"
+          echo "derived-image: '${{ matrix.image_repo }}'"
+          echo "package-to-check: '${{ matrix.package_name }}'"
+          echo "image-version: '${{ matrix.tag }}'"
