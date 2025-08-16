@@ -2,7 +2,7 @@
 ghcr.io/neomediatech/rspamd;generic
 #ghcr.io/neomediatech/exim;generic
 ghcr.io/neomediatech/dovecot;dovecot
-ghcr.io/neomediatech/caddy;generic
+ghcr.io/neomediatech/caddy;meta
 #ghcr.io/neomediatech/bind9;generic
 #ghcr.io/neomediatech/cron;alpine
 #ghcr.io/neomediatech/fail2ban;github
