@@ -35,42 +35,58 @@ jobs:
             fi
           done < "$FILE"
 
+          MATRIX_ARRAY="[]"
+
           # creo altri array contenenti gli altri elementi
-          declare -A REPO_TAGS
-          declare -A BASE_IMAGES
-          declare -A PACKAGES
-          declare -A IMAGES_TYPE
+          #declare -A REPO_TAGS
+          #declare -A BASE_IMAGES
+          #declare -A PACKAGES
+          #declare -A IMAGES_TYPE
           for REPO in "${!REPOS[@]}"; do
               echo "::notice:: Retrieving tags for repository: $REPO"
               TAGS=$(skopeo inspect docker://${REPO} | jq -r '.RepoTags[]' || echo "")
               
               # inserisce i tag nell'array indicizzato
-              REPO_TAGS["$REPO"]="$TAGS"
-              echo "::notice:: TAGS for repo $REPO : $TAGS"
+              #REPO_TAGS["$REPO"]="$TAGS"
+              #echo "::notice:: TAGS for repo $REPO : $TAGS"
 
               # processo ogni tag, recupero i metadati e inserisco tutto nei vari array associativi
               for TAG in $TAGS; do
                 IMAGE="${REPO}:${TAG}"
                 IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
-                BASE_IMAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
-                PACKAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
-                IMAGES_TYPE["$IMAGE"]="${REPOS[$REPO]}"
-                echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGES[$IMAGE]}, PACKAGE ${PACKAGES[$IMAGE]}, IMAGE_TYPE ${IMAGES_TYPE[$IMAGE]}"
+                #BASE_IMAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
+                #PACKAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
+                #IMAGES_TYPE["$IMAGE"]="${REPOS[$REPO]}"
+                BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
+                PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
+                IMAGE_TYPE="${REPOS[$REPO]}"
+                #echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGES[$IMAGE]}, PACKAGE ${PACKAGES[$IMAGE]}, IMAGE_TYPE ${IMAGES_TYPE[$IMAGE]}"
+                echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}"
+
+                # Costruisci l'oggetto JSON per l'immagine corrente
+                JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\"}"
+                # Aggiungi l'oggetto all'array
+                if [ "$MATRIX_ARRAY" == "[]" ]; then
+                  MATRIX_ARRAY="[$JSON_ITEM]"
+                else
+                  MATRIX_ARRAY=$(echo "$MATRIX_ARRAY" | jq -c ". += [$JSON_ITEM]")
+                fi
+                echo "::notice:: Added to matrix: $JSON_ITEM"
               done
           done
 
-          MATRIX=$(printf '"%s",' "${BASE_IMAGES[@]}")
-          MATRIX="[${MATRIX%,}]"
+          #MATRIX=$(printf '"%s",' "${BASE_IMAGES[@]}")
+          #MATRIX="[${MATRIX%,}]"
           
           # Imposta l'output per il prossimo passo
-          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "matrix=$MATRIX_ARRAY" >> "$GITHUB_OUTPUT"
 
   check-update:
     runs-on: [self-hosted]
     needs: prepare-matrix
     strategy:
       matrix:
-        repo: ${{ fromJson(steps.set-up-matrix.outputs.matrix) }}
+        repo: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     steps:
       #- name: Check image update (check software versions)
       #  id: check-image
@@ -83,8 +99,13 @@ jobs:
       #    image-version: '${{ matrix.tag }}'
       - name: Test output
         run: |
-          echo "image-type: '${{ matrix.image_type }}'"
-          echo "base-image: '${{ matrix.base_image }}'"
-          echo "derived-image: '${{ matrix.image_repo }}'"
-          echo "package-to-check: '${{ matrix.package_name }}'"
-          echo "image-version: '${{ matrix.tag }}'"
+          #echo "image-type: '${{ matrix.image_type }}'"
+          #echo "base-image: '${{ matrix.base_image }}'"
+          #echo "derived-image: '${{ matrix.image_repo }}'"
+          #echo "package-to-check: '${{ matrix.package_name }}'"
+          #echo "image-version: '${{ matrix.tag }}'"
+          echo "image-type: '${{ matrix.repo.image_type }}'"
+          echo "base-image: '${{ matrix.repo.base_image }}'"
+          echo "derived-image: '${{ matrix.repo.repo }}'"
+          echo "package-to-check: '${{ matrix.repo.package_name }}'"
+          echo "image-version: '${{ matrix.repo.tag }}'"
