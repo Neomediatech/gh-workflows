@@ -54,8 +54,8 @@ jobs:
                 IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
                 BASE_IMAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
                 PACKAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
-                IMAGES_TYPE["$IMAGE"]="${REPO}"
-                echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGES[$IMAGE]}, PACKAGE ${PACKAGES[$IMAGE]}, IMAGE_TYPE ${REPOS[$REPO]}"
+                IMAGES_TYPE["$IMAGE"]="${REPOS[$REPO]}"
+                echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGES[$IMAGE]}, PACKAGE ${PACKAGES[$IMAGE]}, IMAGE_TYPE ${IMAGES_TYPE[$IMAGE]}"
               done
           done
 
