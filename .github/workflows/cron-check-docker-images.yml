@@ -18,90 +18,58 @@ jobs:
       - name: Prepare all data for matrix
         id: prepare-data
         run: |
-          # 1. Legge il file images-to-check.txt per ottenere repo e tipo.
-          #    Salva l'output come un array di oggetti JSON.
-          REPOS_TO_CHECK=$(jq -R -s -c '
-            split("\n") |
-            map(
-              select(length > 0) |
-              select(test("^#") | not) |
-              split(";") |
-              {
-                image_repo: (.[0] // "" | sub("^ *#? *|;.*$";"")),
-                image_type: (.[1] // "" | sub("^ *| *$";""))
-              }
-            )
-          ' images-to-check.txt)
+          # Specifica il percorso del tuo file
+          FILE="images-to-check.txt"
 
-          # 2. Itera su ogni repository per ottenere tutti i tag.
-          #    Crea un array intermedio di tutti i repo e i loro tag.
-          ALL_TAGS_PER_REPO="[]"
-          for row in $(echo "${REPOS_TO_CHECK}" | jq -r '.[] | @base64'); do
-              _jq_data() {
-                 echo "${row}" | base64 --decode | jq -r "${1}"
-              }
-              IMAGE_REPO=$(_jq_data '.image_repo')
-              IMAGE_TYPE=$(_jq_data '.image_type')
+          # creo un array contenente il repo come indice e il tipo di immagine come valore
+          declare -A REPOS
+          while IFS=';' read -r REPO IMAGE_TYPE; do
+            # Salta le righe vuote o commentate
+            if [[ ! -z "$REPO" && ! "$REPO" =~ ^# ]]; then
+              # Rimuove gli spazi bianchi iniziali e finali
+              REPO=$(echo "$REPO" | xargs)
+              IMAGE_TYPE=$(echo "$IMAGE_TYPE" | xargs)
 
-              echo "::notice:: Retrieving tags for repository: $IMAGE_REPO"
+              # Assegna la chiave (REPO) e il valore (IMAGE_TYPE)
+              REPOS["$REPO"]="$IMAGE_TYPE"
+            fi
+          done < "$FILE"
+
+          # creo altri array contenenti gli altri elementi
+          declare -A REPO_TAGS
+          declare -A BASE_IMAGES
+          declare -A PACKAGES
+          declare -A IMAGES_TYPE
+          for REPO in "${!REPOS[@]}"; do
+              echo "::notice:: Retrieving tags for repository: $REPO"
+              TAGS=$(skopeo inspect docker://${REPO} | jq -r '.RepoTags[]' || echo "")
               
-              TAGS=$(skopeo inspect docker://${IMAGE_REPO} | jq -c '.RepoTags' || echo "[]")
-              
-              # Aggiunge i dati del repository e del tipo a un array temporaneo
-              TEMP_DATA=$(echo "${TAGS}" | jq -c --arg ir "$IMAGE_REPO" --arg it "$IMAGE_TYPE" '
-                map({
-                  image_repo: $ir,
-                  image_type: $it,
-                  tags: .
-                })
-              ')
+              # inserisce i tag nell'array indicizzato
+              REPO_TAGS["$REPO"]="$TAGS"
+              echo "::notice:: TAGS for repo $REPO : $TAGS"
 
-              ALL_TAGS_PER_REPO=$(echo "${ALL_TAGS_PER_REPO} ${TEMP_DATA}" | jq -s 'add')
-          done
-
-          echo "::notice:: ALL_TAGS_PER_REPO=$ALL_TAGS_PER_REPO"
-
-          # 3. Itera sull'array intermedio per creare la matrice finale con tutte le informazioni.
-          FINAL_MATRIX_DATA="[]"
-          for row in $(echo "${ALL_TAGS_PER_REPO}" | jq -r '.[] | @base64'); do
-              _jq_data() {
-                  echo "${row}" | base64 --decode | jq -r "${1}"
-              }
-              IMAGE_REPO=$(_jq_data '.image_repo')
-              IMAGE_TYPE=$(_jq_data '.image_type')
-              TAG=$(_jq_data '.tags')
-              echo "::notice:: IMAGE_REPO=$IMAGE_REPO IMAGE_TYPE=$IMAGE_TYPE TAG=$TAG"
-              
-              # Recupera i metadati solo una volta per ogni repository
-              IMAGE_META="$(skopeo inspect docker://${IMAGE_REPO}:${TAG} || echo "")"
-              BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
-              PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
-
-              TAGS_ARRAY=$(_jq_data '.tags' | jq -c '.[]')
-              
-              # Crea gli oggetti finali per la matrice
-              for tag in $(echo "${TAGS_ARRAY}"); do
-                  FINAL_MATRIX_DATA=$(echo "${FINAL_MATRIX_DATA}" | jq -c --arg ir "$IMAGE_REPO" --arg it "$IMAGE_TYPE" --arg bi "$BASE_IMAGE" --arg pn "$PACKAGE_NAME" --arg t "$tag" '. + [{
-                      image_repo: $ir,
-                      image_type: $it,
-                      base_image: $bi,
-                      package_name: $pn,
-                      tag: $t
-                  }]')
+              # processo ogni tag, recupero i metadati e inserisco tutto nei vari array associativi
+              for TAG in $TAGS; do
+                IMAGE="${REPO}:${TAG}"
+                IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
+                BASE_IMAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
+                PACKAGES["$IMAGE"]="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name"' || echo "")"
+                IMAGES_TYPE["$IMAGE"]="${REPO}"
+                echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE BASE_IMAGES["$IMAGE"], PACKAGE PACKAGES["$IMAGE"], IMAGE_TYPE IMAGES_TYPE["$IMAGE"]"
               done
           done
 
           # 4. Genera la matrice finale per il job successivo.
-          MATRIX_JSON=$(echo "${FINAL_MATRIX_DATA}" | jq -c '{include: .}')
-          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          #MATRIX_JSON=$(echo "${FINAL_MATRIX_DATA}" | jq -c '{include: .}')
+          #echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
 
-  check-update:
-    runs-on: [self-hosted]
-    needs: prepare-matrix
-    strategy:
-      matrix:
-        include: ${{ fromJson(needs.prepare-matrix.outputs.matrix).include }}
-    steps:
+  #check-update:
+  #  runs-on: [self-hosted]
+  #  needs: prepare-matrix
+  #  strategy:
+  #    matrix:
+  #      include: ${{ fromJson(needs.prepare-matrix.outputs.matrix).include }}
+  #  steps:
       #- name: Check image update (check software versions)
       #  id: check-image
       #  uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
@@ -111,10 +79,10 @@ jobs:
       #    derived-image: '${{ matrix.image_repo }}'
       #    package-to-check: '${{ matrix.package_name }}'
       #    image-version: '${{ matrix.tag }}'
-      - name: Test output
-        run: |
-          echo "image-type: '${{ matrix.image_type }}'"
-          echo "base-image: '${{ matrix.base_image }}'"
-          echo "derived-image: '${{ matrix.image_repo }}'"
-          echo "package-to-check: '${{ matrix.package_name }}'"
-          echo "image-version: '${{ matrix.tag }}'"
+  #    - name: Test output
+  #      run: |
+  #        echo "image-type: '${{ matrix.image_type }}'"
+  #        echo "base-image: '${{ matrix.base_image }}'"
+  #        echo "derived-image: '${{ matrix.image_repo }}'"
+  #        echo "package-to-check: '${{ matrix.package_name }}'"
+  #        echo "image-version: '${{ matrix.tag }}'"
