@@ -47,11 +47,12 @@ jobs:
                 IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
                 BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
                 PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
+                PACKAGE_VERSION="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.version" // ""')"
                 IMAGE_TYPE="${REPOS[$REPO]}"
-                echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}"
+                echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}, PACKAGE_VERSION ${PACKAGE_VERSION}"
 
                 # Costruisci l'oggetto JSON per l'immagine corrente
-                JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\"}"
+                JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\", \"package_version\":\"$PACKAGE_VERSION\"}"
                 # Aggiungi l'oggetto all'array
                 if [ "$MATRIX_ARRAY" == "[]" ]; then
                   MATRIX_ARRAY="[$JSON_ITEM]"
@@ -79,6 +80,7 @@ jobs:
           #echo "derived-image: '${{ matrix.repo.repo }}'"
           #echo "package-to-check: '${{ matrix.repo.package_name }}'"
           #echo "image-version: '${{ matrix.repo.tag }}'"
+
       - name: Check image update (check software versions)
         id: check-image
         uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
@@ -88,3 +90,38 @@ jobs:
           derived-image: '${{ matrix.repo.repo }}'
           package-to-check: '${{ matrix.repo.package_name }}'
           image-version: '${{ matrix.repo.tag }}'
+
+      - name: Set vars from Check image type action
+        run: |
+          echo "::notice:: Update Needed: ${{ steps.check-image.outputs.update-needed }}"
+          echo "UPDATE_NEEDED=${{ steps.check-image.outputs.update-needed }}" >> $GITHUB_ENV
+          echo "::notice:: Base image package version: ${{ steps.check-image.outputs.base-img-pkg-ver }}"
+          echo "BASE_PACKAGE_VERSION=${{ steps.check-image.outputs.base-img-pkg-ver }}" >> $GITHUB_ENV
+          echo "::notice:: Derived image package version: ${{ matrix.repo.package_version }}"
+
+          # set update result
+          case "${{ steps.check-image.outputs.update-needed }}" in
+            "unknown")
+              echo "${{ steps.check-image.outputs.update-needed }}"
+              ICON="❓"
+              ;;
+            "false")
+              echo "${{ steps.check-image.outputs.update-needed }}"
+              ICON="✅"
+              ;;
+            "true")
+              echo "${{ steps.check-image.outputs.update-needed }}"
+              ICON="🔁"
+              ;;
+            "*")
+              echo "${{ steps.check-image.outputs.update-needed }}"
+              ICON="⚠️"
+              ;;
+          esac
+          TITLE="$ICON (${{ matrix.repo.repo }})"
+          # nuovo report per upload artifact
+          #ARTIFACT_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt"
+          #echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
+          #echo "$(date) --- $DERIVED_IMAGE $IMAGE_UPDATE_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $ARTIFACT_FILE
+          #echo "STATUS=$ICON ${REPO_NAME}" >> $ARTIFACT_FILE
+          #ls -l
