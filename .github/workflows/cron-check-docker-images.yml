@@ -178,8 +178,8 @@ jobs:
             rm -f update-report-last.txt
             for REPO_NAME in $(ls results/*.txt | sed 's/_.*//g'); do
               echo "::notice:: REPO_NAME=$REPO_NAME"
-              cat results/${REPO_NAME}_*.txt |sort > ${REPO_NAME}_update-report-last.txt
-              cat results/${REPO_NAME}_*.txt |sort >> update-report-last.txt
+              cat ${REPO_NAME}_*.txt |sort > ${REPO_NAME}_update-report-last.txt
+              cat ${REPO_NAME}_*.txt |sort >> update-report-last.txt
               cat ${REPO_NAME}_update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
               ICONS="$(cat ${REPO_NAME}_update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
               if [[ "$ICONS" == *"❓"* ]]; then
@@ -228,8 +228,6 @@ jobs:
             git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
             git push origin ${{ github.ref_name }}
           fi
-
-          echo "::warning:: report name ${{ env.REPORT_NAME }}"
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
