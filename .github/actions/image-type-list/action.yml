@@ -131,7 +131,7 @@ runs:
             fi
           ;;
           "meta")
-            BASE_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("${{ inputs.package-to-check }}=")) | split("=")[1]')"
+            BASE_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("${{ inputs.package-to-check }}=")) | split("=")[1]' || echo "")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("${{ inputs.package-to-check }}=")) | split("=")[1]' || echo "")"
             ;;
           *)
