@@ -33,6 +33,7 @@ jobs:
         id: prepare-data
         run: |
           FILE="images-to-check.txt"
+          START_DATE="$(date)"
           echo "start-date=$START_DATE" >> "$GITHUB_OUTPUT"
 
           # creo un array contenente il repo come indice e il tipo di immagine come valore
@@ -172,11 +173,12 @@ jobs:
         run: |
           PUSH_FILES=""
           PUSH='false'
-          mkdir -p reports
           if [[ -d results ]]; then
             GLOBAL_ICON="✅"
             rm -f update-report-last.txt
-            for REPO_NAME in $(ls results/*.txt | sed 's/_.*//g'); do
+            mkdir -p reports
+            cd results
+            for REPO_NAME in $(ls *.txt | sed 's/_.*//g' | sort -u); do
               echo "::notice:: REPO_NAME=$REPO_NAME"
               cat ${REPO_NAME}_*.txt |sort > ${REPO_NAME}_update-report-last.txt
               cat ${REPO_NAME}_*.txt |sort >> update-report-last.txt
@@ -213,8 +215,8 @@ jobs:
             date >> $TMP_REPORT_FILE
             truncate -s -1 $TMP_REPORT_FILE
             echo " --- Job terminated" >> $TMP_REPORT_FILE
-            cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
-            mv $TMP_REPORT_FILE reports/update-report-last.txt
+            cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > ../reports/body.txt
+            mv $TMP_REPORT_FILE ../reports/update-report-last.txt
             PUSH_FILES="update-report-last.txt update-report-history.txt"
             PUSH='true'
             echo "UPLOAD_REPORT=true" >> $GITHUB_ENV
@@ -228,6 +230,8 @@ jobs:
             git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
             git push origin ${{ github.ref_name }}
           fi
+
+          cd ..
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
