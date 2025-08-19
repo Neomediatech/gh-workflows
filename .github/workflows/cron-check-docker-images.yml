@@ -23,18 +23,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Warn if Docker Login absent
-        if: ${{ secrets.DOCKER_PASSWORD == '' }}
-        run: |
-          echo "::warning:: Credenziali Docker Hub non fornite"
-
       - name: Log in to Docker Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-        if: ${{ secrets.DOCKER_PASSWORD != '' }}
 
       - name: Prepare all data for matrix
         id: prepare-data
