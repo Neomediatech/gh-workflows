@@ -151,7 +151,7 @@ jobs:
           overwrite: true
 
   build-report:
-    needs: [check-update]
+    needs: [prepare-matrix,check-update]
     runs-on: [self-hosted]
     steps:
       - name: Checkout calling repository
