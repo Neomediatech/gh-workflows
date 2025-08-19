@@ -221,19 +221,17 @@ jobs:
             echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
             cat "$LAST_UPDATE_REPORT_FILE" | sort >> $TMP_REPORT_FILE
             DATE="$(TZ="Europe/Rome" date)"
-            echo "$DATE" >> $TMP_REPORT_FILE
-            truncate -s -1 $TMP_REPORT_FILE
-            echo " --- Job terminated" >> $TMP_REPORT_FILE
+            echo "$DATE --- Job terminated" >> $TMP_REPORT_FILE
+            #truncate -s -1 $TMP_REPORT_FILE
+            #echo " --- Job terminated" >> $TMP_REPORT_FILE
             cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
 
             HTML_REPORT_FILE="report.html"
-            echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started<br>" > $HTML_REPORT_FILE
-            echo "<table>" >> $HTML_REPORT_FILE
+            echo '<table border="1">' > $HTML_REPORT_FILE
+            echo '<tr><th colspan="3">${{ needs.prepare-matrix.outputs.start-date }} --- Job started</th></tr>' >> $HTML_REPORT_FILE
             cat update-report-last.html | sort >> $HTML_REPORT_FILE
+            echo "<tr><td colspan=\"3\">$DATE --- Job terminated</td></tr>" >> $HTML_REPORT_FILE
             echo "</table>" >> $HTML_REPORT_FILE
-            echo "$DATE" >> $HTML_REPORT_FILE
-            truncate -s -1 $HTML_REPORT_FILE
-            echo " --- Job terminated<br>" >> $HTML_REPORT_FILE
             cat $HTML_REPORT_FILE > reports/body.txt
             
             mv $TMP_REPORT_FILE reports/$LAST_UPDATE_REPORT_FILE
