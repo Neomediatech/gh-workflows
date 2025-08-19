@@ -215,6 +215,8 @@ jobs:
             git push origin ${{ github.ref_name }}
           fi
 
+          echo "::warning:: report name ${{ env.REPORT_NAME }}"
+
       - name: Upload global report
         uses: actions/upload-artifact@v4
         if: ${{ env.UPLOAD_REPORT == 'true' }}
