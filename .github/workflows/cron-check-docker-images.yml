@@ -183,8 +183,8 @@ jobs:
             for REPO_NAME in $(ls *_report.txt | sed 's/_.*//g' | sort -u); do
               echo "::notice:: REPO_NAME=$REPO_NAME"
               cat ${REPO_NAME}_*.txt > ${REPO_NAME}_update-report-last.txt
-              cat ${REPO_NAME}_*.txt | sed '/STATUS=/d' >> ../"$LAST_UPDATE_REPORT_FILE"
-              cat ${REPO_NAME}_*.txt | sed '/STATUS=/d' >> ../"${HISTORY_UPDATE_REPORT_FILE}"
+              cat ${REPO_NAME}_*.txt | sed '/STATUS=/d' | sort >> ../"$LAST_UPDATE_REPORT_FILE"
+              cat ${REPO_NAME}_*.txt | sed '/STATUS=/d' | sort >> ../"${HISTORY_UPDATE_REPORT_FILE}"
               ICONS="$(cat ${REPO_NAME}_update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
               if [[ "$ICONS" == *"❓"* ]]; then
                 ICON="❓"
@@ -217,7 +217,7 @@ jobs:
             truncate -s -1 $TMP_REPORT_FILE
             echo " --- Job terminated" >> $TMP_REPORT_FILE
             cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
-            mv $TMP_REPORT_FILE "$LAST_UPDATE_REPORT_FILE"
+            mv $TMP_REPORT_FILE reports/$LAST_UPDATE_REPORT_FILE
             PUSH_FILES="$LAST_UPDATE_REPORT_FILE ${HISTORY_UPDATE_REPORT_FILE}"
             PUSH='true'
             echo "UPLOAD_REPORT=true" >> $GITHUB_ENV
