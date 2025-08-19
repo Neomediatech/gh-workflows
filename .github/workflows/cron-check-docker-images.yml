@@ -140,15 +140,18 @@ jobs:
           ARTIFACT_FILE="${REPO_NAME}_${{ matrix.repo.tag }}_report.txt"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
           DATE="$(TZ="Europe/Rome" date)"
-          echo "$(date) --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} Update required: $ICON $UPDATE_NEEDED" > $ARTIFACT_FILE
-          echo "STATUS=$ICON $REPO_NAME" >> $ARTIFACT_FILE
+          mkdir -p reports
+          echo "$DATE --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} --- Update required: $ICON $UPDATE_NEEDED" > reports/$ARTIFACT_FILE
+          echo "STATUS=$ICON $REPO_NAME" >> reports/$ARTIFACT_FILE
+          echo "<tr><td>$DATE</td><td>${{ matrix.repo.repo }}:${{ matrix.repo.tag }}</td><td>Update required: $ICON $UPDATE_NEEDED</td><tr>" > reports/${ARTIFACT_FILE}.html
           #ls -l
 
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ strategy.job-index }}
-          path: ${{ env.ARTIFACT_FILE }}
+          #path: ${{ env.ARTIFACT_FILE }}
+          path: reports/*
           retention-days: 1
           overwrite: true
 
@@ -211,14 +214,28 @@ jobs:
               rm -f ../${REPO_NAME}_update-report-last.txt
             done
 
+            cat *.txt.html |sort > ../update-report-last.html
+
             cd ..
             TMP_REPORT_FILE="report.txt"
             echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
             cat "$LAST_UPDATE_REPORT_FILE" | sort >> $TMP_REPORT_FILE
-            TZ="Europe/Rome" date >> $TMP_REPORT_FILE
+            DATE="$(TZ="Europe/Rome" date)"
+            echo "$DATE" >> $TMP_REPORT_FILE
             truncate -s -1 $TMP_REPORT_FILE
             echo " --- Job terminated" >> $TMP_REPORT_FILE
             cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
+
+            HTML_REPORT_FILE="report.html"
+            echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started<br>" > $HTML_REPORT_FILE
+            echo "<table>" >> $HTML_REPORT_FILE
+            cat update-report-last.html | sort >> $HTML_REPORT_FILE
+            echo "</table>" >> $HTML_REPORT_FILE
+            echo "$DATE" >> $HTML_REPORT_FILE
+            truncate -s -1 $HTML_REPORT_FILE
+            echo " --- Job terminated<br>" >> $HTML_REPORT_FILE
+            cat $HTML_REPORT_FILE > reports/body.txt
+            
             mv $TMP_REPORT_FILE reports/$LAST_UPDATE_REPORT_FILE
             PUSH_FILES="$LAST_UPDATE_REPORT_FILE ${HISTORY_UPDATE_REPORT_FILE}"
             PUSH='true'
