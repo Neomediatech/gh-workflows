@@ -5,23 +5,6 @@ on:
   #  - cron: '0 4 * * *'
   workflow_dispatch:
   workflow_call:
-    secrets:
-      NOTIFY_CMD:
-        required: true
-      NOTIFY_UP:
-        required: true
-      NOTIFY_ENDPOINT:
-        required: true
-      NOTIFY_OPTIONS:
-        required: true
-      GHCR_TOKEN:
-        required: true
-      API_TOKEN_GITHUB:
-        required: true
-      DOCKER_USERNAME:
-        required: false
-      DOCKER_PASSWORD:
-        required: false
 
 jobs:
   prepare-matrix:
