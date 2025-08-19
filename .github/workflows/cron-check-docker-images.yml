@@ -75,7 +75,7 @@ jobs:
     steps:
       - name: Info
         run: |
-          echo "::notice:: processing ${{ matrix.repo.repo }} with tag ${{ matrix.repo.tag }}, base image ${{ matrix.repo.base_image }}, package to check '${{ matrix.repo.package_name }}', image type '${{ matrix.repo.image_type }}'"
+          echo "::notice:: processing ${{ matrix.repo.repo }}:${{ matrix.repo.tag }}, base image ${{ matrix.repo.base_image }}, package to check '${{ matrix.repo.package_name }}', image type '${{ matrix.repo.image_type }}'"
           #echo "base-image: '${{ matrix.repo.base_image }}'"
           #echo "derived-image: '${{ matrix.repo.repo }}'"
           #echo "package-to-check: '${{ matrix.repo.package_name }}'"
@@ -87,7 +87,7 @@ jobs:
         with:
           image-type: '${{ matrix.repo.image_type }}'
           base-image: '${{ matrix.repo.base_image }}'
-          derived-image: '${{ matrix.repo.repo }}'
+          derived-image: '${{ matrix.repo.repo }}:${{ matrix.repo.tag }}'
           package-to-check: '${{ matrix.repo.package_name }}'
           image-version: '${{ matrix.repo.tag }}'
 
