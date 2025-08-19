@@ -55,15 +55,19 @@ jobs:
                 fi
                 echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}, PACKAGE_VERSION ${PACKAGE_VERSION}"
 
-                # Costruisci l'oggetto JSON per l'immagine corrente
-                JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\", \"package_version\":\"$PACKAGE_VERSION\"}"
-                # Aggiungi l'oggetto all'array
-                if [ "$MATRIX_ARRAY" == "[]" ]; then
-                  MATRIX_ARRAY="[$JSON_ITEM]"
+                if [[ "$BASE_IMAGE" == "" || "$PACKAGE_VERSION" == "" || "$PACKAGE_NAME" == "" ]]; then
+                  echo "::warning:: uno o più parametri non trovati, non inserisco l'elemento nell'array"
                 else
-                  MATRIX_ARRAY=$(echo "$MATRIX_ARRAY" | jq -c ". += [$JSON_ITEM]")
+                  # Costruisci l'oggetto JSON per l'immagine corrente
+                  JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\", \"package_version\":\"$PACKAGE_VERSION\"}"
+                  # Aggiungi l'oggetto all'array
+                  if [ "$MATRIX_ARRAY" == "[]" ]; then
+                    MATRIX_ARRAY="[$JSON_ITEM]"
+                  else
+                    MATRIX_ARRAY=$(echo "$MATRIX_ARRAY" | jq -c ". += [$JSON_ITEM]")
+                  fi
+                  echo "::notice:: Added to matrix: $JSON_ITEM"
                 fi
-                echo "::notice:: Added to matrix: $JSON_ITEM"
               done
           done
 
