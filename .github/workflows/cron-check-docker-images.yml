@@ -175,14 +175,16 @@ jobs:
           PUSH='false'
           if [[ -d results ]]; then
             GLOBAL_ICON="✅"
-            rm -f update-report-last.txt
+            LAST_UPDATE_REPORT_FILE="update-report-last.txt"
+            HISTORY_UPDATE_REPORT_FILE="update-report-history.txt"
+            rm -f "$LAST_UPDATE_REPORT_FILE"
             mkdir -p reports
             cd results
-            for REPO_NAME in $(ls *.txt | sed 's/_.*//g' | sort -u); do
+            for REPO_NAME in $(ls *_report.txt | sed 's/_.*//g' | sort -u); do
               echo "::notice:: REPO_NAME=$REPO_NAME"
-              cat ${REPO_NAME}_*.txt |sort > ${REPO_NAME}_update-report-last.txt
-              cat ${REPO_NAME}_*.txt |sort >> update-report-last.txt
-              cat ${REPO_NAME}_update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
+              cat ${REPO_NAME}_*.txt > ${REPO_NAME}_update-report-last.txt
+              cat ${REPO_NAME}_*.txt | sed '/STATUS=/d' >> ../"$LAST_UPDATE_REPORT_FILE"
+              cat ${REPO_NAME}_*.txt | sed '/STATUS=/d' >> ../"${HISTORY_UPDATE_REPORT_FILE}"
               ICONS="$(cat ${REPO_NAME}_update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
               if [[ "$ICONS" == *"❓"* ]]; then
                 ICON="❓"
@@ -207,17 +209,16 @@ jobs:
               fi
             done
 
-            sed -i '/STATUS=/d' update-report-last.txt
-
+            cd ..
             TMP_REPORT_FILE="report.txt"
             echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
-            cat update-report-last.txt >> $TMP_REPORT_FILE
+            cat "$LAST_UPDATE_REPORT_FILE" >> $TMP_REPORT_FILE
             date >> $TMP_REPORT_FILE
             truncate -s -1 $TMP_REPORT_FILE
             echo " --- Job terminated" >> $TMP_REPORT_FILE
-            cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > ../reports/body.txt
-            mv $TMP_REPORT_FILE ../reports/update-report-last.txt
-            PUSH_FILES="update-report-last.txt update-report-history.txt"
+            cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
+            mv $TMP_REPORT_FILE "$LAST_UPDATE_REPORT_FILE"
+            PUSH_FILES="$LAST_UPDATE_REPORT_FILE ${HISTORY_UPDATE_REPORT_FILE}"
             PUSH='true'
             echo "UPLOAD_REPORT=true" >> $GITHUB_ENV
             echo "ICON=$GLOBAL_ICON" >> $GITHUB_ENV
@@ -230,8 +231,6 @@ jobs:
             git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
             git push origin ${{ github.ref_name }}
           fi
-
-          cd ..
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
