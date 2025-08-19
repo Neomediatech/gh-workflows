@@ -10,3 +10,6 @@ mar 19 ago 2025, 18:39:00, UTC --- ghcr.io/neomediatech/self-hosted-runner:lates
 mar 19 ago 2025, 18:52:24, UTC --- ghcr.io/neomediatech/bind9:latest Update required: ✅ false
 mar 19 ago 2025, 18:52:20, UTC --- ghcr.io/neomediatech/cron:latest Update required: ✅ false
 mar 19 ago 2025, 18:52:18, UTC --- ghcr.io/neomediatech/self-hosted-runner:latest Update required: ✅ false
+mar 19 ago 2025, 19:13:53, UTC --- ghcr.io/neomediatech/bind9:latest --- Update required: ✅ false
+mar 19 ago 2025, 19:13:48, UTC --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
+mar 19 ago 2025, 19:13:46, UTC --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
