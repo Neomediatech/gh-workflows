@@ -33,7 +33,7 @@ jobs:
         id: prepare-data
         run: |
           FILE="images-to-check.txt"
-          START_DATE="$(date)"
+          START_DATE="$(TZ="Europe/Rome" date)"
           echo "start-date=$START_DATE" >> "$GITHUB_OUTPUT"
 
           # creo un array contenente il repo come indice e il tipo di immagine come valore
@@ -139,7 +139,8 @@ jobs:
           REPO_NAME="$(echo "${{ matrix.repo.repo }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')"
           ARTIFACT_FILE="${REPO_NAME}_${{ matrix.repo.tag }}_report.txt"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
-          echo "$(date) --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} $UPDATE_NEEDED" > $ARTIFACT_FILE
+          DATE="$(TZ="Europe/Rome" date)"
+          echo "$(date) --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} Update required: $ICON $UPDATE_NEEDED" > $ARTIFACT_FILE
           echo "STATUS=$ICON $REPO_NAME" >> $ARTIFACT_FILE
           #ls -l
 
@@ -213,8 +214,8 @@ jobs:
             cd ..
             TMP_REPORT_FILE="report.txt"
             echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
-            cat "$LAST_UPDATE_REPORT_FILE" |sort >> $TMP_REPORT_FILE
-            date >> $TMP_REPORT_FILE
+            cat "$LAST_UPDATE_REPORT_FILE" | sort >> $TMP_REPORT_FILE
+            TZ="Europe/Rome" date >> $TMP_REPORT_FILE
             truncate -s -1 $TMP_REPORT_FILE
             echo " --- Job terminated" >> $TMP_REPORT_FILE
             cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
