@@ -46,9 +46,13 @@ jobs:
                 IMAGE="${REPO}:${TAG}"
                 IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
                 BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
-                PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
                 PACKAGE_VERSION="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.version" // ""')"
                 IMAGE_TYPE="${REPOS[$REPO]}"
+                if [[ "$IMAGE_TYPE" == "meta" ]]; then
+                  PACKAGE_NAME="$(basename "$(echo $IMAGE_META |jq -r '.Name + "_VERSION"'|tr '[:lower:]' '[:upper:]')")"
+                else
+                  PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
+                fi
                 echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}, PACKAGE_VERSION ${PACKAGE_VERSION}"
 
                 # Costruisci l'oggetto JSON per l'immagine corrente
