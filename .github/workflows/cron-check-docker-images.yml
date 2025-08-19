@@ -5,6 +5,23 @@ on:
   #  - cron: '0 4 * * *'
   workflow_dispatch:
   workflow_call:
+    secrets:
+      NOTIFY_CMD:
+        required: true
+      NOTIFY_UP:
+        required: true
+      NOTIFY_ENDPOINT:
+        required: true
+      NOTIFY_OPTIONS:
+        required: true
+      GHCR_TOKEN:
+        required: true
+      API_TOKEN_GITHUB:
+        required: true
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
 
 jobs:
   prepare-matrix:
@@ -12,9 +29,6 @@ jobs:
     outputs:
       matrix: ${{ steps.prepare-data.outputs.matrix }}
       start-date: ${{ steps.prepare-data.outputs.start-date }}
-    env:
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -27,7 +41,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Warn if Docker Login absent
-        if: ${{ env.DOCKER_PASSWORD == '' }}
+        if: ${{ secrets.DOCKER_PASSWORD == '' }}
         run: |
           echo "::warning:: Credenziali Docker Hub non fornite"
 
@@ -35,9 +49,9 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ env.DOCKER_USERNAME }}
-          password: ${{ env.DOCKER_PASSWORD }}
-        if: ${{ env.DOCKER_PASSWORD != '' }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        if: ${{ secrets.DOCKER_PASSWORD != '' }}
 
       - name: Prepare all data for matrix
         id: prepare-data
