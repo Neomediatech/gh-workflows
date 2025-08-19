@@ -213,7 +213,7 @@ jobs:
             cd ..
             TMP_REPORT_FILE="report.txt"
             echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
-            cat "$LAST_UPDATE_REPORT_FILE" >> $TMP_REPORT_FILE
+            cat "$LAST_UPDATE_REPORT_FILE" |sort >> $TMP_REPORT_FILE
             date >> $TMP_REPORT_FILE
             truncate -s -1 $TMP_REPORT_FILE
             echo " --- Job terminated" >> $TMP_REPORT_FILE
