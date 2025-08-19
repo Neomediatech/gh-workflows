@@ -15,10 +15,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Warn if Docker Login absent
+        if: ${{ secrets.DOCKER_PASSWORD == "" }}
+        run: |
+          echo "::warning:: Credenziali Docker Hub non fornite"
+
+      - name: Log in to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        if: ${{ secrets.DOCKER_PASSWORD != "" }}
+
       - name: Prepare all data for matrix
         id: prepare-data
         run: |
-          # Specifica il percorso del tuo file
           FILE="images-to-check.txt"
 
           # creo un array contenente il repo come indice e il tipo di immagine come valore
@@ -84,10 +103,6 @@ jobs:
       - name: Info
         run: |
           echo "::notice:: processing ${{ matrix.repo.repo }}:${{ matrix.repo.tag }}, base image ${{ matrix.repo.base_image }}, package to check '${{ matrix.repo.package_name }}', image type '${{ matrix.repo.image_type }}'"
-          #echo "base-image: '${{ matrix.repo.base_image }}'"
-          #echo "derived-image: '${{ matrix.repo.repo }}'"
-          #echo "package-to-check: '${{ matrix.repo.package_name }}'"
-          #echo "image-version: '${{ matrix.repo.tag }}'"
 
       - name: Check image update (check software versions)
         id: check-image
@@ -99,10 +114,11 @@ jobs:
           package-to-check: '${{ matrix.repo.package_name }}'
           image-version: '${{ matrix.repo.tag }}'
 
-      - name: Set vars from Check image type action
+      - name: Set vars after Check
         run: |
-          echo "::notice:: Update Needed: ${{ steps.check-image.outputs.update-needed }}"
-          echo "UPDATE_NEEDED=${{ steps.check-image.outputs.update-needed }}" >> $GITHUB_ENV
+          UPDATE_NEEDED=${{ steps.check-image.outputs.update-needed }}
+          echo "::notice:: Update Needed: $UPDATE_NEEDED"
+          echo "UPDATE_NEEDED=$UPDATE_NEEDED" >> $GITHUB_ENV
           echo "::notice:: Base image package version: ${{ steps.check-image.outputs.base-img-pkg-ver }}"
           echo "BASE_PACKAGE_VERSION=${{ steps.check-image.outputs.base-img-pkg-ver }}" >> $GITHUB_ENV
           echo "::notice:: Derived image package version: ${{ matrix.repo.package_version }}"
@@ -110,26 +126,31 @@ jobs:
           # set update result
           case "${{ steps.check-image.outputs.update-needed }}" in
             "unknown")
-              echo "${{ steps.check-image.outputs.update-needed }}"
               ICON="❓"
               ;;
             "false")
-              echo "${{ steps.check-image.outputs.update-needed }}"
               ICON="✅"
               ;;
             "true")
-              echo "${{ steps.check-image.outputs.update-needed }}"
               ICON="🔁"
               ;;
             "*")
-              echo "${{ steps.check-image.outputs.update-needed }}"
               ICON="⚠️"
               ;;
           esac
+          echo "$ICON ${{ steps.check-image.outputs.update-needed }}"
           TITLE="$ICON (${{ matrix.repo.repo }})"
-          # nuovo report per upload artifact
-          #ARTIFACT_FILE="${REPO_NAME}_${{ matrix.version }}${IMAGE_TYPE}_report.txt"
-          #echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
-          #echo "$(date) --- $DERIVED_IMAGE $IMAGE_UPDATE_RESULT (image build needed: $IMAGE_BUILD_NEEDED)" > $ARTIFACT_FILE
-          #echo "STATUS=$ICON ${REPO_NAME}" >> $ARTIFACT_FILE
+          REPO_NAME="$(echo "${{ matrix.repo.repo }}"|sed 's|ghcr.io/||' | awk -F'/' '{print $2}')"
+          ARTIFACT_FILE="${REPO_NAME}_${{ matrix.repo.tag }}_report.txt"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
+          echo "$(date) --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} $UPDATE_NEEDED" > $ARTIFACT_FILE
+          echo "STATUS=$ICON ${{ matrix.repo.repo }}" >> $ARTIFACT_FILE
           #ls -l
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ strategy.job-index }}
+          path: ${{ env.ARTIFACT_FILE }}
+          retention-days: 1
+          overwrite: true
