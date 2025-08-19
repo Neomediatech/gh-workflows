@@ -174,24 +174,36 @@ jobs:
           PUSH='false'
           mkdir -p reports
           if [[ -d results ]]; then
-            cat results/*.txt |sort > update-report-last.txt
-            cat update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
-            REPO_NAME="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $2}'| uniq)"
-            ICONS="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
-            if [[ "$ICONS" == *"❓"* ]]; then
-              ICON="❓"
-            elif [[ "$ICONS" == *"⚠️"* ]]; then
-              ICON="⚠️"
-            elif [[ "$ICONS" == *"🔁"* ]]; then
-              ICON="🔁"
-            elif [[ "$ICONS" == *"✅"* ]]; then
-              ICON="✅"
-            else
-              ICON="⚠️"
-            fi
-            echo "::notice:: REPO_NAME=$REPO_NAME"
-            echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-            echo "ICON=$ICON" >> $GITHUB_ENV
+            GLOBAL_ICON="✅"
+            rm -f update-report-last.txt
+            for REPO_NAME in $(ls results/*.txt | sed 's/_.*//g'); do
+              echo "::notice:: REPO_NAME=$REPO_NAME"
+              cat results/${REPO_NAME}_*.txt |sort > ${REPO_NAME}_update-report-last.txt
+              cat results/${REPO_NAME}_*.txt |sort >> update-report-last.txt
+              cat ${REPO_NAME}_update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
+              ICONS="$(cat ${REPO_NAME}_update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
+              if [[ "$ICONS" == *"❓"* ]]; then
+                ICON="❓"
+                GLOBAL_ICON=$ICON
+              elif [[ "$ICONS" == *"⚠️"* ]]; then
+                ICON="⚠️"
+                if [[ "$GLOBAL_ICON != "❓" ]]; then
+                  GLOBAL_ICON=$ICON
+                fi
+              elif [[ "$ICONS" == *"🔁"* ]]; then
+                ICON="🔁"
+                if [[ "$GLOBAL_ICON != "❓" && "$GLOBAL_ICON != "⚠️" ]]; then
+                  GLOBAL_ICON=$ICON
+                fi                
+              elif [[ "$ICONS" == *"✅"* ]]; then
+                ICON="✅"
+              else
+                ICON="⚠️"
+                if [[ "$GLOBAL_ICON != "❓" ]]; then
+                  GLOBAL_ICON=$ICON
+                fi
+              fi
+            done
 
             sed -i '/STATUS=/d' update-report-last.txt
 
@@ -206,6 +218,7 @@ jobs:
             PUSH_FILES="update-report-last.txt update-report-history.txt"
             PUSH='true'
             echo "UPLOAD_REPORT=true" >> $GITHUB_ENV
+            echo "ICON=$GLOBAL_ICON" >> $GITHUB_ENV
           fi
 
           if [[ "$PUSH" == "true" ]]; then
@@ -233,8 +246,7 @@ jobs:
         if: ${{ env.UPLOAD_REPORT == 'true' }}
         with:
           report-name: ${{ env.REPORT_NAME }}
-          #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
-          title: "${{ env.ICON }} (${{ env.REPO_NAME }}) Aggiornamenti immagini docker"
+          title: "${{ env.ICON }} Aggiornamenti immagini docker"
           #message: "${{ env.MESSAGE_BODY }}"
           notify-cmd: ${{ secrets.NOTIFY_CMD }}
           notify-up: ${{ secrets.NOTIFY_UP }}
