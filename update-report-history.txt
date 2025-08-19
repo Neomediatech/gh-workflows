@@ -32,3 +32,6 @@ mar 19 ago 2025, 16:04:59, UTC --- ghcr.io/neomediatech/caddy:2.8-extra false
 mar 19 ago 2025, 16:05:01, UTC --- ghcr.io/neomediatech/exim:4.96 false
 mar 19 ago 2025, 16:05:04, UTC --- ghcr.io/neomediatech/bind9:latest false
 mar 19 ago 2025, 16:05:39, UTC --- ghcr.io/neomediatech/rspamd:3.9 false
+mar 19 ago 2025, 16:18:36, UTC --- ghcr.io/neomediatech/self-hosted-runner:latest false
+mar 19 ago 2025, 16:18:38, UTC --- ghcr.io/neomediatech/cron:latest false
+mar 19 ago 2025, 16:18:41, UTC --- ghcr.io/neomediatech/bind9:latest false
