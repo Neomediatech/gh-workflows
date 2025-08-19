@@ -139,7 +139,7 @@ jobs:
           ARTIFACT_FILE="${REPO_NAME}_${{ matrix.repo.tag }}_report.txt"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
           echo "$(date) --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} $UPDATE_NEEDED" > $ARTIFACT_FILE
-          echo "STATUS=$ICON ${{ matrix.repo.repo }}" >> $ARTIFACT_FILE
+          echo "STATUS=$ICON $REPO_NAME" >> $ARTIFACT_FILE
           #ls -l
 
       - name: Upload result
