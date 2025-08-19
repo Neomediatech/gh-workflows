@@ -11,6 +11,7 @@ jobs:
     runs-on: [self-hosted]
     outputs:
       matrix: ${{ steps.prepare-data.outputs.matrix }}
+      start-date: ${{ steps.prepare-data.outputs.start-date }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -39,6 +40,7 @@ jobs:
         id: prepare-data
         run: |
           FILE="images-to-check.txt"
+          echo "start-date=$START_DATE" >> "$GITHUB_OUTPUT"
 
           # creo un array contenente il repo come indice e il tipo di immagine come valore
           declare -A REPOS
@@ -154,3 +156,91 @@ jobs:
           path: ${{ env.ARTIFACT_FILE }}
           retention-days: 1
           overwrite: true
+
+  build-report:
+    needs: [check-update]
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout calling repository
+        uses: actions/checkout@v5
+
+      - name: Set some var
+        run: |
+          echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: result-*
+          path: results
+          merge-multiple: true
+
+      - name: Join reports and commit it
+        run: |
+          PUSH_FILES=""
+          PUSH='false'
+          mkdir -p reports
+          if [[ -d results ]]; then
+            cat results/*.txt |sort > update-report-last.txt
+            cat update-report-last.txt | sed '/STATUS=/d' >> update-report-history.txt
+            REPO_NAME="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $2}'| uniq)"
+            ICONS="$(cat update-report-last.txt|grep "STATUS="| sed 's/STATUS=//g'| awk '{print $1}'| xargs)"
+            if [[ "$ICONS" == *"❓"* ]]; then
+              ICON="❓"
+            elif [[ "$ICONS" == *"⚠️"* ]]; then
+              ICON="⚠️"
+            elif [[ "$ICONS" == *"🔁"* ]]; then
+              ICON="🔁"
+            elif [[ "$ICONS" == *"✅"* ]]; then
+              ICON="✅"
+            else
+              ICON="⚠️"
+            fi
+            echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+            echo "ICON=$ICON" >> $GITHUB_ENV
+
+            sed -i '/STATUS=/d' update-report-last.txt
+
+            TMP_REPORT_FILE="report.txt"
+            echo "${{ needs.prepare-matrix.outputs.start-date }} --- Job started" > $TMP_REPORT_FILE
+            cat update-report-last.txt >> $TMP_REPORT_FILE
+            date >> $TMP_REPORT_FILE
+            truncate -s -1 $TMP_REPORT_FILE
+            echo " --- Job terminated" >> $TMP_REPORT_FILE
+            cat $TMP_REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt
+            mv $TMP_REPORT_FILE reports/update-report-last.txt
+            PUSH_FILES="update-report-last.txt update-report-history.txt"
+            PUSH='true'
+            echo "UPLOAD_REPORT=true" >> $GITHUB_ENV
+          fi
+
+          if [[ "$PUSH" == "true" ]]; then
+            git config user.name "neo-github-actions[bot]"
+            git config user.email "neo-github-actions[bot]@users.noreply.github.com"
+            git add $PUSH_FILES
+            git commit -m "[bot] Update from ${{ github.workflow_ref }} - $(date)"
+            git push origin ${{ github.ref_name }}
+          fi
+
+      - name: Upload global report
+        uses: actions/upload-artifact@v4
+        if: ${{ env.UPLOAD_REPORT == 'true' }}
+        with:
+          name: ${{ env.REPORT_NAME }}
+          path: reports/*.txt
+          retention-days: 1
+          overwrite: true
+
+      - name: Notify image build
+        id: notify
+        uses: Neomediatech/gh-workflows/.github/actions/send-notification@main
+        if: ${{ env.UPLOAD_REPORT == 'true' }}
+        with:
+          report-name: ${{ env.REPORT_NAME }}
+          #title: "${{ env.ICON_TITLE }} Aggiornamenti immagini docker BASE"
+          title: "${{ env.ICON }} (${{ env.REPO_NAME }}) Aggiornamenti immagini docker"
+          #message: "${{ env.MESSAGE_BODY }}"
+          notify-cmd: ${{ secrets.NOTIFY_CMD }}
+          notify-up: ${{ secrets.NOTIFY_UP }}
+          notify-endpoint: ${{ secrets.NOTIFY_ENDPOINT }}
+          notify-options: ${{ secrets.NOTIFY_OPTIONS }}
