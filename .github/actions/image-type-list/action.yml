@@ -54,16 +54,6 @@ runs:
         UPDATE_NEEDED="unknown"
 
         case "${{ inputs.image-type }}" in
-          "php")
-            #BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "printenv PHP_VERSION")"
-            BASE_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]')"
-            #DERIVED_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.derived-image }} -c "printenv PHP_VERSION")"
-            DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("PHP_VERSION=")) | split("=")[1]' || echo "")"
-            ;;
-          "roundcube")
-            BASE_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("ROUNDCUBEMAIL_VERSION=")) | split("=")[1]')"
-            DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("ROUNDCUBEMAIL_VERSION=")) | split("=")[1]' || echo "")"
-            ;;
           "dovecot")
             SH_CMD='\
             #!/bin/sh\
