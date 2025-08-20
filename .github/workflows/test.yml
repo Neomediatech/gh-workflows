@@ -86,3 +86,6 @@ jobs:
           repo: ${{ inputs.repo }}
           image-tag: ${{ inputs.image-tag }}
           derived-image-prefix: ${{ inputs.derived-image-prefix }}
+          ghcr_token: ${{ secrets.GHCR_TOKEN }}
+          docker_username: ${{ vars.DOCKER_USERNAME }}
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
