@@ -124,31 +124,31 @@ runs:
         echo "DOCKERDIR=$DOCKERDIR" >> $GITHUB_ENV
         echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
 
-      - name: Get base image package version
-        id: get-pkg-ver
-        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
-        with:
-          image-type: '${{ env.IMAGE_TYPE }}'
-          base-image: '${{ env.BASE_IMAGE }}'
-          derived-image: '${{ env.IMAGE }}'
-          package-to-check: "${{ env.PACKAGE_NAME }}"
-          image-version: ${{ inputs.image-tag }}
-          sticky-version: "${{ env.STICKY_VERSION}}"
+    - name: Get base image package version
+      id: get-pkg-ver
+      uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+      with:
+        image-type: '${{ env.IMAGE_TYPE }}'
+        base-image: '${{ env.BASE_IMAGE }}'
+        derived-image: '${{ env.IMAGE }}'
+        package-to-check: "${{ env.PACKAGE_NAME }}"
+        image-version: ${{ inputs.image-tag }}
+        sticky-version: "${{ env.STICKY_VERSION}}"
 
-      - name: Build and push image
-        id: get-image-meta
-        shell: bash
-        run: |
-          IMAGE_DATE="$(date --rfc-3339='seconds')"
-          PACKAGE_VERSION="${{ steps.get-pkg-ver.outputs.base-img-pkg-ver }}"
+    - name: Build and push image
+      id: get-image-meta
+      shell: bash
+      run: |
+        IMAGE_DATE="$(date --rfc-3339='seconds')"
+        PACKAGE_VERSION="${{ steps.get-pkg-ver.outputs.base-img-pkg-ver }}"
 
-          echo "::notice:: docker build --pull --label org.opencontainers.image.base.digest=$BASE_DIGEST \
-            --label org.opencontainers.image.created=$IMAGE_DATE \
-            --label org.opencontainers.image.source=https://github.com/${{ inputs.repo }} \
-            --label org.opencontainers.image.base=$BASE_IMAGE \
-            --label org.opencontainers.package.name=$PACKAGE_NAME \
-            --label org.opencontainers.package.version=$PACKAGE_VERSION \
-            -t $IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
+        echo "::notice:: docker build --pull --label org.opencontainers.image.base.digest=$BASE_DIGEST \
+          --label org.opencontainers.image.created=$IMAGE_DATE \
+          --label org.opencontainers.image.source=https://github.com/${{ inputs.repo }} \
+          --label org.opencontainers.image.base=$BASE_IMAGE \
+          --label org.opencontainers.package.name=$PACKAGE_NAME \
+          --label org.opencontainers.package.version=$PACKAGE_VERSION \
+          -t $IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
 
         #docker build --pull --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
         #    --label "org.opencontainers.image.created=$IMAGE_DATE" \
@@ -158,4 +158,3 @@ runs:
         #    $PACKAGE_LABEL \
         #    -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
         #docker push $DERIVED_IMAGE
-
