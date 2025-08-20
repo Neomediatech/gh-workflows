@@ -25,7 +25,7 @@ outputs:
     description: "Whether the derived-image needs updating (true/false/unknown)"
     value: ${{ steps.build-image.outputs.update-needed }}
   base-img-pkg-ver:
-    description: "Package versione taken from base image"
+    description: "Package version taken from base image"
     value: ${{ steps.build-image.outputs.base-img-pkg-ver }}
 
 runs:
@@ -50,8 +50,8 @@ runs:
         username: ${{ vars.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push image
-      id: build-image
+    - name: Get metadata from image
+      id: get-image-meta
       shell: bash
       run: |
         # verifico se il tag dell'immagini contiene un "-"
@@ -80,6 +80,7 @@ runs:
         fi
 
         # cerco l'immagine di base in $DOCKERDIR/$DOCKERFILE
+        STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
         FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
         if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
           VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
@@ -96,30 +97,49 @@ runs:
         else
           IMAGE="ghcr.io/${{ inputs.repo }}:${{ inputs.image-tag }}"
         fi
-          if [[ "${{ inputs.derived-image-repo}}" != "" ]]; then
-            IMAGE_REPO="--label org.opencontainers.image.source=https://github.com/${{ inputs.derived-image-repo}}"
-          else
-            IMAGE_REPO=""
-          fi
+
         IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
         BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
         PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
         PACKAGE_VERSION="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.version" // ""')"
         BASE_IMAGE_META="$(skopeo inspect docker://${BASE_IMAGE} || echo "")"
         BASE_DIGEST=$(echo "$BASE_IMAGE_META" | jq -r '.Digest // ""')
-        IMAGE_DATE="$(date --rfc-3339='seconds')"
+        IMAGE_TYPE="$(echo "$IMAGE_META" | jq -r '.Labels."it.neomediatech.app-label" // ""')"
 
-        echo "::error:: NON SO (ANCORA) COME RECUPERARE LA VERSIONE DEL PACCHETTO PERCHE' QUI NON POSSO USARE LA LOGICA DELLE 'image-type'"
+        echo "BASE_DIGEST=$BASE_DIGEST" >> $GITHUB_ENV
+        echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
+        echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+        echo "IMAGE_TYPE=$IMAGE_TYPE" >> $GITHUB_ENV
+        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+        echo "STICKY_VERSION=$STICKY_VERSION" >> $GITHUB_ENV
+        echo "DOCKERDIR=$DOCKERDIR" >> $GITHUB_ENV
+        echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
 
-        PACKAGE_LABEL="--label org.opencontainers.package.version=$BASE_PACKAGE_VERSION"
+      - name: Get base image package version
+        id: get-pkg-ver
+        uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+        with:
+          image-type: '${{ env.IMAGE_TYPE }}'
+          base-image: '${{ env.BASE_IMAGE }}'
+          derived-image: '${{ env.IMAGE }}'
+          package-to-check: "${{ env.PACKAGE_NAME }}"
+          image-version: ${{ inputs.image-tag }}
+          sticky-version: "${{ env.STICKY_VERSION}}"
 
-        echo "::notice:: docker build --pull --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
-            --label "org.opencontainers.image.created=$IMAGE_DATE" \
-            --label org.opencontainers.image.source=https://github.com/${{ inputs.derived-image-repo}} \
-            --label "org.opencontainers.image.base=$BASE_IMAGE" \
-            --label "org.opencontainers.package.name=$PACKAGE_NAME" \
-            $PACKAGE_LABEL \
-            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
+      - name: Build and push image
+        id: get-image-meta
+        shell: bash
+        run: |
+          IMAGE_DATE="$(date --rfc-3339='seconds')"
+          PACKAGE_VERSION="${{ steps.get-pkg-ver.outputs.base-img-pkg-ver }}"
+
+          echo "::notice:: docker build --pull --label org.opencontainers.image.base.digest=$BASE_DIGEST \
+            --label org.opencontainers.image.created=$IMAGE_DATE \
+            --label org.opencontainers.image.source=https://github.com/${{ inputs.repo }} \
+            --label org.opencontainers.image.base=$BASE_IMAGE \
+            --label org.opencontainers.package.name=$PACKAGE_NAME \
+            --label org.opencontainers.package.version=$PACKAGE_VERSION \
+            -t $IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
 
         #docker build --pull --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
         #    --label "org.opencontainers.image.created=$IMAGE_DATE" \
@@ -129,3 +149,4 @@ runs:
         #    $PACKAGE_LABEL \
         #    -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
         #docker push $DERIVED_IMAGE
+
