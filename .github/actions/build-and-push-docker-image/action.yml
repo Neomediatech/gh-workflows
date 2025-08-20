@@ -20,13 +20,13 @@ inputs:
 outputs:
   image-res:
     description: "Result of the executed command"
-    value: ${{ steps.build-image.outputs.cmd-res }}
+    value: ${{ steps.get-pkg-ver.outputs.cmd-res }}
   update-needed:
     description: "Whether the derived-image needs updating (true/false/unknown)"
-    value: ${{ steps.build-image.outputs.update-needed }}
+    value: ${{ steps.get-pkg-ver.outputs.update-needed }}
   base-img-pkg-ver:
     description: "Package version taken from base image"
-    value: ${{ steps.build-image.outputs.base-img-pkg-ver }}
+    value: ${{ steps.get-pkg-ver.outputs.base-img-pkg-ver }}
 
 runs:
   # Indica una Composite Action
