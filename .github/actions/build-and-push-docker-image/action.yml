@@ -136,7 +136,7 @@ runs:
         sticky-version: "${{ env.STICKY_VERSION}}"
 
     - name: Build and push image
-      id: get-image-meta
+      id: build-and-push
       shell: bash
       run: |
         IMAGE_DATE="$(date --rfc-3339='seconds')"
