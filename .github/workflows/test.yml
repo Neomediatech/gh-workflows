@@ -1,6 +1,20 @@
 name: test
 on:
   workflow_dispatch:
+    inputs:
+      repo:
+        description: 'GitHub Repository where the Dockerfile is (ex: neomediatech/cron-docker)'
+        required: true
+        type: string
+      image-tag:
+        description: 'Image tag to compile (example: 3.10)'
+        required: false
+        type: string
+        default: "latest"
+      derived-image-prefix:
+        description: 'Prefix for the derived image (ex: neomediatech/cron)'
+        required: false
+        type: string
 
 jobs:
   #one-job:
@@ -52,15 +66,23 @@ jobs:
       #    base-image: 'php:8.4-apache'
       #    derived-image: 'ghcr.io/neomediatech/php:8.4-apache'
 
-      - name: Find Dockerfiles in a repo
-        id: discover-dockerfiles
-        uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
-        with:
-          repository: Neomediatech/php
+      #- name: Find Dockerfiles in a repo
+      #  id: discover-dockerfiles
+      #  uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
+      #  with:
+      #    repository: Neomediatech/php
 
-      - name: Process Remote Action Outputs
-        run: |
-          #echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
-          #echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
-          echo "Matrix: ${{ steps.discover-dockerfiles.outputs.matrix }}"
-          echo "Repo lower: ${{ steps.discover-dockerfiles.outputs.repo-lower }}"
+      #- name: Process Remote Action Outputs
+      #  run: |
+      #    #echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
+      #    #echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
+      #    echo "Matrix: ${{ steps.discover-dockerfiles.outputs.matrix }}"
+      #    echo "Repo lower: ${{ steps.discover-dockerfiles.outputs.repo-lower }}"
+
+      - name: Build and push docker image
+        id: build-docker-image
+        uses: Neomediatech/gh-workflows/.github/actions/build-and-push-docker-image@main
+        with:
+          repo: ${{ inputs.repo }}
+          image-tag: ${{ inputs.image-tag }}
+          derived-image-prefix: ${{ inputs.derived-image-prefix }}
