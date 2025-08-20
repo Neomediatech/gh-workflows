@@ -83,6 +83,7 @@ runs:
           DOCKERFILE="Dockerfile.$DOCKERFILE_TAG"
         fi
 
+        ls -lah
         # se il file non esiste mi fermo qui
         if [[ ! -f $DOCKERDIR/$DOCKERFILE ]]; then
           echo "::error:: $DOCKERDIR/$DOCKERFILE non trovato. Non posso proseguire"
