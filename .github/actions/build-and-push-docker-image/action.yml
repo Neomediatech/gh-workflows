@@ -1,0 +1,131 @@
+# .github/actions/build-and-push-docker-image/action.yml
+name: 'Build and push Docker image'
+description: 'Build a Docker image e push it on container registry (Docker and Ghcr.io)'
+
+inputs:
+  repo:
+    description: 'GitHub Repository where the Dockerfile is (ex: neomediatech/cron-docker)'
+    required: true
+    type: string
+  image-tag:
+    description: 'Image tag to compile (example: 3.10)'
+    required: false
+    type: string
+    default: "latest"
+  derived-image-prefix:
+    description: 'Prefix for the derived image (ex: neomediatech/cron)'
+    required: false
+    type: string
+
+outputs:
+  image-res:
+    description: "Result of the executed command"
+    value: ${{ steps.build-image.outputs.cmd-res }}
+  update-needed:
+    description: "Whether the derived-image needs updating (true/false/unknown)"
+    value: ${{ steps.build-image.outputs.update-needed }}
+  base-img-pkg-ver:
+    description: "Package versione taken from base image"
+    value: ${{ steps.build-image.outputs.base-img-pkg-ver }}
+
+runs:
+  # Indica una Composite Action
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+      with:
+        repository: ${{ inputs.repo }}
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN }}
+
+    - name: Log in to Docker Registry
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push image
+      id: build-image
+      shell: bash
+      run: |
+        # verifico se il tag dell'immagini contiene un "-"
+        if [[ "${{ inputs.image-tag }}" =~ "-" ]]; then
+          DOCKERDIR="$(echo ${{ inputs.image-tag }} | cut -d'-' -f2-)"
+          DOCKERFILE_TAG="$(echo ${{ inputs.image-tag }} | cut -d'-' -f1)"
+        else
+          DOCKERDIR="."
+          DOCKERFILE_TAG="${{ inputs.image-tag }}"
+        fi
+
+        # se il tag è "latest" cerco sia Dockerfile che Dockerfile.latest
+        if [[ "${{ inputs.image-tag }}" == "latest" ]]; then
+          if [[ -f "$DOCKERDIR/Dockerfile" ]]; then
+            DOCKERFILE="Dockerfile"
+          else
+            DOCKERFILE="Dockerfile.latest"
+          fi
+        else
+          DOCKERFILE="Dockerfile.$DOCKERFILE_TAG"
+        fi
+
+        # se il file non esiste mi fermo qui
+        if [[ ! -f $DOCKERDIR/$DOCKERFILE ]]; then
+          echo "::error:: $DOCKERDIR/$DOCKERFILE non trovato. Non posso proseguire"
+        fi
+
+        # cerco l'immagine di base in $DOCKERDIR/$DOCKERFILE
+        FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
+        if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
+          VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
+          VERSION="$(cat $DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
+          FROM_IMAGE="$(echo "$FROM_IMAGE_TMP"|sed "s/\${\?$VAR_FROM}\?/$VERSION/")"
+          echo "VERSION: $VERSION"
+        else
+          FROM_IMAGE="$FROM_IMAGE_TMP"
+        fi
+        echo "Base image taken from $DOCKERDIR/$DOCKERFILE : $FROM_IMAGE"
+
+        if [[ -n "${{ inputs.derived-image-prefix }}" ]]; then
+          IMAGE="ghcr.io/${{ inputs.derived-image-prefix }}:${{ inputs.image-tag }}"
+        else
+          IMAGE="ghcr.io/${{ inputs.repo }}:${{ inputs.image-tag }}"
+        fi
+          if [[ "${{ inputs.derived-image-repo}}" != "" ]]; then
+            IMAGE_REPO="--label org.opencontainers.image.source=https://github.com/${{ inputs.derived-image-repo}}"
+          else
+            IMAGE_REPO=""
+          fi
+        IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
+        BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
+        PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
+        PACKAGE_VERSION="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.version" // ""')"
+        BASE_IMAGE_META="$(skopeo inspect docker://${BASE_IMAGE} || echo "")"
+        BASE_DIGEST=$(echo "$BASE_IMAGE_META" | jq -r '.Digest // ""')
+        IMAGE_DATE="$(date --rfc-3339='seconds')"
+
+        echo "::error:: NON SO (ANCORA) COME RECUPERARE LA VERSIONE DEL PACCHETTO PERCHE' QUI NON POSSO USARE LA LOGICA DELLE 'image-type'"
+
+        PACKAGE_LABEL="--label org.opencontainers.package.version=$BASE_PACKAGE_VERSION"
+
+        echo "::notice:: docker build --pull --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
+            --label "org.opencontainers.image.created=$IMAGE_DATE" \
+            --label org.opencontainers.image.source=https://github.com/${{ inputs.derived-image-repo}} \
+            --label "org.opencontainers.image.base=$BASE_IMAGE" \
+            --label "org.opencontainers.package.name=$PACKAGE_NAME" \
+            $PACKAGE_LABEL \
+            -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
+
+        #docker build --pull --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
+        #    --label "org.opencontainers.image.created=$IMAGE_DATE" \
+        #    --label org.opencontainers.image.source=https://github.com/${{ inputs.derived-image-repo}} \
+        #    --label "org.opencontainers.image.base=$BASE_IMAGE" \
+        #    --label "org.opencontainers.package.name=$PACKAGE_NAME" \
+        #    $PACKAGE_LABEL \
+        #    -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
+        #docker push $DERIVED_IMAGE
