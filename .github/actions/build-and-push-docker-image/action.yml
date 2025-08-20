@@ -91,9 +91,10 @@ runs:
 
         # cerco l'immagine di base in $DOCKERDIR/$DOCKERFILE
         echo "::info:: Debug 1"
-        STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep STICKY_VERSION=|tail -n 1|awk -F'=' '{print $2}')"
-        FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
+        STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep "STICKY_VERSION="|tail -n 1|awk -F'=' '{print $2}')"
         echo "::info:: Debug 2"
+        FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
+        echo "::info:: Debug 3"
         if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
           VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
           VERSION="$(cat $DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
