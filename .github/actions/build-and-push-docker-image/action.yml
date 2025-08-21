@@ -91,7 +91,7 @@ runs:
 
         # cerco l'immagine di base in $DOCKERDIR/$DOCKERFILE
         echo "::info:: Debug 1"
-        STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep "STICKY_VERSION="|tail -n 1|awk -F'=' '{print $2}')"
+        STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep "STICKY_VERSION="|tail -n 1|awk -F'=' '{print $2}' || echo "")"
         echo "::info:: Debug 2"
         FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
         echo "::info:: Debug 3"
