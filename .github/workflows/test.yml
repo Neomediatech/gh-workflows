@@ -4,7 +4,7 @@ on:
     inputs:
       repo:
         description: 'GitHub Repository where the Dockerfile is (ex: neomediatech/cron-docker)'
-        required: true
+        required: false
         type: string
       image-tag:
         description: 'Image tag to compile (example: 3.10)'
@@ -17,6 +17,60 @@ on:
         type: string
 
 jobs:
+  run_actions:
+    runs-on: [self-hosted]
+    steps:
+      - name: test1
+        id: test1
+        run: |
+          if [[ ! -f ~/bin/http ]]; then
+            mkdir -p ~/bin
+            # install HTTPie
+            curl https://packages.httpie.io/binaries/linux/http-latest -o ~/bin/http
+            chmod +x ~/bin/http
+            ln -s ~/bin/http ~/bin/https
+          fi
+          
+          # test usage
+          echo '<table border="1"' > /tmp/body.html
+          echo "<tr><td>$(date)</td><td>2</td><td>3</td></tr>" >> /tmp/body.html
+          echo "<tr><td>4</td><td>aaa gggg</td><td>5</td></tr>" >> /tmp/body.html
+          echo "</table>" >> /tmp/body.html
+          #~/bin/https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body=@/tmp/body.html
+          ~/bin/https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}"
+      #- name: Run Remote Docker Image Check Action
+      #  id: remote_checker # ID per accedere agli output
+      #  uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
+      #  with:
+      #    image-type: 'php'
+      #    base-image: 'php:8.4-apache'
+      #    derived-image: 'ghcr.io/neomediatech/php:8.4-apache'
+
+      #- name: Find Dockerfiles in a repo
+      #  id: discover-dockerfiles
+      #  uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
+      #  with:
+      #    repository: Neomediatech/php
+
+      #- name: Process Remote Action Outputs
+      #  run: |
+      #    #echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
+      #    #echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
+      #    echo "Matrix: ${{ steps.discover-dockerfiles.outputs.matrix }}"
+      #    echo "Repo lower: ${{ steps.discover-dockerfiles.outputs.repo-lower }}"
+
+      #- name: Build and push docker image
+      #  id: build-docker-image
+      #  uses: Neomediatech/gh-workflows/.github/actions/build-and-push-docker-image@main
+      #  with:
+      #    repo: ${{ inputs.repo }}
+      #    image-tag: ${{ inputs.image-tag }}
+      #    derived-image-prefix: ${{ inputs.derived-image-prefix }}
+      #    ghcr_token: ${{ secrets.GHCR_TOKEN }}
+      #    docker_username: ${{ vars.DOCKER_USERNAME }}
+      #    docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
+
+
   #one-job:
   #  runs-on: [self-hosted]
   #  strategy:
@@ -54,56 +108,3 @@ jobs:
   #        echo "Output from reusable workflow:"
   #        echo "exit-code: ${{ needs.call_reusable_workflow.outputs.exit-code }}"
   #        echo "cmd-res: ${{ needs.call_reusable_workflow.outputs.cmd-res }}"
-
-  run_actions:
-    runs-on: [self-hosted]
-    steps:
-      #- name: Run Remote Docker Image Check Action
-      #  id: remote_checker # ID per accedere agli output
-      #  uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
-      #  with:
-      #    image-type: 'php'
-      #    base-image: 'php:8.4-apache'
-      #    derived-image: 'ghcr.io/neomediatech/php:8.4-apache'
-
-      #- name: Find Dockerfiles in a repo
-      #  id: discover-dockerfiles
-      #  uses: Neomediatech/gh-workflows/.github/actions/discover-dockerfiles@main
-      #  with:
-      #    repository: Neomediatech/php
-
-      #- name: Process Remote Action Outputs
-      #  run: |
-      #    #echo "Exit Code from Remote Action: ${{ steps.remote_checker.outputs.exit-code }}"
-      #    #echo "Update Needed from Remote Action: ${{ steps.remote_checker.outputs.update-needed }}"
-      #    echo "Matrix: ${{ steps.discover-dockerfiles.outputs.matrix }}"
-      #    echo "Repo lower: ${{ steps.discover-dockerfiles.outputs.repo-lower }}"
-
-      #- name: Build and push docker image
-      #  id: build-docker-image
-      #  uses: Neomediatech/gh-workflows/.github/actions/build-and-push-docker-image@main
-      #  with:
-      #    repo: ${{ inputs.repo }}
-      #    image-tag: ${{ inputs.image-tag }}
-      #    derived-image-prefix: ${{ inputs.derived-image-prefix }}
-      #    ghcr_token: ${{ secrets.GHCR_TOKEN }}
-      #    docker_username: ${{ vars.DOCKER_USERNAME }}
-      #    docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: test1
-        id: test1
-        run: |
-          if [[ ! -f ~/bin/http ]]; then
-            mkdir -p ~/bin
-            # install HTTPie
-            curl https://packages.httpie.io/binaries/linux/http-latest -o ~/bin/http
-            chmod +x ~/bin/http
-            ln -s ~/bin/http ~/bin/https
-          fi
-          
-          # test usage
-          echo '<table border="1"' > /tmp/body.html
-          echo "<tr><td>$(date)</td><td>2</td><td>3</td></tr>" >> /tmp/body.html
-          echo "<tr><td>4</td><td>aaa gggg</td><td>5</td></tr>" >> /tmp/body.html
-          echo "</table>" >> /tmp/body.html
-          ~/bin/https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body=@/tmp/body.html
