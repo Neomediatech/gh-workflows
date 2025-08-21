@@ -1,0 +1,32 @@
+name: Build and push single Docker image
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'GitHub Repository where the Dockerfile is (ex: neomediatech/cron-docker)'
+        required: true
+        type: string
+      image-tag:
+        description: 'Image tag to compile (example: 3.10)'
+        required: false
+        type: string
+        default: "latest"
+      derived-image-prefix:
+        description: 'Prefix for the derived image (ex: neomediatech/cron)'
+        required: false
+        type: string
+
+jobs:
+  build-and-push:
+    runs-on: [self-hosted]
+    steps:
+      - name: Build and push docker image
+        id: build-docker-image
+        uses: Neomediatech/gh-workflows/.github/actions/build-and-push-docker-image@main
+        with:
+          repo: ${{ inputs.repo }}
+          image-tag: ${{ inputs.image-tag }}
+          derived-image-prefix: ${{ inputs.derived-image-prefix }}
+          ghcr_token: ${{ secrets.GHCR_TOKEN }}
+          docker_username: ${{ vars.DOCKER_USERNAME }}
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
