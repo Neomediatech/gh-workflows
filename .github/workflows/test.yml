@@ -93,12 +93,13 @@ jobs:
       - name: test1
         id: test1
         run: |
-          echo $PATH
-
-          # install HTTPie
-          curl https://packages.httpie.io/binaries/linux/http-latest -o /usr/local/sbin/http
-          chmod +x /usr/local/sbin/http
-          ln -s /usr/local/sbin/http /usr/local/sbin/https
+          if [[ ! -f ~/bin/http ]]; then
+            mkdir -p ~/bin
+            # install HTTPie
+            curl https://packages.httpie.io/binaries/linux/http-latest -o ~/bin/http
+            chmod +x ~/bin/http
+            ln -s ~/bin/http ~/bin/https
+          fi
           
           # test usage
-           https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body="${{ github.job }}"
+          ~/bin/https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body="${{ github.job }}"
