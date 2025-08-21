@@ -152,9 +152,9 @@ jobs:
           echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
           DATE="$(date)"
           mkdir -p reports
-          echo "$DATE --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} --- Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE}" > reports/$ARTIFACT_FILE
+          echo "$DATE --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} --- Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE_TXT}" > reports/$ARTIFACT_FILE
           echo "STATUS=$ICON $REPO_NAME" >> reports/$ARTIFACT_FILE
-          echo "<tr><td>$DATE</td><td>${{ matrix.repo.repo }}:${{ matrix.repo.tag }}</td><td>Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE}</td><tr>" > reports/${ARTIFACT_FILE}.html
+          echo "<tr><td>$DATE</td><td>${{ matrix.repo.repo }}:${{ matrix.repo.tag }}</td><td>Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE_HTM}</td><tr>" > reports/${ARTIFACT_FILE}.html
           #ls -l
 
       - name: Upload result
