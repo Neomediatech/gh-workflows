@@ -136,3 +136,16 @@ gio 21 ago 2025, 17:16:52, CEST --- ghcr.io/neomediatech/rspamd:3.11 --- Update 
 gio 21 ago 2025, 17:17:00, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
 gio 21 ago 2025, 17:17:16, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: ✅ false
 gio 21 ago 2025, 17:16:57, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
+gio 21 ago 2025, 18:19:59, CEST --- ghcr.io/neomediatech/bind9:latest --- Update required: ✅ false
+gio 21 ago 2025, 18:19:56, CEST --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
+gio 21 ago 2025, 18:20:08, CEST --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: ✅ false
+gio 21 ago 2025, 18:20:08, CEST --- ghcr.io/neomediatech/dovecot:latest --- Update required: ✅ false
+gio 21 ago 2025, 18:20:17, CEST --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: ✅ false
+gio 21 ago 2025, 18:19:53, CEST --- ghcr.io/neomediatech/fail2ban:0.11.2 --- Update required: 🔁 true --- image source neomediatech/fail2ban
+gio 21 ago 2025, 18:19:53, CEST --- ghcr.io/neomediatech/fail2ban:1.0.2 --- Update required: 🔁 true --- image source neomediatech/fail2ban
+gio 21 ago 2025, 18:19:53, CEST --- ghcr.io/neomediatech/fail2ban:latest --- Update required: ✅ false
+gio 21 ago 2025, 18:19:55, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+gio 21 ago 2025, 18:19:55, CEST --- ghcr.io/neomediatech/roundcube:latest-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+gio 21 ago 2025, 18:19:59, CEST --- ghcr.io/neomediatech/roundcube:1.6.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+gio 21 ago 2025, 18:20:07, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+gio 21 ago 2025, 18:20:10, CEST --- ghcr.io/neomediatech/roundcube:latest --- Update required: ❓ unknown --- image source neomediatech/roundcube
