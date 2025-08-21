@@ -83,3 +83,31 @@ gio 21 ago 2025, 17:16:56, CEST --- ghcr.io/neomediatech/rspamd:3.10 --- Update 
 gio 21 ago 2025, 17:17:00, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
 gio 21 ago 2025, 17:17:16, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: ✅ false
 gio 21 ago 2025, 17:16:57, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
+gio 21 ago 2025, 17:34:34, CEST --- ghcr.io/neomediatech/bind9:latest --- Update required: ✅ false
+gio 21 ago 2025, 17:17:03, CEST --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: ✅ false
+gio 21 ago 2025, 17:17:10, CEST --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
+gio 21 ago 2025, 17:17:12, CEST --- ghcr.io/neomediatech/caddy:2.10 --- Update required: ✅ false
+gio 21 ago 2025, 17:17:26, CEST --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
+gio 21 ago 2025, 17:17:30, CEST --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
+gio 21 ago 2025, 17:34:29, CEST --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: ✅ false
+gio 21 ago 2025, 17:56:03, CEST --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: ✅ false
+gio 21 ago 2025, 17:56:03, CEST --- ghcr.io/neomediatech/dovecot:latest --- Update required: ✅ false
+gio 21 ago 2025, 17:16:37, CEST --- ghcr.io/neomediatech/exim:4.97 --- Update required: ✅ false
+gio 21 ago 2025, 17:16:37, CEST --- ghcr.io/neomediatech/exim:rolling --- Update required: ✅ false
+gio 21 ago 2025, 17:16:44, CEST --- ghcr.io/neomediatech/exim:4.97-from-source --- Update required: ✅ false
+gio 21 ago 2025, 17:16:55, CEST --- ghcr.io/neomediatech/exim:4.96-from-source --- Update required: ✅ false
+gio 21 ago 2025, 17:17:22, CEST --- ghcr.io/neomediatech/exim:4.96 --- Update required: ✅ false
+gio 21 ago 2025, 17:17:31, CEST --- ghcr.io/neomediatech/exim:4.93 --- Update required: ✅ false
+gio 21 ago 2025, 17:17:24, CEST --- ghcr.io/neomediatech/fail2ban:latest --- Update required: ✅ false
+gio 21 ago 2025, 17:55:49, CEST --- ghcr.io/neomediatech/fail2ban:1.0.2 --- Update required: 🔁 true --- image source https://github.com/neomediatech/fail2ban
+gio 21 ago 2025, 17:55:53, CEST --- ghcr.io/neomediatech/fail2ban:0.11.2 --- Update required: 🔁 true --- image source https://github.com/neomediatech/fail2ban
+gio 21 ago 2025, 17:17:07, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown
+gio 21 ago 2025, 17:34:15, CEST --- ghcr.io/neomediatech/roundcube:1.6.x-apache --- Update required: ❓ unknown --- IMAGE_SOURCE https://github.com/neomediatech/roundcube
+gio 21 ago 2025, 17:34:15, CEST --- ghcr.io/neomediatech/roundcube:latest-fpm --- Update required: ❓ unknown --- IMAGE_SOURCE https://github.com/neomediatech/roundcube
+gio 21 ago 2025, 17:55:51, CEST --- ghcr.io/neomediatech/roundcube:latest --- Update required: ❓ unknown --- image source https://github.com/neomediatech/roundcube
+gio 21 ago 2025, 17:55:52, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source https://github.com/neomediatech/roundcube
+gio 21 ago 2025, 17:16:52, CEST --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
+gio 21 ago 2025, 17:16:56, CEST --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
+gio 21 ago 2025, 17:17:00, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
+gio 21 ago 2025, 17:17:16, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: ✅ false
+gio 21 ago 2025, 17:16:57, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
