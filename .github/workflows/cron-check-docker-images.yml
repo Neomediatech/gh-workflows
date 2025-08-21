@@ -123,26 +123,26 @@ jobs:
           echo "::notice:: Derived image package version: ${{ matrix.repo.package_version }}"
 
           # set update result
-          IMAGE_SOURCE=""
-          IMAGE_SOURCE_HTM="</td><td>"
+          IMAGE_SOURCE_TXT=""
+          IMAGE_SOURCE_HTM="</td><td>&nbsp;"
           case "${{ steps.check-image.outputs.update-needed }}" in
             "unknown")
               ICON="❓"
-              IMAGE_SOURCE_TXT=" --- IMAGE_SOURCE ${{ matrix.repo.image_source }}"
-              IMAGE_SOURCE_HTM="</td><td>IMAGE_SOURCE ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_TXT=" --- image source ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>image source ${{ matrix.repo.image_source }}"
               ;;
             "false")
               ICON="✅"
               ;;
             "true")
               ICON="🔁"
-              IMAGE_SOURCE_TXT=" --- IMAGE_SOURCE ${{ matrix.repo.image_source }}"
-              IMAGE_SOURCE_HTM="</td><td>IMAGE_SOURCE ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_TXT=" --- image source ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>image source ${{ matrix.repo.image_source }}"
               ;;
             "*")
               ICON="⚠️"
-              IMAGE_SOURCE_TXT=" --- IMAGE_SOURCE ${{ matrix.repo.image_source }}"
-              IMAGE_SOURCE_HTM="</td><td>IMAGE_SOURCE ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_TXT=" --- image source ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>image source ${{ matrix.repo.image_source }}"
               ;;
           esac
           echo "$ICON ${{ steps.check-image.outputs.update-needed }}"
@@ -243,9 +243,9 @@ jobs:
             cat update-report-last.html | sort >> $HTML_REPORT_FILE
             echo "<tr><td colspan=\"4\">$DATE --- Job terminated</td></tr>" >> $HTML_REPORT_FILE
             echo "</table>" >> $HTML_REPORT_FILE
-            echo 'Build single image here: \
-              <a href="https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml">\
-              https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml\
+            echo 'Build single image here: 
+              <a href="https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml">
+              https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml
               </a>' >> $HTML_REPORT_FILE
             cat $HTML_REPORT_FILE > reports/body.txt
             
