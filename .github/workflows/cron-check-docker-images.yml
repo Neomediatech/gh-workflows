@@ -124,12 +124,12 @@ jobs:
 
           # set update result
           IMAGE_SOURCE_TXT=""
-          IMAGE_SOURCE_HTM="</td><td>&nbsp;"
+          IMAGE_SOURCE_HTM="</td><td> "
           case "${{ steps.check-image.outputs.update-needed }}" in
             "unknown")
               ICON="❓"
               IMAGE_SOURCE_TXT=" --- image source ${{ matrix.repo.image_source }}"
-              IMAGE_SOURCE_HTM="</td><td>image source ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>${{ matrix.repo.image_source }}"
               ;;
             "false")
               ICON="✅"
@@ -137,12 +137,12 @@ jobs:
             "true")
               ICON="🔁"
               IMAGE_SOURCE_TXT=" --- image source ${{ matrix.repo.image_source }}"
-              IMAGE_SOURCE_HTM="</td><td>image source ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>${{ matrix.repo.image_source }}"
               ;;
             "*")
               ICON="⚠️"
               IMAGE_SOURCE_TXT=" --- image source ${{ matrix.repo.image_source }}"
-              IMAGE_SOURCE_HTM="</td><td>image source ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>${{ matrix.repo.image_source }}"
               ;;
           esac
           echo "$ICON ${{ steps.check-image.outputs.update-needed }}"
@@ -152,10 +152,10 @@ jobs:
           echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
           DATE="$(date)"
           mkdir -p reports
-          rm -f reports/*
+          #rm -f reports/*
           echo "$DATE --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} --- Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE_TXT}" > reports/$ARTIFACT_FILE
           echo "STATUS=$ICON $REPO_NAME" >> reports/$ARTIFACT_FILE
-          echo "<tr><td>$DATE</td><td>${{ matrix.repo.repo }}:${{ matrix.repo.tag }}</td><td>Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE_HTM}</td></tr>" > reports/${ARTIFACT_FILE}.html
+          echo "<tr><td>$DATE</td><td>${{ matrix.repo.repo }}:${{ matrix.repo.tag }}</td><td>$ICON ${UPDATE_NEEDED}${IMAGE_SOURCE_HTM}</td></tr>" > reports/${ARTIFACT_FILE}.html
           #ls -l
 
       - name: Upload result
@@ -244,6 +244,7 @@ jobs:
             HTML_REPORT_FILE="report.html"
             echo '<table border="1">' > $HTML_REPORT_FILE
             echo '<tr><th colspan="4">${{ needs.prepare-matrix.outputs.start-date }} --- Job started</th></tr>' >> $HTML_REPORT_FILE
+            echo '<tr><td><b>Date</b></td><td><b>Image</b></td><td><b>Update required</b></td><td><b>Image source</b></td></tr>' >> $HTML_REPORT_FILE
             cat update-report-last.html | sort >> $HTML_REPORT_FILE
             echo "<tr><td colspan=\"4\">$DATE --- Job terminated</td></tr>" >> $HTML_REPORT_FILE
             echo "</table>" >> $HTML_REPORT_FILE
