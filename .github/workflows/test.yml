@@ -79,13 +79,24 @@ jobs:
       #    echo "Matrix: ${{ steps.discover-dockerfiles.outputs.matrix }}"
       #    echo "Repo lower: ${{ steps.discover-dockerfiles.outputs.repo-lower }}"
 
-      - name: Build and push docker image
-        id: build-docker-image
-        uses: Neomediatech/gh-workflows/.github/actions/build-and-push-docker-image@main
-        with:
-          repo: ${{ inputs.repo }}
-          image-tag: ${{ inputs.image-tag }}
-          derived-image-prefix: ${{ inputs.derived-image-prefix }}
-          ghcr_token: ${{ secrets.GHCR_TOKEN }}
-          docker_username: ${{ vars.DOCKER_USERNAME }}
-          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
+      #- name: Build and push docker image
+      #  id: build-docker-image
+      #  uses: Neomediatech/gh-workflows/.github/actions/build-and-push-docker-image@main
+      #  with:
+      #    repo: ${{ inputs.repo }}
+      #    image-tag: ${{ inputs.image-tag }}
+      #    derived-image-prefix: ${{ inputs.derived-image-prefix }}
+      #    ghcr_token: ${{ secrets.GHCR_TOKEN }}
+      #    docker_username: ${{ vars.DOCKER_USERNAME }}
+      #    docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: test1
+        id: test1
+        run: |
+          # install HTTPie
+          curl https://packages.httpie.io/binaries/linux/http-latest -o /usr/local/sbin/http
+          chmod +x /usr/local/sbin/http
+          ln -s /usr/local/sbin/http /usr/local/sbin/https
+          
+          # test usage
+           https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.job }}" body="${{ github.run_id }}-${{ github.run_number }}"
