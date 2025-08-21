@@ -55,7 +55,7 @@ jobs:
   #        echo "exit-code: ${{ needs.call_reusable_workflow.outputs.exit-code }}"
   #        echo "cmd-res: ${{ needs.call_reusable_workflow.outputs.cmd-res }}"
 
-  use_actions:
+  run_actions:
     runs-on: [self-hosted]
     steps:
       #- name: Run Remote Docker Image Check Action
@@ -93,10 +93,12 @@ jobs:
       - name: test1
         id: test1
         run: |
+          echo $PATH
+
           # install HTTPie
           curl https://packages.httpie.io/binaries/linux/http-latest -o /usr/local/sbin/http
           chmod +x /usr/local/sbin/http
           ln -s /usr/local/sbin/http /usr/local/sbin/https
           
           # test usage
-           https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.job }}" body="${{ github.run_id }}-${{ github.run_number }}"
+           https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body="${{ github.job }}"
