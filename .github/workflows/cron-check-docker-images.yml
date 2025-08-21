@@ -176,6 +176,7 @@ jobs:
       - name: Set some var
         run: |
           echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
+          rm -rf results reports
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -243,10 +244,10 @@ jobs:
             cat update-report-last.html | sort >> $HTML_REPORT_FILE
             echo "<tr><td colspan=\"4\">$DATE --- Job terminated</td></tr>" >> $HTML_REPORT_FILE
             echo "</table>" >> $HTML_REPORT_FILE
-            echo 'Build single image here: 
-              <a href="https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml">
-              https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml
-              </a>' >> $HTML_REPORT_FILE
+            echo "Build single image here: \
+              <a href=\"https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml\">\
+              https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml\
+              </a>" >> $HTML_REPORT_FILE
             cat $HTML_REPORT_FILE > reports/body.txt
             
             mv $TMP_REPORT_FILE reports/$LAST_UPDATE_REPORT_FILE
