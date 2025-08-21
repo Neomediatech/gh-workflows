@@ -104,6 +104,6 @@ jobs:
           # test usage
           echo '<table border="1"' > /tmp/body.html
           echo "<tr><td>$(date)</td><td>2</td><td>3</td></tr>" >> /tmp/body.html
-          echo "<tr><td>4</td><td>aaa gggg</td><td>5</td></tr> >> /tmp/body.html
-          echo "</table> >> /tmp/body.html
+          echo "<tr><td>4</td><td>aaa gggg</td><td>5</td></tr>" >> /tmp/body.html
+          echo "</table>" >> /tmp/body.html
           ~/bin/https --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body=@/tmp/body.html
