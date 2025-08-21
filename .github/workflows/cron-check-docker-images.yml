@@ -68,7 +68,7 @@ jobs:
                 else
                   PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
                 fi
-                IMAGE_SOURCE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.source" // ""')"
+                IMAGE_SOURCE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.source" // ""' |sed 's|https://github.com/||')"
                 echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}, PACKAGE_VERSION ${PACKAGE_VERSION}"
 
                 if [[ "$BASE_IMAGE" == "" || "$PACKAGE_VERSION" == "" || "$PACKAGE_NAME" == "" ]]; then
