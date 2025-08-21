@@ -110,7 +110,7 @@ runs:
           ln -s ~/bin/http ~/bin/https
         fi
 
-        ~/bin/https --ignore-stdin --raw --verify=no -a ${{ inputs.notify-up }} POST ${{ inputs.notify-endpoint }} \
+        ~/bin/https --ignore-stdin --pretty none --verify=no -a ${{ inputs.notify-up }} POST ${{ inputs.notify-endpoint }} \
                     tags=all format=html title="${{ inputs.title }}" body=@${BODY_CONTENT_FILE} $ATTACH_PIE
 
         echo "rm -rf $DELETE"
