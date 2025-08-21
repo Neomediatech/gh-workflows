@@ -87,18 +87,14 @@ runs:
           DOCKERFILE="Dockerfile.$DOCKERFILE_TAG"
         fi
 
-        ls -lah
         # se il file non esiste mi fermo qui
         if [[ ! -f $DOCKERDIR/$DOCKERFILE ]]; then
           echo "::error:: $DOCKERDIR/$DOCKERFILE non trovato. Non posso proseguire"
         fi
 
         # cerco l'immagine di base in $DOCKERDIR/$DOCKERFILE
-        echo "::info:: Debug 1"
         STICKY_VERSION="$(cat $DOCKERDIR/$DOCKERFILE |grep "STICKY_VERSION="|tail -n 1|awk -F'=' '{print $2}' || echo "")"
-        echo "::info:: Debug 2"
         FROM_IMAGE_TMP="$(cat $DOCKERDIR/$DOCKERFILE |grep FROM|tail -n 1|awk '{print $2}')"
-        echo "::info:: Debug 3"
         if [[ "$FROM_IMAGE_TMP" =~ '$' ]]; then
           VAR_FROM="$(echo $FROM_IMAGE_TMP|sed -E 's/^[^:]+:\$(\{)?([^\}]+)(\})?.*/\2/')"
           VERSION="$(cat $DOCKERDIR/$DOCKERFILE|grep "$VAR_FROM"|grep -E "ENV|ARG"|sed -E 's/^(ARG|ENV)[[:space:]]+[^=]+=//')"
@@ -110,12 +106,12 @@ runs:
         echo "Base image taken from $DOCKERDIR/$DOCKERFILE : $FROM_IMAGE"
 
         if [[ -n "${{ inputs.derived-image-prefix }}" ]]; then
-          IMAGE="ghcr.io/${{ inputs.derived-image-prefix }}:${{ inputs.image-tag }}"
+          IMAGE="${{ inputs.derived-image-prefix }}:${{ inputs.image-tag }}"
         else
-          IMAGE="ghcr.io/${{ inputs.repo }}:${{ inputs.image-tag }}"
+          IMAGE="${{ inputs.repo }}:${{ inputs.image-tag }}"
         fi
 
-        IMAGE_META="$(skopeo inspect docker://${IMAGE} || echo "")"
+        IMAGE_META="$(skopeo inspect docker://ghcr.io/${IMAGE} || echo "")"
         BASE_IMAGE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.base" // ""')"
         PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
         PACKAGE_VERSION="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.version" // ""')"
@@ -141,7 +137,7 @@ runs:
       with:
         image-type: '${{ env.IMAGE_TYPE }}'
         base-image: '${{ env.BASE_IMAGE }}'
-        derived-image: '${{ env.IMAGE }}'
+        derived-image: 'ghcr.io/${{ env.IMAGE }}'
         package-to-check: "${{ env.PACKAGE_NAME }}"
         image-version: ${{ inputs.image-tag }}
         sticky-version: "${{ env.STICKY_VERSION}}"
@@ -152,26 +148,33 @@ runs:
       run: |
         IMAGE_DATE="$(date --rfc-3339='seconds')"
         PACKAGE_VERSION="${{ steps.get-pkg-ver.outputs.base-img-pkg-ver }}"
+        GHCR_IMAGE="ghcr.io/$IMAGE"
         if [[ "${IMAGE_TYPE}" != "" ]]; then
           APP_LABEL="--label it.neomediatech.app-label=${IMAGE_TYPE}"
         else
           APP_LABEL=""
         fi
 
-        echo "::notice:: docker build --pull --label org.opencontainers.image.base.digest=$BASE_DIGEST \
+        echo "::notice:: Building $GHCR_IMAGE with command: docker build --pull --label org.opencontainers.image.base.digest=$BASE_DIGEST \
           --label org.opencontainers.image.created=$IMAGE_DATE \
           --label org.opencontainers.image.source=https://github.com/${{ inputs.repo }} \
           --label org.opencontainers.image.base=$BASE_IMAGE \
           --label org.opencontainers.package.name=$PACKAGE_NAME \
           --label org.opencontainers.package.version=$PACKAGE_VERSION \
           $APP_LABEL \
-          -t $IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
+          -t $GHCR_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
 
-        #docker build --pull --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
-        #    --label "org.opencontainers.image.created=$IMAGE_DATE" \
-        #    --label org.opencontainers.image.source=https://github.com/${{ inputs.derived-image-repo}} \
-        #    --label "org.opencontainers.image.base=$BASE_IMAGE" \
-        #    --label "org.opencontainers.package.name=$PACKAGE_NAME" \
-        #    $PACKAGE_LABEL \
-        #    -t $DERIVED_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
-        #docker push $DERIVED_IMAGE
+        docker build --pull \
+          --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
+          --label "org.opencontainers.image.created=$IMAGE_DATE" \
+          --label "org.opencontainers.image.source=https://github.com/${{ inputs.repo}}" \
+          --label "org.opencontainers.image.base=$BASE_IMAGE" \
+          --label "org.opencontainers.package.name=$PACKAGE_NAME" \
+          --label "org.opencontainers.package.version=$PACKAGE_VERSION" \
+          $APP_LABEL \
+          -t $GHCR_IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/
+        docker push $GHCR_IMAGE
+
+        # PUSH ANCHE SU DOCKERHUB
+        echo "::notice:: Push image $IMAGE on DockerHUB"
+        docker push $IMAGE
