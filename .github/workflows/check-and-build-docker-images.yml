@@ -351,8 +351,8 @@ jobs:
             IMAGE_REPO=""
           fi
           IMAGE_DATE="$(date --rfc-3339='seconds')"
-          if [[ "${{ inputs.package-to-check }}" != "" ]]; then
-            APP_LABEL="--label it.neomediatech.app-label=${{ inputs.package-to-check }}"
+          if [[ "${{ inputs.image-type }}" != "" ]]; then
+            APP_LABEL="--label it.neomediatech.app-label=${{ inputs.image-type }}"
           else
             APP_LABEL=""
           fi
