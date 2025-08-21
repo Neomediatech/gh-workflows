@@ -2,7 +2,7 @@ name: Check via cron if a image needs to be updated
 
 on:
   schedule:
-    - cron: '0 4 * * 1'
+    - cron: '30 4 * * 1'
   workflow_dispatch:
   workflow_call:
 
@@ -68,13 +68,16 @@ jobs:
                 else
                   PACKAGE_NAME="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.name" // ""')"
                 fi
+                IMAGE_SOURCE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.source" // ""')"
                 echo "::notice:: IMAGE ${IMAGE}, BASE_IMAGE ${BASE_IMAGE}, PACKAGE ${PACKAGE_NAME}, IMAGE_TYPE ${IMAGE_TYPE}, PACKAGE_VERSION ${PACKAGE_VERSION}"
 
                 if [[ "$BASE_IMAGE" == "" || "$PACKAGE_VERSION" == "" || "$PACKAGE_NAME" == "" ]]; then
                   echo "::warning:: uno o più parametri non trovati, non inserisco l'elemento nell'array"
                 else
                   # Costruisci l'oggetto JSON per l'immagine corrente
-                  JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\", \"package_version\":\"$PACKAGE_VERSION\"}"
+                  JSON_ITEM="{\"repo\":\"$REPO\", \"tag\":\"$TAG\", \"base_image\":\"$BASE_IMAGE\", \
+                              \"package_name\":\"$PACKAGE_NAME\", \"image_type\":\"$IMAGE_TYPE\", \
+                              \"package_version\":\"$PACKAGE_VERSION\", \"image_source\":\"$IMAGE_SOURCE\"}"
                   # Aggiungi l'oggetto all'array
                   if [ "$MATRIX_ARRAY" == "[]" ]; then
                     MATRIX_ARRAY="[$JSON_ITEM]"
@@ -120,18 +123,26 @@ jobs:
           echo "::notice:: Derived image package version: ${{ matrix.repo.package_version }}"
 
           # set update result
+          IMAGE_SOURCE=""
+          IMAGE_SOURCE_HTM="</td><td>"
           case "${{ steps.check-image.outputs.update-needed }}" in
             "unknown")
               ICON="❓"
+              IMAGE_SOURCE_TXT=" --- IMAGE_SOURCE ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>IMAGE_SOURCE ${{ matrix.repo.image_source }}"
               ;;
             "false")
               ICON="✅"
               ;;
             "true")
               ICON="🔁"
+              IMAGE_SOURCE_TXT=" --- IMAGE_SOURCE ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>IMAGE_SOURCE ${{ matrix.repo.image_source }}"
               ;;
             "*")
               ICON="⚠️"
+              IMAGE_SOURCE_TXT=" --- IMAGE_SOURCE ${{ matrix.repo.image_source }}"
+              IMAGE_SOURCE_HTM="</td><td>IMAGE_SOURCE ${{ matrix.repo.image_source }}"
               ;;
           esac
           echo "$ICON ${{ steps.check-image.outputs.update-needed }}"
@@ -141,9 +152,9 @@ jobs:
           echo "ARTIFACT_FILE=$ARTIFACT_FILE" >> $GITHUB_ENV
           DATE="$(date)"
           mkdir -p reports
-          echo "$DATE --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} --- Update required: $ICON $UPDATE_NEEDED" > reports/$ARTIFACT_FILE
+          echo "$DATE --- ${{ matrix.repo.repo }}:${{ matrix.repo.tag }} --- Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE}" > reports/$ARTIFACT_FILE
           echo "STATUS=$ICON $REPO_NAME" >> reports/$ARTIFACT_FILE
-          echo "<tr><td>$DATE</td><td>${{ matrix.repo.repo }}:${{ matrix.repo.tag }}</td><td>Update required: $ICON $UPDATE_NEEDED</td><tr>" > reports/${ARTIFACT_FILE}.html
+          echo "<tr><td>$DATE</td><td>${{ matrix.repo.repo }}:${{ matrix.repo.tag }}</td><td>Update required: $ICON ${UPDATE_NEEDED}${IMAGE_SOURCE}</td><tr>" > reports/${ARTIFACT_FILE}.html
           #ls -l
 
       - name: Upload result
@@ -228,10 +239,14 @@ jobs:
 
             HTML_REPORT_FILE="report.html"
             echo '<table border="1">' > $HTML_REPORT_FILE
-            echo '<tr><th colspan="3">${{ needs.prepare-matrix.outputs.start-date }} --- Job started</th></tr>' >> $HTML_REPORT_FILE
+            echo '<tr><th colspan="4">${{ needs.prepare-matrix.outputs.start-date }} --- Job started</th></tr>' >> $HTML_REPORT_FILE
             cat update-report-last.html | sort >> $HTML_REPORT_FILE
-            echo "<tr><td colspan=\"3\">$DATE --- Job terminated</td></tr>" >> $HTML_REPORT_FILE
+            echo "<tr><td colspan=\"4\">$DATE --- Job terminated</td></tr>" >> $HTML_REPORT_FILE
             echo "</table>" >> $HTML_REPORT_FILE
+            echo 'Build single image here: \
+              <a href="https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml">\
+              https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml\
+              </a>' >> $HTML_REPORT_FILE
             cat $HTML_REPORT_FILE > reports/body.txt
             
             mv $TMP_REPORT_FILE reports/$LAST_UPDATE_REPORT_FILE
