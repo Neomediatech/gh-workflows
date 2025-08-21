@@ -70,6 +70,7 @@ runs:
         
         # attach all files
         ATTACHMENTS=""
+        ATTACH_PIE=""
         ARTIFACT_DIR="artifacts"
         DELETE="$BODY_CONTENT_FILE"
         if [[ -d "$ARTIFACT_DIR" ]]; then
@@ -84,6 +85,7 @@ runs:
           for file in $ARTIFACT_DIR/*; do
             if [ -f "$file" ]; then
               ATTACHMENTS+=" -F attach$i=@$file"
+              ATTACH_PIE+=" attach$i=@$file"
               if [[ "$BODY_EXISTS" == "false" ]]; then
                 cat "$file" >> $BODY_CONTENT_FILE
               fi
@@ -93,12 +95,23 @@ runs:
         fi
 
         BODY_CONTENT="$(< $BODY_CONTENT_FILE)"
-        ${{ inputs.notify-cmd }} --no-progress-meter --user "${{ inputs.notify-up }}" \
-             -X POST ${{ inputs.notify-endpoint }} \
-             ${{ inputs.notify-options }} \
-             $ATTACHMENTS \
-             -F "title=${{ inputs.title }}" \
-             -F "body=$BODY_CONTENT"
+        #${{ inputs.notify-cmd }} --no-progress-meter --user "${{ inputs.notify-up }}" \
+        #     -X POST ${{ inputs.notify-endpoint }} \
+        #     ${{ inputs.notify-options }} \
+        #     $ATTACHMENTS \
+        #     -F "title=${{ inputs.title }}" \
+        #     -F "body=$BODY_CONTENT"
+
+        if [[ ! -f ~/bin/http ]]; then
+          mkdir -p ~/bin
+          # install HTTPie
+          curl https://packages.httpie.io/binaries/linux/http-latest -o ~/bin/http
+          chmod +x ~/bin/http
+          ln -s ~/bin/http ~/bin/https
+        fi
+
+        ~/bin/https --ignore-stdin --raw --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} \
+                    tags=all format=html title="${{ inputs.title }}" body=@${BODY_CONTENT_FILE} $ATTACH_PIE
 
         echo "rm -rf $DELETE"
         rm -rf $DELETE
