@@ -16,6 +16,10 @@ inputs:
     description: 'Prefix for the derived image (ex: neomediatech/cron)'
     required: false
     type: string
+  image-type:
+    description: 'Image type taken from gh-workflows/.github/workflows/image-type-list.yml'
+    required: false
+    type: string
   ghcr_token:
     required: true
     type: string
@@ -117,8 +121,11 @@ runs:
         PACKAGE_VERSION="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.package.version" // ""')"
         BASE_IMAGE_META="$(skopeo inspect docker://${BASE_IMAGE} || echo "")"
         BASE_DIGEST=$(echo "$BASE_IMAGE_META" | jq -r '.Digest // ""')
-        IMAGE_TYPE="$(echo "$IMAGE_META" | jq -r '.Labels."it.neomediatech.app-label" // ""')"
-
+        if [[ "${{ inputs.image-type }}" != "" ]]; then
+          IMAGE_TYPE="${{ inputs.image-type }}"
+        else
+          IMAGE_TYPE="$(echo "$IMAGE_META" | jq -r '.Labels."it.neomediatech.app-label" // ""')"
+        fi
         echo "BASE_DIGEST=$BASE_DIGEST" >> $GITHUB_ENV
         echo "BASE_IMAGE=$BASE_IMAGE" >> $GITHUB_ENV
         echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
@@ -145,6 +152,11 @@ runs:
       run: |
         IMAGE_DATE="$(date --rfc-3339='seconds')"
         PACKAGE_VERSION="${{ steps.get-pkg-ver.outputs.base-img-pkg-ver }}"
+        if [[ "${IMAGE_TYPE}" != "" ]]; then
+          APP_LABEL="--label it.neomediatech.app-label=${IMAGE_TYPE}"
+        else
+          APP_LABEL=""
+        fi
 
         echo "::notice:: docker build --pull --label org.opencontainers.image.base.digest=$BASE_DIGEST \
           --label org.opencontainers.image.created=$IMAGE_DATE \
@@ -152,6 +164,7 @@ runs:
           --label org.opencontainers.image.base=$BASE_IMAGE \
           --label org.opencontainers.package.name=$PACKAGE_NAME \
           --label org.opencontainers.package.version=$PACKAGE_VERSION \
+          $APP_LABEL \
           -t $IMAGE -f $DOCKERDIR/$DOCKERFILE $DOCKERDIR/"
 
         #docker build --pull --label "org.opencontainers.image.base.digest=$BASE_DIGEST" \
