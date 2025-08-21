@@ -36,7 +36,7 @@ jobs:
           echo "<tr><td>$(date)</td><td>2</td><td>3</td></tr>" >> /tmp/body.html
           echo "<tr><td>4</td><td>aaa gggg</td><td>5</td></tr>" >> /tmp/body.html
           echo "</table>" >> /tmp/body.html
-          ~/bin/https --ignore-stdin --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body=@/tmp/body.html
+          ~/bin/https --ignore-stdin --raw --verify=no -a ${{ secrets.NOTIFY_UP }} POST ${{ secrets.NOTIFY_ENDPOINT }} tags=all format=html title="prova ${{ github.run_id }}-${{ github.run_number }}" body=@/tmp/body.html
       #- name: Run Remote Docker Image Check Action
       #  id: remote_checker # ID per accedere agli output
       #  uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
