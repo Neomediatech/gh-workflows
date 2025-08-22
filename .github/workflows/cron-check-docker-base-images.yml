@@ -12,6 +12,7 @@ jobs:
     runs-on: [self-hosted]
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      start-date: ${{ steps.set-matrix.outputs.start-date }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -24,6 +25,8 @@ jobs:
           MATRIX_JSON="{\"images\":[${IMAGES}]}"
           echo "matrix=${MATRIX_JSON}"
           echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+          START_DATE="$(date)"
+          echo "start-date=$START_DATE" >> "$GITHUB_OUTPUT"
 
   update-check:
     runs-on: [self-hosted]
@@ -35,10 +38,12 @@ jobs:
         id: check-update
         run: |
           echo "The current value from the matrix is ${{ matrix.images }}"
+          DATE="$(date)"
           IMAGE_META="$(skopeo inspect docker://${{ matrix.images }} || echo "")"
           IMAGE_BASE="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base"' || echo "")"
           IMAGE_BASE_DIGEST="$(echo $IMAGE_META | jq -r '.Labels."org.opencontainers.image.base.digest"' || echo "")"
           CURRENT_IMAGE_BASE_DIGEST="$(skopeo inspect docker://$IMAGE_BASE | jq -r '.Digest' || echo "")"
+          IMAGE_SOURCE="$(echo "$IMAGE_META" | jq -r '.Labels."org.opencontainers.image.source" // ""' |sed 's|https://github.com/||')"
 
           echo "IMAGE_BASE=$IMAGE_BASE"
           echo "IMAGE_BASE_DIGEST=$IMAGE_BASE_DIGEST"
@@ -46,18 +51,27 @@ jobs:
 
           GLOBAL_STATUS=""
           ICON_TITLE=""
+          ICON=""
+          UPDATE_NEEDED=""
+          IMAGE_SOURCE_HTM="</td><td> "
           if [[ "$IMAGE_BASE_DIGEST" == "" || "$CURRENT_IMAGE_BASE_DIGEST" == "" ]]; then
             echo "::warning:: Digest not found"
             RES="❌ digest non found"
+            IMAGE_SOURCE_HTM="</td><td>${IMAGE_SOURCE}"
             GLOBAL_STATUS="ERROR"
             ICON_TITLE="❌"
+            ICON="❌"
+            UPDATE_NEEDED="digest non found"
           elif [[ "$IMAGE_BASE_DIGEST" != "$CURRENT_IMAGE_BASE_DIGEST" ]]; then
             echo "::notice:: Image update required"
             RES="⚠️🔁 update required"
+            IMAGE_SOURCE_HTM="</td><td>${IMAGE_SOURCE}"
             if [[ "$GLOBAL_STATUS" != "ERROR" ]]; then
               GLOBAL_STATUS="UPDATE_REQUIRED"
               ICON_TITLE="🔁"
             fi
+            ICON="🔁"
+            UPDATE_NEEDED="true"
           else
             echo "::notice:: Update not required"
             RES="✅ update NOT required"
@@ -65,22 +79,28 @@ jobs:
               GLOBAL_STATUS="UPDATE_OK"
               ICON_TITLE="✅"
             fi
+            ICON="✅"
+            UPDATE_NEEDED="false"
           fi
           #RES=$RANDOM
           echo "::notice:: ${{ matrix.images }} $RES"
           echo "${{ matrix.images }} $RES" > result.txt
+          echo "<tr><td>$DATE</td><td>${{ matrix.images }}</td><td>$ICON ${UPDATE_NEEDED}${IMAGE_SOURCE_HTM}</td></tr>" > result.html
 
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ strategy.job-index }}
-          path: result.txt
+          #path: result.txt
+          path: |
+            result.txt
+            result.html
           retention-days: 1
           overwrite: true
 
   result:
     runs-on: [self-hosted]
-    needs: update-check
+    needs: [generate-matrix,update-check]
     steps:
       - name: Set some var
         run: |
@@ -97,8 +117,12 @@ jobs:
         run: |
           mkdir -p reports
           REPORT_FILE="reports/all-results.txt"
+          REPORT_FILE_HTM="reports/all-results.html"
           echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
+          echo "REPORT_FILE_HTM=$REPORT_FILE_HTM" >> $GITHUB_ENV
           cat results/*/result.txt |sort > $REPORT_FILE
+          cat results/*/result.html |sort > $REPORT_FILE_HTM
+          DATE="$(date)"
           if grep -q "❌" $REPORT_FILE; then
             ICON_TITLE="❌"
           elif grep -q "🔁" $REPORT_FILE; then
@@ -110,6 +134,19 @@ jobs:
           fi
           cat $REPORT_FILE | sed 's/$/<br>/g' > reports/body.txt 
           echo "ICON_TITLE=$ICON_TITLE" >> $GITHUB_ENV
+
+          HTML_REPORT_FILE="report.html"
+          echo '<table border="1">' > $HTML_REPORT_FILE
+          echo '<tr><th colspan="4">${{ needs.generate-matrix.outputs.start-date }} --- Job started</th></tr>' >> $HTML_REPORT_FILE
+          echo '<tr><td><b>Date</b></td><td><b>Image</b></td><td><b>Update required</b></td><td><b>Image source</b></td></tr>' >> $HTML_REPORT_FILE
+          cat $REPORT_FILE_HTM | sort >> $HTML_REPORT_FILE
+          echo "<tr><td colspan=\"4\">$DATE --- Job terminated</td></tr>" >> $HTML_REPORT_FILE
+          echo "</table>" >> $HTML_REPORT_FILE
+          #echo "Build single image here: \
+          #  <a href=\"https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml\">\
+          #  https://github.com/Neomediatech/gh-workflows/actions/workflows/build-and-push-single-docker-image.yml\
+          #  </a>" >> $HTML_REPORT_FILE
+          cat $HTML_REPORT_FILE > reports/body.txt
 
       - name: Upload global report
         uses: actions/upload-artifact@v4
