@@ -122,7 +122,7 @@ runs:
           ;;
           "meta")
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
-              PKG="{{ inputs.package-to-check }}"
+              PKG="${{ inputs.package-to-check }}"
             else
               PKG="$(basename "${{ inputs.base-image }}"|cut -d":" -f 1|tr [[:lower:]] [[:upper:]] ).*_VERSION"
             fi
