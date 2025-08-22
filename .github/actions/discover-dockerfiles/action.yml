@@ -52,7 +52,7 @@ runs:
           fi
           IMAGE_VERSIONS=$(echo "$IMAGE_VERSIONS" | jq -c --arg v "$version" --arg t "$dir" '. += [{"version": $v, "type": $t}]')
         done <<< "$files"
-        echo "::warning::IMAGE_VERSIONS $IMAGE_VERSIONS"
+        echo "::notice::IMAGE_VERSIONS $IMAGE_VERSIONS"
         # Rimuove la virgola finale e crea array include
 
         echo "matrix=$IMAGE_VERSIONS" >> $GITHUB_OUTPUT
