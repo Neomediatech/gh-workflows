@@ -113,7 +113,6 @@ runs:
           ln -s ~/bin/http ~/bin/https
         fi
 
-        echo "::warning:: DEBUG: ~/bin/https --ignore-stdin --verify=no -a ${{ inputs.notify-up }} POST ${{ inputs.notify-endpoint }} tags=all format=html title="${{ inputs.title }}" body=@${BODY_CONTENT_FILE} $ATTACH_PIE"
         ~/bin/https --ignore-stdin --verify=no -a ${{ inputs.notify-up }} POST ${{ inputs.notify-endpoint }} \
                     tags=all format=html title="${{ inputs.title }}" body=@${BODY_CONTENT_FILE} $ATTACH_PIE
 
