@@ -107,6 +107,7 @@ jobs:
           echo "REPORT_NAME=image-update-report-${{ github.job }}-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_ENV
           REPORT_DATE="$(TZ="Europe/Rome" date)"
           echo "REPORT_DATE=$REPORT_DATE" >> $GITHUB_ENV
+          rm -rf results
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -115,6 +116,7 @@ jobs:
 
       - name: Show result
         run: |
+          rm -rf reports
           mkdir -p reports
           REPORT_FILE="reports/all-results.txt"
           REPORT_FILE_HTM="reports/all-results.html"
