@@ -227,11 +227,11 @@ jobs:
         id: check-image
         uses: Neomediatech/gh-workflows/.github/actions/image-type-list@main
         with:
-          image-type: '${{ inputs.image-type }}'
-          base-image: '$BASE_IMAGE'
-          derived-image: '$DERIVED_IMAGE'
+          image-type: "${{ inputs.image-type }}"
+          base-image: "$BASE_IMAGE"
+          derived-image: "$DERIVED_IMAGE"
           package-to-check: "${{ inputs.package-to-check }}"
-          image-version: ${{ matrix.version }}
+          image-version: "${{ matrix.version }}"
           sticky-version: "$STICKY_VERSION"
         if: ${{ inputs.image-type != '' && inputs.image-type != 'none' }}
 
