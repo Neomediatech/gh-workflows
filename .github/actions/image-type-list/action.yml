@@ -126,7 +126,7 @@ runs:
             else
               PKG="$(basename "${{ inputs.base-image }}"|cut -d":" -f 1|tr [[:lower:]] [[:upper:]] ).*_VERSION"
             fi
-            BASE_IMAGE_META="$(skopeo inspect docker://${{ inputs.base-image }}")"
+            BASE_IMAGE_META="$(skopeo inspect docker://${{ inputs.base-image }})"
             BASE_PACKAGE_VERSION="$(echo $BASE_IMAGE_META | jq -r '.Env[] | select(startswith("${PKG}=")) | split("=")[1]' || echo "")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("${PKG}=")) | split("=")[1]' || echo "")"
             ;;
