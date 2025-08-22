@@ -121,13 +121,14 @@ runs:
             fi
           ;;
           "meta")
-            # very brutal and bad!
-            if [[ "${{ inputs.package-to-check }}" == "ROUNDCUBE_VERSION" ]]; then
-              PKG="ROUNDCUBEMAIL_VERSION"
+            if [[ "${{ inputs.package-to-check }}" != "" ]]; then
+              PKG="{{ inputs.package-to-check }}"
             else
-              PKG="${{ inputs.package-to-check }}"
+              PKG="$(basename "${{ inputs.base-image }}"|cut -d":" -f 1|tr [[:lower:]] [[:upper:]] ).*_VERSION"
             fi
-            BASE_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.base-image }} | jq -r '.Env[] | select(startswith("${PKG}=")) | split("=")[1]' || echo "")"
+            BASE_IMAGE_META="$(skopeo inspect docker://${{ inputs.base-image }}"
+            | jq -r '.Env[] | select(startswith("${PKG}=")) | split("=")[1]' || echo "")"
+            BASE_PACKAGE_VERSION="$(echo $BASE_IMAGE_META | jq -r '.Env[] | select(startswith("${PKG}=")) | split("=")[1]' || echo "")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Env[] | select(startswith("${PKG}=")) | split("=")[1]' || echo "")"
             ;;
           *)
