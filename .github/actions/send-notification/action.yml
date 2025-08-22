@@ -85,13 +85,16 @@ runs:
           for file in $ARTIFACT_DIR/*; do
             if [ -f "$file" ]; then
               ATTACHMENTS+=" -F attach$i=@$file"
-              ATTACH_PIE+=" attach$i=@$file"
+              ATTACH_PIE+=" attach${i}@$file"
               if [[ "$BODY_EXISTS" == "false" ]]; then
                 cat "$file" >> $BODY_CONTENT_FILE
               fi
               ((i++))
             fi
           done
+          if [[ -n "$ATTACH_PIE" ]]; then
+            ATTACH_PIE+=" -f"
+          fi
         fi
 
         BODY_CONTENT="$(< $BODY_CONTENT_FILE)"
