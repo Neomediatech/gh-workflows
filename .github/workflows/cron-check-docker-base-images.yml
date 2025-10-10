@@ -3,7 +3,7 @@ name: Check via cron if a derived image needs to be updated from BASE image
 on:
   schedule:
     # Esegui ogni giorno alle 04:00 UTC
-    - cron: '0 4 * * *'
+    - cron: '0 4 * * 1'
   workflow_dispatch:
   workflow_call:
 
