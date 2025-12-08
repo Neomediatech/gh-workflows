@@ -70,6 +70,7 @@ runs:
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
             ;;
           "proxmox")
+            DEBIAN_VER="$(echo ${{ inputs.base-image }}|cut -d: -f 2)"
             SH_CMD='\
             #!/bin/sh\
             set -x;\
@@ -81,6 +82,7 @@ runs:
             apt-get update 1>/dev/null 2>/dev/null;\
             apt-cache policy ${{ inputs.package-to-check }}|egrep -v "[a-z]"|sed "s/500//g;s/*//g;s/ //g"|grep "${{ inputs.sticky-version }}"|head -n1
             '
+            SH_CMD="$(echo $SH_CMD|sed "s/bookworm/$DEBIAN_VER/g")"
             echo "Running $DOCKER_CMD ${{ inputs.base-image }} -c $SH_CMD"
             BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
