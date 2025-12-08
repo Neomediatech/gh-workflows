@@ -655,3 +655,34 @@ lun 1 dic 2025, 06:03:53, CET --- ghcr.io/neomediatech/rspamd:latest --- Update 
 lun 1 dic 2025, 06:04:08, CET --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
 lun 1 dic 2025, 06:04:18, CET --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
 lun 1 dic 2025, 06:04:13, CET --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
+lun 8 dic 2025, 05:54:55, CET --- ghcr.io/neomediatech/bind9:latest --- Update required: 🔁 true --- image source neomediatech/bind9
+lun 8 dic 2025, 05:53:55, CET --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:20, CET --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: 🔁 true --- image source neomediatech/caddy
+lun 8 dic 2025, 05:54:24, CET --- ghcr.io/neomediatech/caddy:latest --- Update required: 🔁 true --- image source neomediatech/caddy
+lun 8 dic 2025, 05:54:34, CET --- ghcr.io/neomediatech/caddy:2.10 --- Update required: 🔁 true --- image source neomediatech/caddy
+lun 8 dic 2025, 05:54:35, CET --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
+lun 8 dic 2025, 05:54:35, CET --- ghcr.io/neomediatech/caddy:2.9 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:20, CET --- ghcr.io/neomediatech/cron:latest --- Update required: 🔁 true --- image source neomediatech/cron
+lun 8 dic 2025, 05:54:21, CET --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: 🔁 true --- image source neomediatech/dovecot
+lun 8 dic 2025, 05:54:38, CET --- ghcr.io/neomediatech/dovecot:latest --- Update required: 🔁 true --- image source neomediatech/dovecot
+lun 8 dic 2025, 05:54:46, CET --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: 🔁 true --- image source neomediatech/dovecot
+lun 8 dic 2025, 05:54:01, CET --- ghcr.io/neomediatech/exim:latest --- Update required: ✅ false
+lun 8 dic 2025, 05:54:01, CET --- ghcr.io/neomediatech/exim:rolling --- Update required: 🔁 true --- image source neomediatech/exim
+lun 8 dic 2025, 05:54:02, CET --- ghcr.io/neomediatech/exim:4.95 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:15, CET --- ghcr.io/neomediatech/exim:4.93-from-source --- Update required: ✅ false
+lun 8 dic 2025, 05:54:20, CET --- ghcr.io/neomediatech/exim:4.97-from-source --- Update required: ✅ false
+lun 8 dic 2025, 05:54:21, CET --- ghcr.io/neomediatech/exim:4.96 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:41, CET --- ghcr.io/neomediatech/exim:4.96-from-source --- Update required: ✅ false
+lun 8 dic 2025, 05:54:41, CET --- ghcr.io/neomediatech/exim:4.97 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:46, CET --- ghcr.io/neomediatech/exim:4.93 --- Update required: ✅ false
+lun 8 dic 2025, 05:53:55, CET --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 8 dic 2025, 05:53:55, CET --- ghcr.io/neomediatech/roundcube:latest-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 8 dic 2025, 05:54:29, CET --- ghcr.io/neomediatech/roundcube:latest --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 8 dic 2025, 05:54:35, CET --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 8 dic 2025, 05:54:43, CET --- ghcr.io/neomediatech/roundcube:1.6.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 8 dic 2025, 05:54:00, CET --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:00, CET --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:00, CET --- ghcr.io/neomediatech/rspamd:latest --- Update required: 🔁 true --- image source neomediatech/rspamd
+lun 8 dic 2025, 05:54:11, CET --- ghcr.io/neomediatech/rspamd:3.9 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:20, CET --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
+lun 8 dic 2025, 05:54:06, CET --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
