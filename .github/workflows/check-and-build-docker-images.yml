@@ -478,6 +478,7 @@ jobs:
           vuln-type: 'os,library'
           scanners: 'vuln,secret,misconfig'
           version: 'latest'
+          server-addr: 'http://trivy:4954'
       
       - name: Update trivy report
         if: env.IMAGE_BUILD_NEEDED == 'true' && inputs.update-image == 'true'
