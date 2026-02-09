@@ -478,6 +478,7 @@ jobs:
           vuln-type: 'os,library'
           scanners: 'vuln,secret,misconfig'
           version: 'latest'
+          args: --debug
         env:
           TRIVY_SERVER: "http://trivy:4954"
       
