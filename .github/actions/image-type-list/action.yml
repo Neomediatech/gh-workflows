@@ -132,6 +132,18 @@ runs:
             BASE_PACKAGE_VERSION="$(echo $BASE_IMAGE_META | jq -r ".Env[] | select(startswith(\"${PKG}=\")) | split(\"=\")[1]" || echo "")"
             DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r ".Env[] | select(startswith(\"${PKG}=\")) | split(\"=\")[1]" || echo "")"
             ;;
+          "firefox")
+            SH_CMD='\
+            #!/bin/sh\
+            set -x;\
+            apt-get update 1>/dev/null 2>/dev/null;\
+            apt-get install -y --no-install-recommends curl jq ca-certificates 1>/dev/null 2>/dev/null;\
+            curl -s https://product-details.mozilla.org/1.0/firefox_versions.json | jq -r '.LATEST_FIREFOX_VERSION'
+            '
+            echo "Running $DOCKER_CMD ${{ inputs.base-image }} -c $SH_CMD"
+            BASE_PACKAGE_VERSION="$($DOCKER_CMD ${{ inputs.base-image }} -c "$SH_CMD")"
+            DERIVED_PACKAGE_VERSION="$(skopeo inspect docker://${{ inputs.derived-image }} | jq -r '.Labels."org.opencontainers.package.version"' || echo "")"
+            ;;         
           *)
             if [[ "${{ inputs.package-to-check }}" != "" ]]; then
               BASE_PACKAGE_VERSION="$(docker run --rm --entrypoint /bin/sh -u root ${{ inputs.base-image }} -c "apt-get update 1>/dev/null ; apt-cache policy ${{ inputs.package-to-check }} |grep Candidat|awk '{print \$2}'")"
