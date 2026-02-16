@@ -1,32 +1,32 @@
-lun 9 feb 2026, 06:53:45, CET --- ghcr.io/neomediatech/bind9:latest --- Update required: ✅ false
-lun 9 feb 2026, 06:53:00, CET --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:21, CET --- ghcr.io/neomediatech/caddy:2.10 --- Update required: 🔁 true --- image source neomediatech/caddy
-lun 9 feb 2026, 06:53:21, CET --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
-lun 9 feb 2026, 06:53:26, CET --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: 🔁 true --- image source neomediatech/caddy
-lun 9 feb 2026, 06:53:35, CET --- ghcr.io/neomediatech/caddy:latest --- Update required: 🔁 true --- image source neomediatech/caddy
-lun 9 feb 2026, 06:53:43, CET --- ghcr.io/neomediatech/caddy:2.9 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:51, CET --- ghcr.io/neomediatech/cron:latest --- Update required: 🔁 true --- image source neomediatech/cron
-lun 9 feb 2026, 06:53:53, CET --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: 🔁 true --- image source neomediatech/dovecot
-lun 9 feb 2026, 06:53:55, CET --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: 🔁 true --- image source neomediatech/dovecot
-lun 9 feb 2026, 06:54:03, CET --- ghcr.io/neomediatech/dovecot:latest --- Update required: 🔁 true --- image source neomediatech/dovecot
-lun 9 feb 2026, 06:53:08, CET --- ghcr.io/neomediatech/exim:latest --- Update required: ✅ false
-lun 9 feb 2026, 06:53:09, CET --- ghcr.io/neomediatech/exim:4.96 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:09, CET --- ghcr.io/neomediatech/exim:4.97 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:22, CET --- ghcr.io/neomediatech/exim:4.93-from-source --- Update required: ✅ false
-lun 9 feb 2026, 06:53:24, CET --- ghcr.io/neomediatech/exim:rolling --- Update required: 🔁 true --- image source neomediatech/exim
-lun 9 feb 2026, 06:53:28, CET --- ghcr.io/neomediatech/exim:4.93 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:44, CET --- ghcr.io/neomediatech/exim:4.95 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:46, CET --- ghcr.io/neomediatech/exim:4.96-from-source --- Update required: ✅ false
-lun 9 feb 2026, 06:53:52, CET --- ghcr.io/neomediatech/exim:4.97-from-source --- Update required: ✅ false
-lun 9 feb 2026, 06:53:04, CET --- ghcr.io/neomediatech/roundcube:latest-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 9 feb 2026, 06:53:21, CET --- ghcr.io/neomediatech/roundcube:latest --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 9 feb 2026, 06:53:25, CET --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 9 feb 2026, 06:53:58, CET --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 9 feb 2026, 06:53:59, CET --- ghcr.io/neomediatech/roundcube:1.6.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 9 feb 2026, 06:53:05, CET --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:06, CET --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:06, CET --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:06, CET --- ghcr.io/neomediatech/rspamd:latest --- Update required: ✅ false
-lun 9 feb 2026, 06:53:10, CET --- ghcr.io/neomediatech/rspamd:3.14 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:44, CET --- ghcr.io/neomediatech/rspamd:3.9 --- Update required: ✅ false
-lun 9 feb 2026, 06:53:33, CET --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
+lun 16 feb 2026, 06:51:57, CET --- ghcr.io/neomediatech/bind9:latest --- Update required: ✅ false
+lun 16 feb 2026, 06:50:56, CET --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
+lun 16 feb 2026, 06:51:41, CET --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: ✅ false
+lun 16 feb 2026, 06:51:53, CET --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
+lun 16 feb 2026, 06:52:02, CET --- ghcr.io/neomediatech/caddy:2.9 --- Update required: ✅ false
+lun 16 feb 2026, 06:52:08, CET --- ghcr.io/neomediatech/caddy:2.10 --- Update required: ✅ false
+lun 16 feb 2026, 06:52:09, CET --- ghcr.io/neomediatech/caddy:latest --- Update required: ✅ false
+lun 16 feb 2026, 06:52:00, CET --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
+lun 16 feb 2026, 06:51:47, CET --- ghcr.io/neomediatech/dovecot:latest --- Update required: ✅ false
+lun 16 feb 2026, 06:52:14, CET --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: ✅ false
+lun 16 feb 2026, 06:52:38, CET --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: ✅ false
+lun 16 feb 2026, 06:51:12, CET --- ghcr.io/neomediatech/exim:4.93 --- Update required: ✅ false
+lun 16 feb 2026, 06:51:12, CET --- ghcr.io/neomediatech/exim:latest --- Update required: ✅ false
+lun 16 feb 2026, 06:51:23, CET --- ghcr.io/neomediatech/exim:4.96 --- Update required: ✅ false
+lun 16 feb 2026, 06:51:34, CET --- ghcr.io/neomediatech/exim:4.96-from-source --- Update required: ✅ false
+lun 16 feb 2026, 06:51:36, CET --- ghcr.io/neomediatech/exim:4.93-from-source --- Update required: ✅ false
+lun 16 feb 2026, 06:51:54, CET --- ghcr.io/neomediatech/exim:4.97-from-source --- Update required: ✅ false
+lun 16 feb 2026, 06:52:06, CET --- ghcr.io/neomediatech/exim:4.95 --- Update required: ✅ false
+lun 16 feb 2026, 06:52:19, CET --- ghcr.io/neomediatech/exim:4.97 --- Update required: ✅ false
+lun 16 feb 2026, 06:52:26, CET --- ghcr.io/neomediatech/exim:rolling --- Update required: ✅ false
+lun 16 feb 2026, 06:51:27, CET --- ghcr.io/neomediatech/roundcube:latest --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 16 feb 2026, 06:51:39, CET --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 16 feb 2026, 06:51:53, CET --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 16 feb 2026, 06:52:07, CET --- ghcr.io/neomediatech/roundcube:1.6.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 16 feb 2026, 06:52:18, CET --- ghcr.io/neomediatech/roundcube:latest-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 16 feb 2026, 06:51:32, CET --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
+lun 16 feb 2026, 06:51:32, CET --- ghcr.io/neomediatech/rspamd:3.14 --- Update required: ✅ false
+lun 16 feb 2026, 06:51:32, CET --- ghcr.io/neomediatech/rspamd:3.9 --- Update required: ✅ false
+lun 16 feb 2026, 06:51:32, CET --- ghcr.io/neomediatech/rspamd:latest --- Update required: ✅ false
+lun 16 feb 2026, 06:52:04, CET --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
+lun 16 feb 2026, 06:52:04, CET --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
+lun 16 feb 2026, 06:50:53, CET --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
