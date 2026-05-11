@@ -1326,3 +1326,28 @@ lun 4 mag 2026, 09:36:54, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update r
 lun 4 mag 2026, 09:37:57, CEST --- ghcr.io/neomediatech/rspamd:3.14 --- Update required: ✅ false
 lun 4 mag 2026, 09:38:04, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: 🔁 true --- image source neomediatech/rspamd
 lun 4 mag 2026, 09:35:57, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
+lun 11 mag 2026, 10:08:18, CEST --- ghcr.io/neomediatech/bind9:latest --- Update required: ✅ false
+lun 11 mag 2026, 10:07:41, CEST --- ghcr.io/neomediatech/caddy:2.10 --- Update required: ✅ false
+lun 11 mag 2026, 10:07:41, CEST --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
+lun 11 mag 2026, 10:07:42, CEST --- ghcr.io/neomediatech/caddy:2.9 --- Update required: ✅ false
+lun 11 mag 2026, 10:07:44, CEST --- ghcr.io/neomediatech/caddy:latest --- Update required: ✅ false
+lun 11 mag 2026, 10:07:57, CEST --- ghcr.io/neomediatech/caddy:2.11 --- Update required: ✅ false
+lun 11 mag 2026, 10:07:59, CEST --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: ✅ false
+lun 11 mag 2026, 10:08:14, CEST --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
+lun 11 mag 2026, 10:08:20, CEST --- ghcr.io/neomediatech/caddy:latest-extra --- Update required: ✅ false
+lun 11 mag 2026, 10:07:58, CEST --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
+lun 11 mag 2026, 10:08:05, CEST --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: 🔁 true --- image source neomediatech/dovecot
+lun 11 mag 2026, 10:08:07, CEST --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: 🔁 true --- image source neomediatech/dovecot
+lun 11 mag 2026, 10:08:08, CEST --- ghcr.io/neomediatech/dovecot:latest --- Update required: 🔁 true --- image source neomediatech/dovecot
+lun 11 mag 2026, 10:07:43, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 11 mag 2026, 10:07:43, CEST --- ghcr.io/neomediatech/roundcube:latest-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 11 mag 2026, 10:07:55, CEST --- ghcr.io/neomediatech/roundcube:1.6.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 11 mag 2026, 10:07:59, CEST --- ghcr.io/neomediatech/roundcube:latest --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 11 mag 2026, 10:08:13, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 11 mag 2026, 10:07:47, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: 🔁 true --- image source neomediatech/rspamd
+lun 11 mag 2026, 10:08:03, CEST --- ghcr.io/neomediatech/rspamd:3.14 --- Update required: ✅ false
+lun 11 mag 2026, 10:08:04, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
+lun 11 mag 2026, 10:08:13, CEST --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
+lun 11 mag 2026, 10:08:18, CEST --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
+lun 11 mag 2026, 10:08:22, CEST --- ghcr.io/neomediatech/rspamd:3.9 --- Update required: ✅ false
+lun 11 mag 2026, 10:08:19, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
