@@ -61,8 +61,8 @@ on:
 
 jobs:
   discover-dockerfiles:
-    runs-on: ubuntu-latest
-    #runs-on: [self-hosted]
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       repo-lower: ${{ steps.set-matrix.outputs.repo-lower }}
