@@ -1,34 +1,33 @@
-lun 22 giu 2026, 12:22:03, CEST --- ghcr.io/neomediatech/bind9:latest --- Update required: 🔁 true --- image source neomediatech/bind9
-lun 22 giu 2026, 12:21:48, CEST --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
-lun 22 giu 2026, 12:22:18, CEST --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: ✅ false
-lun 22 giu 2026, 12:22:18, CEST --- ghcr.io/neomediatech/caddy:2.10 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:23, CEST --- ghcr.io/neomediatech/caddy:2.11 --- Update required: 🔁 true --- image source neomediatech/caddy
-lun 22 giu 2026, 12:22:30, CEST --- ghcr.io/neomediatech/caddy:2.9 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:33, CEST --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:49, CEST --- ghcr.io/neomediatech/caddy:latest-extra --- Update required: 🔁 true --- image source neomediatech/caddy
-lun 22 giu 2026, 12:22:49, CEST --- ghcr.io/neomediatech/caddy:latest --- Update required: 🔁 true --- image source neomediatech/caddy
-lun 22 giu 2026, 12:22:38, CEST --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
-lun 22 giu 2026, 12:22:34, CEST --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: 🔁 true --- image source neomediatech/dovecot
-lun 22 giu 2026, 12:22:35, CEST --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: 🔁 true --- image source neomediatech/dovecot
-lun 22 giu 2026, 12:23:04, CEST --- ghcr.io/neomediatech/dovecot:latest --- Update required: 🔁 true --- image source neomediatech/dovecot
-lun 22 giu 2026, 12:22:03, CEST --- ghcr.io/neomediatech/exim:4.96-from-source --- Update required: ✅ false
-lun 22 giu 2026, 12:22:03, CEST --- ghcr.io/neomediatech/exim:4.97 --- Update required: 🔁 true --- image source neomediatech/exim
-lun 22 giu 2026, 12:22:04, CEST --- ghcr.io/neomediatech/exim:4.95 --- Update required: 🔁 true --- image source neomediatech/exim
-lun 22 giu 2026, 12:22:04, CEST --- ghcr.io/neomediatech/exim:latest --- Update required: 🔁 true --- image source neomediatech/exim
-lun 22 giu 2026, 12:22:26, CEST --- ghcr.io/neomediatech/exim:4.93 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:40, CEST --- ghcr.io/neomediatech/exim:rolling --- Update required: 🔁 true --- image source neomediatech/exim
-lun 22 giu 2026, 12:22:46, CEST --- ghcr.io/neomediatech/exim:4.97-from-source --- Update required: 🔁 true --- image source neomediatech/exim
-lun 22 giu 2026, 12:22:54, CEST --- ghcr.io/neomediatech/exim:4.96 --- Update required: ✅ false
-lun 22 giu 2026, 12:23:00, CEST --- ghcr.io/neomediatech/exim:4.93-from-source --- Update required: ✅ false
-lun 22 giu 2026, 12:21:50, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 22 giu 2026, 12:22:03, CEST --- ghcr.io/neomediatech/roundcube:latest --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 22 giu 2026, 12:22:18, CEST --- ghcr.io/neomediatech/roundcube:1.6.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 22 giu 2026, 12:22:31, CEST --- ghcr.io/neomediatech/roundcube:latest-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 22 giu 2026, 12:22:45, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
-lun 22 giu 2026, 12:22:03, CEST --- ghcr.io/neomediatech/rspamd:3.14 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:08, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: 🔁 true --- image source neomediatech/rspamd
-lun 22 giu 2026, 12:22:22, CEST --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:22, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:43, CEST --- ghcr.io/neomediatech/rspamd:3.9 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:55, CEST --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
-lun 22 giu 2026, 12:22:16, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: 🔁 true --- image source neomediatech/self-hosted-runner
+lun 29 giu 2026, 11:16:06, CEST --- ghcr.io/neomediatech/bind9:latest --- Update required: ✅ false
+lun 29 giu 2026, 11:15:56, CEST --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
+lun 29 giu 2026, 11:15:57, CEST --- ghcr.io/neomediatech/caddy:latest --- Update required: ✅ false
+lun 29 giu 2026, 11:16:10, CEST --- ghcr.io/neomediatech/caddy:2.11 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:21, CEST --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: ✅ false
+lun 29 giu 2026, 11:16:21, CEST --- ghcr.io/neomediatech/caddy:latest-extra --- Update required: ✅ false
+lun 29 giu 2026, 11:16:42, CEST --- ghcr.io/neomediatech/caddy:2.10 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:44, CEST --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:52, CEST --- ghcr.io/neomediatech/caddy:2.9 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:42, CEST --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
+lun 29 giu 2026, 11:16:54, CEST --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: ✅ false
+lun 29 giu 2026, 11:17:04, CEST --- ghcr.io/neomediatech/dovecot:latest --- Update required: ✅ false
+lun 29 giu 2026, 11:17:05, CEST --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:06, CEST --- ghcr.io/neomediatech/exim:latest --- Update required: ✅ false
+lun 29 giu 2026, 11:16:06, CEST --- ghcr.io/neomediatech/exim:rolling --- Update required: ✅ false
+lun 29 giu 2026, 11:16:07, CEST --- ghcr.io/neomediatech/exim:4.97 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:28, CEST --- ghcr.io/neomediatech/exim:4.95 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:30, CEST --- ghcr.io/neomediatech/exim:4.93-from-source --- Update required: ✅ false
+lun 29 giu 2026, 11:16:52, CEST --- ghcr.io/neomediatech/exim:4.96 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:53, CEST --- ghcr.io/neomediatech/exim:4.96-from-source --- Update required: ✅ false
+lun 29 giu 2026, 11:17:04, CEST --- ghcr.io/neomediatech/exim:4.93 --- Update required: ✅ false
+lun 29 giu 2026, 11:17:04, CEST --- ghcr.io/neomediatech/exim:4.97-from-source --- Update required: 🔁 true --- image source neomediatech/exim
+lun 29 giu 2026, 11:16:21, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 29 giu 2026, 11:16:35, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 29 giu 2026, 11:16:06, CEST --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:06, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:06, CEST --- ghcr.io/neomediatech/rspamd:4.0 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:06, CEST --- ghcr.io/neomediatech/rspamd:4.1 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:15, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: ✅ false
+lun 29 giu 2026, 11:16:26, CEST --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:27, CEST --- ghcr.io/neomediatech/rspamd:3.14 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:47, CEST --- ghcr.io/neomediatech/rspamd:3.9 --- Update required: ✅ false
+lun 29 giu 2026, 11:16:54, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
