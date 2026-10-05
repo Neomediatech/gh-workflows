@@ -1983,3 +1983,36 @@ lun 28 set 2026, 13:10:40, CEST --- ghcr.io/neomediatech/rspamd:3.9 --- Update r
 lun 28 set 2026, 13:10:51, CEST --- ghcr.io/neomediatech/rspamd:4.0 --- Update required: ✅ false
 lun 28 set 2026, 13:11:07, CEST --- ghcr.io/neomediatech/rspamd:4.1 --- Update required: ✅ false
 lun 28 set 2026, 13:09:53, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
+lun 5 ott 2026, 13:46:25, CEST --- ghcr.io/neomediatech/bind9:latest --- Update required: 🔁 true --- image source neomediatech/bind9
+lun 5 ott 2026, 13:45:34, CEST --- ghcr.io/neomediatech/caddy:2.9 --- Update required: ✅ false
+lun 5 ott 2026, 13:45:35, CEST --- ghcr.io/neomediatech/caddy:latest-extra --- Update required: 🔁 true --- image source neomediatech/caddy
+lun 5 ott 2026, 13:45:35, CEST --- ghcr.io/neomediatech/caddy:latest --- Update required: 🔁 true --- image source neomediatech/caddy
+lun 5 ott 2026, 13:46:00, CEST --- ghcr.io/neomediatech/caddy:2.8-extra --- Update required: ✅ false
+lun 5 ott 2026, 13:46:02, CEST --- ghcr.io/neomediatech/caddy:2.11 --- Update required: 🔁 true --- image source neomediatech/caddy
+lun 5 ott 2026, 13:46:17, CEST --- ghcr.io/neomediatech/caddy:2.10-extra --- Update required: ✅ false
+lun 5 ott 2026, 13:46:18, CEST --- ghcr.io/neomediatech/caddy:2.10 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:28, CEST --- ghcr.io/neomediatech/caddy:2.8 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:48, CEST --- ghcr.io/neomediatech/cron:latest --- Update required: ✅ false
+lun 5 ott 2026, 13:46:12, CEST --- ghcr.io/neomediatech/dovecot:2.4 --- Update required: 🔁 true --- image source neomediatech/dovecot
+lun 5 ott 2026, 13:46:13, CEST --- ghcr.io/neomediatech/dovecot:2.3 --- Update required: ✅ false
+lun 5 ott 2026, 13:47:22, CEST --- ghcr.io/neomediatech/dovecot:latest --- Update required: ✅ false
+lun 5 ott 2026, 13:45:44, CEST --- ghcr.io/neomediatech/exim:4.97 --- Update required: 🔁 true --- image source neomediatech/exim
+lun 5 ott 2026, 13:45:45, CEST --- ghcr.io/neomediatech/exim:4.95 --- Update required: 🔁 true --- image source neomediatech/exim
+lun 5 ott 2026, 13:45:46, CEST --- ghcr.io/neomediatech/exim:4.96 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:23, CEST --- ghcr.io/neomediatech/exim:latest --- Update required: 🔁 true --- image source neomediatech/exim
+lun 5 ott 2026, 13:46:38, CEST --- ghcr.io/neomediatech/exim:rolling --- Update required: 🔁 true --- image source neomediatech/exim
+lun 5 ott 2026, 13:46:53, CEST --- ghcr.io/neomediatech/exim:4.93-from-source --- Update required: ✅ false
+lun 5 ott 2026, 13:46:55, CEST --- ghcr.io/neomediatech/exim:4.96-from-source --- Update required: ✅ false
+lun 5 ott 2026, 13:47:01, CEST --- ghcr.io/neomediatech/exim:4.97-from-source --- Update required: 🔁 true --- image source neomediatech/exim
+lun 5 ott 2026, 13:47:03, CEST --- ghcr.io/neomediatech/exim:4.93 --- Update required: ✅ false
+lun 5 ott 2026, 13:45:38, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-apache --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 5 ott 2026, 13:46:33, CEST --- ghcr.io/neomediatech/roundcube:1.5.x-fpm --- Update required: ❓ unknown --- image source neomediatech/roundcube
+lun 5 ott 2026, 13:45:42, CEST --- ghcr.io/neomediatech/rspamd:latest --- Update required: ✅ false
+lun 5 ott 2026, 13:46:04, CEST --- ghcr.io/neomediatech/rspamd:4.1 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:28, CEST --- ghcr.io/neomediatech/rspamd:3.14 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:32, CEST --- ghcr.io/neomediatech/rspamd:3.11 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:38, CEST --- ghcr.io/neomediatech/rspamd:3.12 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:44, CEST --- ghcr.io/neomediatech/rspamd:4.0 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:45, CEST --- ghcr.io/neomediatech/rspamd:3.10 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:45, CEST --- ghcr.io/neomediatech/rspamd:3.9 --- Update required: ✅ false
+lun 5 ott 2026, 13:46:17, CEST --- ghcr.io/neomediatech/self-hosted-runner:latest --- Update required: ✅ false
